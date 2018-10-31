@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="il.ac.tau.team2.googleworkshopproject.MainActivity">
+    <item android:id="@+id/action_settings"
+          android:title="@string/action_settings"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_test1"
+          android:title="@string/action_test1"
+          android:orderInCategory="90"
+          android:icon="@drawable/ic_directions_car_black_24dp"
+          android:iconTint="@color/nicePurple"
+          app:showAsAction="ifRoom"/>
+</menu>
