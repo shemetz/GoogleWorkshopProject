@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="nicePurple">#D81BF0</color>
+    <color name="profileBlue">#107783</color>
+    <color name="carButtonBlue">#205bc1</color>
 </resources>

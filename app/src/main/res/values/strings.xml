@@ -1,5 +1,28 @@
 <resources>
-    <string name="app_name">Google Workshop Project</string>
+    <string name="app_name">RIDES (temp name)</string>
+
+    <!-- Strings related to Settings -->
     <string name="action_settings">Settings</string>
-    <string name="action_test1">בדיקה</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="pref_title_login_settings">Login</string>
+    <string name="pref_title_change_password">Change password</string>
+    <string name="pref_title_change_password_hint">Change password hint</string>
+    <string name="pref_title_security_settings">Security</string>
+    <string name="pref_title_auto_lock">Enable auto-lock</string>
+    <string name="pref_title_about_settings">About</string>
+    <string name="pref_title_upgrade">Upgrade</string>
+    <string name="pref_title_contact_us">Contact us</string>
+    <string name="pref_title_version">Version</string>
+    <string name="pref_key_change_password">PREF_KEY_CHANGE_PASSWORD</string>
+    <string name="pref_key_change_password_hint">PREF_KEY_CHANGE_PASSWORD_HINT</string>
+    <string name="pref_key_auto_lock">PREF_KEY_AUTO_LOCK</string>
+    <string name="pref_key_upgrade">PREF_KEY_UPGRADE</string>
+    <string name="pref_key_contact_us">PREF_KEY_CONTACT_US</string>
+    <string name="pref_key_version">PREF_KEY_VERSION</string>
+    <!-- Strings related to the RidesList activity -->
+    <string name="button_label_open_rideslistactivity">Open RidesListActivity</string>
+    <string name="content_description_profile_picture">Profile picture</string>
+    <!-- Miscellaneous strings-->
+    <string name="action_open_event_on_facebook">Open on Facebook</string>
+
 </resources>
