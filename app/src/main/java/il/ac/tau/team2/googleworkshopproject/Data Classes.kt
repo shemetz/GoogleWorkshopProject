@@ -5,46 +5,48 @@ typealias Location = android.location.Location
 typealias Datetime = java.util.Date
 
 open class DatabaseObject(val id: Int) {
-    override fun equals(other: Any?) = (other != null && other is DatabaseObject && other::class.java == this::class.java) && id == other.id
+    override fun equals(other: Any?) =
+        (other != null && other is DatabaseObject && other::class.java == this::class.java) && id == other.id
+
     override fun hashCode() = id.hashCode()
 }
 
 class Ride(
-        id_: Int,
-        var driver: Driver,
-        var origin: Location,
-        var destination: Location,
-        var departureTime: TimeOfDay,
-        var carModel: String,
-        var carColor: String,
-        var extraDetails: String = "",
-        var pickups: List<Pickup> = emptyList()
+    id_: Int,
+    var driver: Driver,
+    var origin: Location,
+    var destination: Location,
+    var departureTime: TimeOfDay,
+    var carModel: String,
+    var carColor: String,
+    var extraDetails: String = "",
+    var pickups: List<Pickup> = emptyList()
 ) : DatabaseObject(id_)
 
 class User(
-        val id: Int,
-        var name: String,
-        var facebookProfileLink: String
-)
+    id_: Int,
+    var name: String,
+    var facebookProfileId: String
+) : DatabaseObject(id_)
 
 class Event(
-        val id: Int,
-        var name: String,
-        var location: Location,
-        var datetime: Datetime,
-        var facebookEventLink: String
-)
+    id_: Int,
+    var name: String,
+    var location: Location,
+    var datetime: Datetime,
+    var facebookEventId: String
+) : DatabaseObject(id_)
 
 class Pickup(
-        val id: Int,
-        val user: User,
-        var pickupSpot: Location,
-        var pickupTime: TimeOfDay
-)
+    id_: Int,
+    val user: User,
+    var pickupSpot: Location,
+    var pickupTime: TimeOfDay
+) : DatabaseObject(id_)
 
 data class TimeOfDay(
-        val hours: Int,
-        val minutes: Int
+    val hours: Int,
+    val minutes: Int
 ) {
     /**
      * Examples:

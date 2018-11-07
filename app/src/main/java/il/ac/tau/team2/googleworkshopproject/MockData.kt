@@ -3,10 +3,10 @@ package il.ac.tau.team2.googleworkshopproject
 import java.text.SimpleDateFormat
 import java.util.*
 
-val user1 = User(1, "Adam Driver", "fake facebook profile link 1")
-val user2 = User(2, "Billy Bobson", "fake facebook profile link 2")
-val user3 = User(3, "Claire White", "fake facebook profile link 3")
-val user4 = User(4, "Donna Spielstein", "fake facebook profile link 4")
+val user1 = User(1, "Adam Driver", "fake facebook profile id 1")
+val user2 = User(2, "Billy Bobson", "fake facebook profile id 2")
+val user3 = User(3, "Claire White", "fake facebook profile id 3")
+val user4 = User(4, "Donna Spielstein", "fake facebook profile id 4")
 val location1 = Location("Tel Aviv")
 val location2 = Location("Haifa")
 val location3 = Location("Eilat")
@@ -35,5 +35,5 @@ val event1 = Event(
         "Summer Party",
         location3,
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse("2019-02-18T15:00:00"),
-        "fake facebook event link 1"
+        "fake facebook event id 1"
 )
