@@ -13,27 +13,29 @@ val location3 = Location("Eilat")
 val pickup1 = Pickup(1, user2, location1, TimeOfDay(12, 34))
 val pickup2 = Pickup(2, user3, location2, TimeOfDay(12, 55))
 val ride1 = Ride(
-        1,
-        user1,
-        location1,
-        location3,
-        TimeOfDay(12, 0),
-        "Tesla S",
-        "Black",
-        "please no dogs",
-        listOf(pickup1, pickup2))
+    1,
+    user1,
+    location1,
+    location3,
+    TimeOfDay(12, 0),
+    "Tesla S",
+    "Black",
+    "please no dogs",
+    listOf(pickup1, pickup2)
+)
 val ride2 = Ride(
-        2,
-        user4,
-        location1,
-        location3,
-        TimeOfDay(12, 20),
-        "Honda",
-        "Red")
+    2,
+    user4,
+    location1,
+    location3,
+    TimeOfDay(12, 20),
+    "Honda",
+    "Red"
+)
 val event1 = Event(
-        1,
-        "Summer Party",
-        location3,
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse("2019-02-18T15:00:00"),
-        "fake facebook event id 1"
+    1,
+    "Summer Party",
+    location3,
+    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse("2019-02-18T15:00:00"),
+    "fake facebook event id 1"
 )
