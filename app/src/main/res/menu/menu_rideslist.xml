@@ -1,9 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context="il.ac.tau.team2.googleworkshopproject.MainActivity">
+      tools:context="il.ac.tau.team2.googleworkshopproject.RidesListActivity">
     <item android:id="@+id/action_settings"
           android:title="@string/action_settings"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_open_event_on_facebook"
+          android:title="@string/action_open_event_on_facebook"
           android:orderInCategory="100"
           app:showAsAction="never"/>
 </menu>

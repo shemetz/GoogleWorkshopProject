@@ -8,6 +8,12 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/activity_main"
         tools:context=".MainActivity">
+    <android.widget.Button
+        android:id="@+id/button_rides_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/button_label_open_rideslistactivity"/>
+
 
     <TextView
             android:layout_width="wrap_content"
