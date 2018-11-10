@@ -37,9 +37,11 @@ class RidesListActivity : AppCompatActivity() {
 
         toolbar_layout.title = event.name
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "This will create a ride where you're the driver", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+        fab.setOnClickListener { _ ->
+            val intent = Intent(applicationContext, NewRiderActivity::class.java)
+            val eventID = -1  // mock
+            intent.putExtra(RidesListActivity.IntentExtraKeys.EVENT.name, eventID)
+            startActivity(intent)
         }
 
         // mock
