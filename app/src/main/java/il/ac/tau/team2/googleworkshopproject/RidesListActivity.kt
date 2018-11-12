@@ -3,7 +3,7 @@ package il.ac.tau.team2.googleworkshopproject
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -32,18 +32,17 @@ class RidesListActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         val eventId = intent.getIntExtra(RidesListActivity.IntentExtraKeys.EVENT.name, -1)
-        // mock
-        event = event1
+        event = Database.getEvent(eventId)!!
 
         toolbar_layout.title = event.name
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "This will create a ride where you're the driver", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+                .setAction("Action", null).show()
         }
 
         // mock
-        val rides = arrayOf(ride1, ride2)
+        val rides = Database.getRidesForEvent(event.id).toTypedArray()
 
         viewManager = LinearLayoutManager(this)
         viewAdapter = MyAdapter(rides)
@@ -57,7 +56,7 @@ class RidesListActivity : AppCompatActivity() {
     }
 
     class MyAdapter(private val rides: Array<Ride>) :
-            RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+        RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
         // Provide a reference to the views for each data item
         // Complex data items may need more than one view per item, and
@@ -66,11 +65,13 @@ class RidesListActivity : AppCompatActivity() {
         class MyViewHolder(val cardView: CardView) : RecyclerView.ViewHolder(cardView)
 
         // Create new views (invoked by the layout manager)
-        override fun onCreateViewHolder(parent: ViewGroup,
-                                        viewType: Int): MyAdapter.MyViewHolder {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int
+        ): MyAdapter.MyViewHolder {
             // create a new view
             val cardView = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.card_ride, parent, false) as CardView
+                .inflate(R.layout.card_ride, parent, false) as CardView
 
             return MyViewHolder(cardView)
         }
@@ -88,7 +89,7 @@ class RidesListActivity : AppCompatActivity() {
             view.departureTime.text = ride.departureTime.shortenedTime()
             holder.cardView.setOnClickListener { _ ->
                 Snackbar.make(view, "This will create a ride where you're the driver", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
+                    .setAction("Action", null).show()
             }
         }
 
