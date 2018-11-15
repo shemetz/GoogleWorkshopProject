@@ -88,8 +88,10 @@ class RidesListActivity : AppCompatActivity() {
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()
             holder.cardView.setOnClickListener { _ ->
-                Snackbar.make(view, "This will create a ride where you're the driver", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+                val intent = Intent(view.context, RidePageActivity::class.java)
+                val rideID = ride.id
+                intent.putExtra(RidePageActivity.IntentExtraKeys.RIDEID.name, rideID)
+                view.context.startActivity(intent)
             }
         }
 

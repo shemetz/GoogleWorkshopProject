@@ -6,4 +6,5 @@
     <color name="nicePurple">#D81BF0</color>
     <color name="profileBlue">#107783</color>
     <color name="carButtonBlue">#205bc1</color>
+    <color name="profileNameColor">#1d7fff</color>
 </resources>
