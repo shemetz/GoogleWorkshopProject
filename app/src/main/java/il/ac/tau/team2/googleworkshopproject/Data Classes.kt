@@ -14,13 +14,13 @@ open class DatabaseObject(val id: Int) {
 class Ride(
     id_: Int,
     var driver: Driver,
+    val event: Event,
     var origin: Location,
     var destination: Location,
     var departureTime: TimeOfDay,
     var carModel: String,
     var carColor: String,
-    var extraDetails: String = "",
-    var pickups: List<Pickup> = emptyList()
+    var extraDetails: String = ""
 ) : DatabaseObject(id_)
 
 class User(
@@ -40,6 +40,7 @@ class Event(
 class Pickup(
     id_: Int,
     val user: User,
+    val ride: Ride,
     var pickupSpot: Location,
     var pickupTime: TimeOfDay
 ) : DatabaseObject(id_)

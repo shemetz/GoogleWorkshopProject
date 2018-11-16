@@ -2,8 +2,7 @@ package il.ac.tau.team2.googleworkshopproject
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 
@@ -19,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
         button_rides_list.setOnClickListener { _ ->
             val intent = Intent(applicationContext, RidesListActivity::class.java)
-            val eventID = -1  // mock
+            val eventID = MockData.event1.id  // MOCK
             intent.putExtra(RidesListActivity.IntentExtraKeys.EVENT.name, eventID)
             startActivity(intent)
         }
