@@ -2,7 +2,6 @@ package il.ac.tau.team2.googleworkshopproject
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
@@ -38,8 +37,7 @@ class RidesListActivity : AppCompatActivity() {
 
         fab.setOnClickListener { _ ->
             val intent = Intent(applicationContext, NewRiderActivity::class.java)
-            val eventID = -1  // mock
-            intent.putExtra(RidesListActivity.IntentExtraKeys.EVENT.name, eventID)
+            intent.putExtra(RidesListActivity.IntentExtraKeys.EVENT.name, event.id)
             startActivity(intent)
         }
 
@@ -108,6 +106,7 @@ class RidesListActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
