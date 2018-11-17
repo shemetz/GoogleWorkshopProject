@@ -44,6 +44,7 @@
                 android:name=".NewRiderActivity"
                 android:label="Add a new ride!"
                 android:parentActivityName=".RidesListActivity"/>
+
     </application>
 
 </manifest>
