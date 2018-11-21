@@ -3,10 +3,11 @@ package il.ac.tau.team2.googleworkshopproject
 import android.util.Log
 
 object Database {
+    private val tag = Database::class.java.simpleName
     fun getUser(userId: Int): User? {
         // MOCK
         return MockData.users[userId] ?: run {
-            Log.e(this::class.java.name, "No such user with ID = $userId")
+            Log.e(tag, "No such user with ID = $userId")
             null
         }
     }
@@ -14,7 +15,7 @@ object Database {
     fun getEvent(eventId: Int): Event? {
         // MOCK
         return MockData.events[eventId] ?: run {
-            Log.e(this::class.java.name, "No such event with ID = $eventId")
+            Log.e(tag, "No such event with ID = $eventId")
             null
         }
     }
@@ -22,7 +23,7 @@ object Database {
     fun getRide(rideId: Int): Ride? {
         // MOCK
         return MockData.rides[rideId] ?: run {
-            Log.e(this::class.java.name, "No such ride with ID = $rideId")
+            Log.e(tag, "No such ride with ID = $rideId")
             null
         }
     }
@@ -30,7 +31,7 @@ object Database {
     fun getPickup(pickupId: Int): Pickup? {
         // MOCK
         return MockData.pickups[pickupId] ?: run {
-            Log.e(this::class.java.name, "No such pickup with ID = $pickupId")
+            Log.e(tag, "No such pickup with ID = $pickupId")
             null
         }
     }

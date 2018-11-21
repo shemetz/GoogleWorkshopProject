@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -15,6 +16,8 @@ import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
 
 class EventRidesActivity : AppCompatActivity() {
+    private val tag = EventRidesActivity::class.java.simpleName
+
     private lateinit var event: Event
 
     private lateinit var recyclerView: RecyclerView
@@ -26,7 +29,15 @@ class EventRidesActivity : AppCompatActivity() {
         setContentView(R.layout.activity_eventrides)
         setSupportActionBar(toolbar)
 
-        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
+        // The next line gets the event ID either from the intent extras or from the saved activity state.
+        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
+        if (eventId == -1) {
+            Log.e(tag, "No event ID found in intent or in saved state!")
+            Log.w(tag, "Due to error, returning to main activity.")
+            val intent = Intent(applicationContext, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
         event = Database.getEvent(eventId)!!
 
         toolbar_layout.title = event.name
@@ -49,6 +60,11 @@ class EventRidesActivity : AppCompatActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState?.putInt(Keys.EVENT_ID.name, event.id)
+        super.onSaveInstanceState(outState)
     }
 
     class MyAdapter(private val rides: Array<Ride>) :
