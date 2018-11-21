@@ -23,8 +23,10 @@ class RideCreationActivity : AppCompatActivity() {
         val departureTime = findViewById<TextView>(R.id.departure_time)
         val carModel = findViewById<TextView>(R.id.car_model)
         val carColor = findViewById<TextView>(R.id.car_color)
-        val submitBtn = findViewById<Button>(R.id.btn_submit)
+        val passengerCount = findViewById<TextView>(R.id.num_seats)
         val extraDetails = findViewById<TextView>(R.id.extra_details)
+        val submitBtn = findViewById<Button>(R.id.btn_submit)
+
         val driver: Driver = Database.getThisUser()
         var timeOfDay: TimeOfDay? = null
         val origin = MockData.location3 // MOCK
@@ -47,27 +49,35 @@ class RideCreationActivity : AppCompatActivity() {
             timeOfDay = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
         }
 
+        /**
+         * If some required fields are not filled, we mark them as bad and not continue
+         */
         fun checkThatAllFieldsWereFilledCorrectly(): Boolean {
-            //If some required fields are not filled, we mark them as bad and not continue
-            fun markError(view: Button): Boolean {
-                view.requestFocus()
-                view.error = "This field is required."
+            var focusMoved = false
+            fun markError(view: Button, overrideErrorText: String? = null): Boolean {
+                if (!focusMoved) {
+                    focusMoved = view.requestFocus()
+                }
+                view.error = overrideErrorText ?: "This field is required."
                 return false
             }
 
-            fun markError(view: TextView): Boolean {
+            fun markError(view: TextView, overrideErrorText: String? = null): Boolean {
                 view.requestFocus()
-                view.error = "This field is required."
+                view.error = overrideErrorText ?: "This field is required."
                 return false
             }
-            return when {
-                timeOfDay == null -> markError(mPickTimeBtn)
-                carModel.text.isBlank() -> markError(carModel)
-                carColor.text.isBlank() -> markError(carModel)
-                origin == null -> TODO()
-                destination == null -> TODO()
-                else -> true
-            }
+
+            var allIsGood = true
+            if (timeOfDay == null) allIsGood = markError(mPickTimeBtn)
+            if (carModel.text.isBlank()) allIsGood = markError(carModel)
+            if (carColor.text.isBlank()) allIsGood = markError(carColor)
+            if (passengerCount.text.isBlank()) allIsGood = markError(passengerCount)
+            else if (passengerCount.text.toString().toInt() <= 0) allIsGood =
+                    markError(passengerCount, "Sorry, currently only positive numbers of passengers are allowed ;)")
+            if (origin == null) allIsGood = TODO()
+            if (destination == null) allIsGood = TODO()
+            return allIsGood
         }
 
         submitBtn.setOnClickListener {
@@ -80,7 +90,8 @@ class RideCreationActivity : AppCompatActivity() {
 
             val ride = Database.createNewRide(
                 driver, event, origin, destination, timeOfDay!!,
-                carModel.text.toString(), carColor.text.toString(), extraDetails.text.toString()
+                carModel.text.toString(), carColor.text.toString(),
+                passengerCount.text.toString().toInt(), extraDetails.text.toString()
             )
             val intent = Intent(applicationContext, RidePageActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP

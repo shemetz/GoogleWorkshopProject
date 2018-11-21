@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".RideCreationActivity">
 
 
@@ -53,6 +55,7 @@
             android:id="@+id/departure_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
             android:text="Departure Time"
             android:textSize="20sp" />
 
@@ -66,6 +69,7 @@
             android:id="@+id/departure_address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
             android:text="Departure Address"
             android:textSize="20sp" />
 
@@ -106,7 +110,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:hint="Additional Details"
-                android:maxLines="4" />
+                android:maxLines="4"
+                android:inputType="textMultiLine" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -114,9 +119,9 @@
             android:id="@+id/btn_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
+            android:layout_gravity="center_horizontal"
             android:text="Submit" />
     </LinearLayout>
 
 
-</android.support.constraint.ConstraintLayout>
+</android.support.v4.widget.NestedScrollView>

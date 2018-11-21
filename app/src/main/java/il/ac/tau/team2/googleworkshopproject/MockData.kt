@@ -29,6 +29,7 @@ object MockData {
         TimeOfDay(12, 0),
         "Tesla S",
         "Black",
+        4,
         "please no dogs"
     )
     val ride2 = Ride(
@@ -39,7 +40,8 @@ object MockData {
         location3,
         TimeOfDay(12, 20),
         "Honda",
-        "Red"
+        "Red",
+        6
     )
     val pickup1 = Pickup(1, user2, ride1, location1, TimeOfDay(12, 34))
     val pickup2 = Pickup(2, user3, ride1, location2, TimeOfDay(12, 55))

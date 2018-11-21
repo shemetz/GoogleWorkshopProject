@@ -74,6 +74,7 @@ object Database {
         departureTime: TimeOfDay,
         carModel: String,
         carColor: String,
+        passengerCount: Int,
         extraDetails: String = ""
     ): Ride {
         //MOCK
@@ -87,6 +88,7 @@ object Database {
             departureTime = departureTime,
             carModel = carModel,
             carColor = carColor,
+            passengerCount = passengerCount,
             extraDetails = extraDetails
         )
         MockData.rides[newRideId] = newRide

@@ -20,6 +20,7 @@ class Ride(
     var departureTime: TimeOfDay,
     var carModel: String,
     var carColor: String,
+    var passengerCount: Int,
     var extraDetails: String = ""
 ) : DatabaseObject(id_)
 
