@@ -11,37 +11,33 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 
-import kotlinx.android.synthetic.main.activity_rideslist.*
+import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
 
-class RidesListActivity : AppCompatActivity() {
+class EventRidesActivity : AppCompatActivity() {
     private lateinit var event: Event
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
 
-    enum class IntentExtraKeys {
-        EVENT
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_rideslist)
+        setContentView(R.layout.activity_eventrides)
         setSupportActionBar(toolbar)
 
-        val eventId = intent.getIntExtra(RidesListActivity.IntentExtraKeys.EVENT.name, -1)
+        val eventId = intent.getIntExtra(IntentExtraKeys.EVENT_ID.name, -1)
         event = Database.getEvent(eventId)!!
 
         toolbar_layout.title = event.name
 
-        fab.setOnClickListener { _ ->
-            val intent = Intent(applicationContext, NewRiderActivity::class.java)
-            intent.putExtra(RidesListActivity.IntentExtraKeys.EVENT.name, event.id)
+        fab.setOnClickListener {
+            val intent = Intent(applicationContext, RideCreationActivity::class.java)
+            intent.putExtra(IntentExtraKeys.EVENT_ID.name, event.id)
             startActivity(intent)
         }
 
-        // mock
+        // MOCK
         val rides = Database.getRidesForEvent(event.id).toTypedArray()
 
         viewManager = LinearLayoutManager(this)
@@ -87,10 +83,10 @@ class RidesListActivity : AppCompatActivity() {
             view.originLocationName.text = ride.origin.shortenedLocation()
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()
-            holder.cardView.setOnClickListener { _ ->
+            holder.cardView.setOnClickListener {
                 val intent = Intent(view.context, RidePageActivity::class.java)
                 val rideID = ride.id
-                intent.putExtra(RidePageActivity.IntentExtraKeys.RIDEID.name, rideID)
+                intent.putExtra(IntentExtraKeys.RIDE_ID.name, rideID)
                 view.context.startActivity(intent)
             }
         }
@@ -100,13 +96,12 @@ class RidesListActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_rideslist, menu)
+        menuInflater.inflate(R.menu.menu_eventrides, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {

@@ -16,10 +16,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        button_rides_list.setOnClickListener { _ ->
-            val intent = Intent(applicationContext, RidesListActivity::class.java)
+        button_rides_list.setOnClickListener {
+            val intent = Intent(applicationContext, EventRidesActivity::class.java)
             val eventID = MockData.event1.id  // MOCK
-            intent.putExtra(RidesListActivity.IntentExtraKeys.EVENT.name, eventID)
+            intent.putExtra(IntentExtraKeys.EVENT_ID.name, eventID)
             startActivity(intent)
         }
     }

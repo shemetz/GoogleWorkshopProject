@@ -1,8 +1,8 @@
 package il.ac.tau.team2.googleworkshopproject
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -10,8 +10,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_ride_page.*
-import kotlinx.android.synthetic.main.activity_rideslist.*
-import kotlinx.android.synthetic.main.card_ride.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
 
 
@@ -21,22 +19,19 @@ class RidePageActivity : AppCompatActivity() {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
 
-    enum class IntentExtraKeys {
-        RIDEID
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ride_page)
         //setSupportActionBar(toolbar)
-        val rideID = intent.getIntExtra(RidePageActivity.IntentExtraKeys.RIDEID.name,-1)
+        val rideID = intent.getIntExtra(IntentExtraKeys.RIDE_ID.name, -1)
         val ride = Database.getRide(rideID)!!
         driverNamePage.text = ride.driver.name
         carModel.text = ride.carModel
         carColor.text = ride.carColor
         originLocation.text = ride.origin.shortenedLocation()
         departureTimePage.text = ride.departureTime.shortenedTime()
-        details.text = "Details: " + ride.extraDetails
+        details.text = ride.extraDetails
 
         val pickups = Database.getPickupsForRide(rideID).toTypedArray()
         viewAdapter = MyAdapter(pickups)
@@ -59,7 +54,7 @@ class RidePageActivity : AppCompatActivity() {
                 startActivity(Intent(applicationContext, SettingsActivity::class.java))
                 true
             }
-            android.R.id.home->{
+            android.R.id.home -> {
                 onBackPressed()
                 true
             }

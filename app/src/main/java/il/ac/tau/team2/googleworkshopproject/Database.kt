@@ -106,8 +106,14 @@ object Database {
             pickupSpot,
             pickupTime
         )
+        //MOCK
         MockData.pickups[newPickupId] = newPickup
         MockData.pickupsOfRide.getOrPut(ride.id) { mutableListOf() }.add(newPickupId)
         return newPickup
+    }
+
+    fun getThisUser(): User {
+        //MOCK
+        return MockData.user5
     }
 }

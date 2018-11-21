@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RidesListActivity"
+            android:name=".EventRidesActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -34,16 +34,16 @@
                 android:theme="@style/AppTheme.NoActionBar"/>
         <activity
                 android:name=".RidePageActivity"
-                android:parentActivityName=".RidesListActivity">
+                android:parentActivityName=".EventRidesActivity">
 
         </activity>
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-                android:name=".NewRiderActivity"
+                android:name=".RideCreationActivity"
                 android:label="Add a new ride!"
-                android:parentActivityName=".RidesListActivity"/>
+                android:parentActivityName=".EventRidesActivity"/>
 
     </application>
 
