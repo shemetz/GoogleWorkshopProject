@@ -26,14 +26,14 @@ class EventRidesActivity : AppCompatActivity() {
         setContentView(R.layout.activity_eventrides)
         setSupportActionBar(toolbar)
 
-        val eventId = intent.getIntExtra(IntentExtraKeys.EVENT_ID.name, -1)
+        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         event = Database.getEvent(eventId)!!
 
         toolbar_layout.title = event.name
 
         fab.setOnClickListener {
             val intent = Intent(applicationContext, RideCreationActivity::class.java)
-            intent.putExtra(IntentExtraKeys.EVENT_ID.name, event.id)
+            intent.putExtra(Keys.EVENT_ID.name, event.id)
             startActivity(intent)
         }
 
@@ -86,7 +86,7 @@ class EventRidesActivity : AppCompatActivity() {
             holder.cardView.setOnClickListener {
                 val intent = Intent(view.context, RidePageActivity::class.java)
                 val rideID = ride.id
-                intent.putExtra(IntentExtraKeys.RIDE_ID.name, rideID)
+                intent.putExtra(Keys.RIDE_ID.name, rideID)
                 view.context.startActivity(intent)
             }
         }

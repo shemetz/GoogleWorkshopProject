@@ -39,13 +39,13 @@ class RideCreationActivity : AppCompatActivity() {
         }
 
         submitBtn.setOnClickListener{
-            val eventId = intent.getIntExtra(IntentExtraKeys.EVENT_ID.name, -1)
+            val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
             val event = Database.getEvent(eventId)!!
             val ride = Database.createNewRide(driver, event,MockData.location3,MockData.location2, timeOfDay,
                 carModel.text.toString(),carColor.text.toString(), extraDetails.text.toString())
             val intent = Intent(applicationContext, RidePageActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            intent.putExtra(IntentExtraKeys.RIDE_ID.name, ride.id)
+            intent.putExtra(Keys.RIDE_ID.name, ride.id)
             startActivity(intent)
 
         }

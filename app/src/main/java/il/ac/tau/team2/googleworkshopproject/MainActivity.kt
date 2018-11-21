@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         button_rides_list.setOnClickListener {
             val intent = Intent(applicationContext, EventRidesActivity::class.java)
             val eventID = MockData.event1.id  // MOCK
-            intent.putExtra(IntentExtraKeys.EVENT_ID.name, eventID)
+            intent.putExtra(Keys.EVENT_ID.name, eventID)
             startActivity(intent)
         }
     }

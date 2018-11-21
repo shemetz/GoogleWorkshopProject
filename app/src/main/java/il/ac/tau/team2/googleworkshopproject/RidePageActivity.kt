@@ -24,7 +24,7 @@ class RidePageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ride_page)
         //setSupportActionBar(toolbar)
-        val rideID = intent.getIntExtra(IntentExtraKeys.RIDE_ID.name, -1)
+        val rideID = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         val ride = Database.getRide(rideID)!!
         driverNamePage.text = ride.driver.name
         carModel.text = ride.carModel
