@@ -4,6 +4,10 @@
     <!-- Strings related to Settings -->
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_main">Main screen</string>
+    <string name="title_activity_eventrides">Event rides</string>
+    <string name="title_activity_ridecreation">Creating a new ride</string>
+    <string name="title_activity_ridepage">Ride page</string>
     <string name="pref_title_login_settings">Login</string>
     <string name="pref_title_change_password">Change password</string>
     <string name="pref_title_change_password_hint">Change password hint</string>
@@ -33,7 +37,6 @@
     <string name="error_field_required">This field is required</string>
     <!-- Miscellaneous strings-->
     <string name="action_open_event_on_facebook">Open on Facebook</string>
-    <string name="title_activity_login">Create</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
 
 </resources>

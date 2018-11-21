@@ -9,6 +9,7 @@
 
     <application
         android:allowBackup="true"
+        android:fullBackupContent="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -16,34 +17,32 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
+            android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".EventRidesActivity"
+            android:label="@string/title_activity_eventrides"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-                android:name=".SettingsActivity"
-                android:label="@string/title_activity_settings"
-                android:theme="@style/AppTheme.NoActionBar"/>
-        <activity
-                android:name=".RidePageActivity"
-                android:parentActivityName=".EventRidesActivity">
-
-        </activity>
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-                android:name=".RideCreationActivity"
-                android:label="Add a new ride!"
-                android:parentActivityName=".EventRidesActivity"/>
+            android:name=".RidePageActivity"
+            android:label="@string/title_activity_ridepage"
+            android:parentActivityName=".EventRidesActivity" />
+        <activity
+            android:name=".RideCreationActivity"
+            android:label="@string/title_activity_ridecreation"
+            android:parentActivityName=".EventRidesActivity" />
 
     </application>
 
