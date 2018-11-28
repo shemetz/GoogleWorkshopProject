@@ -1,5 +1,6 @@
 package il.ac.tau.team2.googleworkshopproject
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -29,12 +30,12 @@ class RidePageActivity : AppCompatActivity() {
         driverNamePage.text = ride.driver.name
         carModel.text = ride.carModel
         carColor.text = ride.carColor
-        originLocation.text = ride.origin.shortenedLocation()
+        originLocation.text = shortenedLocation(this, ride.origin)
         departureTimePage.text = ride.departureTime.shortenedTime()
         details.text = ride.extraDetails
 
         val pickups = Database.getPickupsForRide(rideID).toTypedArray()
-        viewAdapter = MyAdapter(pickups)
+        viewAdapter = MyAdapter(this, pickups)
 
         viewManager = LinearLayoutManager(this)
         recyclerView = findViewById<RecyclerView>(R.id.ride_page_recyclerview).apply {
@@ -62,7 +63,7 @@ class RidePageActivity : AppCompatActivity() {
         }
     }
 
-    class MyAdapter(private val pickups: Array<Pickup>) :
+    class MyAdapter(private val context: Context, private val pickups: Array<Pickup>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
         // Provide a reference to the views for each data item
@@ -91,7 +92,7 @@ class RidePageActivity : AppCompatActivity() {
             val pickup = pickups[position]
 
             view.passengerName.text = pickup.user.name
-            view.pickupSpot.text = pickup.pickupSpot.shortenedLocation()
+            view.pickupSpot.text = shortenedLocation(context, pickup.pickupSpot)
 //            view.driverPicture.drawable = ???
             view.pickupTime.text = pickup.pickupTime.shortenedTime()
 

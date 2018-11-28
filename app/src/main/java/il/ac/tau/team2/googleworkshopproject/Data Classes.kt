@@ -59,7 +59,3 @@ data class TimeOfDay(
         return String.format("%02d:%02d", hours, minutes)
     }
 }
-
-fun Location.shortenedLocation(): String {
-    return "$longitude, $latitude"
-}

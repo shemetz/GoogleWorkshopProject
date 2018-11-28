@@ -10,9 +10,9 @@ object MockData {
     val user3 = User(3, "Claire White", "fake facebook profile id 3")
     val user4 = User(4, "Donna Spielstein", "fake facebook profile id 4")
     val user5 = User(5, "Eugene Smith", "fake facebook profile id 5")
-    val location1 = Location("Tel Aviv")
-    val location2 = Location("Haifa")
-    val location3 = Location("Eilat")
+    val location1 = Location("useless paramater").apply { latitude = 32.113859; longitude = 34.804167 } // TAU
+    val location2 = Location("useless paramater").apply { latitude = 32.071116; longitude = 34.783335 } // Cinema
+    val location3 = Location("useless paramater").apply { latitude = 32.055436; longitude = 34.753070 } // Museum
     val event1 = Event(
         1,
         "Summer Party",
@@ -36,7 +36,7 @@ object MockData {
         2,
         user4,
         event1,
-        location1,
+        location2,
         location3,
         TimeOfDay(12, 20),
         "Honda",

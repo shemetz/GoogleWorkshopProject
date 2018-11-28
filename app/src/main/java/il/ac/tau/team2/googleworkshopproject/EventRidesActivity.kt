@@ -1,5 +1,6 @@
 package il.ac.tau.team2.googleworkshopproject
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -52,7 +53,7 @@ class EventRidesActivity : AppCompatActivity() {
         val rides = Database.getRidesForEvent(event.id).toTypedArray()
 
         viewManager = LinearLayoutManager(this)
-        viewAdapter = MyAdapter(rides)
+        viewAdapter = MyAdapter(this, rides)
 
         recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
             // changes in content do not change the layout size of the RecyclerView
@@ -67,7 +68,7 @@ class EventRidesActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
-    class MyAdapter(private val rides: Array<Ride>) :
+    class MyAdapter(private val context: Context, private val rides: Array<Ride>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
         // Provide a reference to the views for each data item
@@ -96,7 +97,7 @@ class EventRidesActivity : AppCompatActivity() {
             val ride = rides[position]
 
             view.driverName.text = ride.driver.name
-            view.originLocationName.text = ride.origin.shortenedLocation()
+            view.originLocationName.text = shortenedLocation(context, ride.origin)
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()
             holder.cardView.setOnClickListener {
