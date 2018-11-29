@@ -1,4 +1,4 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 import android.util.Log
 

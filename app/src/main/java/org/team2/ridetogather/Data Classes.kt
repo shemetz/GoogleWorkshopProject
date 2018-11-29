@@ -1,4 +1,4 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 typealias Driver = User
 typealias Location = android.location.Location

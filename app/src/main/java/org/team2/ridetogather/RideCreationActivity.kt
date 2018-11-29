@@ -1,10 +1,11 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 import android.annotation.SuppressLint
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
@@ -13,12 +14,16 @@ import java.util.*
 
 
 class RideCreationActivity : AppCompatActivity() {
-
+    private val tag = RideCreationActivity::class.java.simpleName
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ridecreation)
+        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
+        val event = Database.getEvent(eventId)!!
+        Log.d(tag, "Created $tag with Event ID $eventId")
+
         val mPickTimeBtn = findViewById<Button>(R.id.pick_time_button)
         val departureTime = findViewById<TextView>(R.id.departure_time)
         val carModel = findViewById<TextView>(R.id.car_model)
@@ -85,17 +90,14 @@ class RideCreationActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
-            val event = Database.getEvent(eventId)!!
-
-            val ride = Database.createNewRide(
+            val newRide = Database.createNewRide(
                 driver, event, origin, destination, timeOfDay!!,
                 carModel.text.toString(), carColor.text.toString(),
                 passengerCount.text.toString().toInt(), extraDetails.text.toString()
             )
             val intent = Intent(applicationContext, RidePageActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            intent.putExtra(Keys.RIDE_ID.name, ride.id)
+            intent.putExtra(Keys.RIDE_ID.name, newRide.id)
             startActivity(intent)
 
         }

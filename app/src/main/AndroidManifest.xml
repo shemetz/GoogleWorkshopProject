@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="il.ac.tau.team2.googleworkshopproject">
+    package="org.team2.ridetogather">
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -22,7 +22,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -43,6 +42,7 @@
             android:name=".RideCreationActivity"
             android:label="@string/title_activity_ridecreation"
             android:windowSoftInputMode="adjustResize"
+            android:noHistory="true"
             android:parentActivityName=".EventRidesActivity" />
 
     </application>

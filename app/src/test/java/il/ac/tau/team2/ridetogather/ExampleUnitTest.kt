@@ -1,8 +1,7 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-
-import org.junit.Assert.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).

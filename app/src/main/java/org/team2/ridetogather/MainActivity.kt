@@ -1,20 +1,22 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
+    private val tag = MainActivity::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        Log.d(tag, "Created $tag")
 
         button_rides_list.setOnClickListener {
             val intent = Intent(applicationContext, EventRidesActivity::class.java)

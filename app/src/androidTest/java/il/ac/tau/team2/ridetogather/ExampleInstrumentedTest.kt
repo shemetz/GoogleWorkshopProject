@@ -1,12 +1,10 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
-
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -19,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
-        assertEquals("il.ac.tau.team2.googleworkshopproject", appContext.packageName)
+        assertEquals("il.ac.tau.team2.org.team2.ridetogather", appContext.packageName)
     }
 }

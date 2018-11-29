@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RIDES (temp name)</string>
+    <string name="app_name">Ride to Gather</string>
 
     <!-- Strings related to Settings -->
     <string name="action_settings">Settings</string>

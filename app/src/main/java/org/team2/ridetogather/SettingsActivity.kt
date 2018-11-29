@@ -1,9 +1,10 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.preference.Preference
 import android.support.v7.preference.PreferenceFragmentCompat
+import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_settings.*
 
@@ -20,10 +21,13 @@ import kotlinx.android.synthetic.main.activity_settings.*
  * I used the [PreferenceFragmentCompat version](https://code.luasoftware.com/tutorials/android/android-settings-preference-using-preferencefragmentcompat/).
  */
 class SettingsActivity : AppCompatActivity() {
+    private val tag = SettingsActivity::class.java.simpleName
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         setSupportActionBar(toolbar)
+        Log.d(tag, "Created $tag")
 
         // android.R.id.content is probably for old style activity
         supportFragmentManager.beginTransaction()

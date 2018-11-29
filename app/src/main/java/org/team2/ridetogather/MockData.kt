@@ -1,4 +1,4 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 import java.text.SimpleDateFormat
 import java.util.*
@@ -10,9 +10,12 @@ object MockData {
     val user3 = User(3, "Claire White", "fake facebook profile id 3")
     val user4 = User(4, "Donna Spielstein", "fake facebook profile id 4")
     val user5 = User(5, "Eugene Smith", "fake facebook profile id 5")
-    val location1 = Location("useless paramater").apply { latitude = 32.113859; longitude = 34.804167 } // TAU
-    val location2 = Location("useless paramater").apply { latitude = 32.071116; longitude = 34.783335 } // Cinema
-    val location3 = Location("useless paramater").apply { latitude = 32.055436; longitude = 34.753070 } // Museum
+    val location1 = Location("useless paramater")
+        .apply { latitude = 32.113859; longitude = 34.804167 } // TAU
+    val location2 = Location("useless paramater")
+        .apply { latitude = 32.071116; longitude = 34.783335 } // Cinema
+    val location3 = Location("useless paramater")
+        .apply { latitude = 32.055436; longitude = 34.753070 } // Museum
     val event1 = Event(
         1,
         "Summer Party",
@@ -43,8 +46,20 @@ object MockData {
         "Red",
         6
     )
-    val pickup1 = Pickup(1, user2, ride1, location1, TimeOfDay(12, 34))
-    val pickup2 = Pickup(2, user3, ride1, location2, TimeOfDay(12, 55))
+    val pickup1 = Pickup(
+        1,
+        user2,
+        ride1,
+        location1,
+        TimeOfDay(12, 34)
+    )
+    val pickup2 = Pickup(
+        2,
+        user3,
+        ride1,
+        location2,
+        TimeOfDay(12, 55)
+    )
 
     // main tables
     var users: HashMap<Int, User> = hashMapOf(1 to user1, 2 to user2, 3 to user3, 4 to user4)

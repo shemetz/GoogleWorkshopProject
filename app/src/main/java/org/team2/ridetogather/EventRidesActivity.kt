@@ -1,4 +1,4 @@
-package il.ac.tau.team2.googleworkshopproject
+package org.team2.ridetogather
 
 import android.content.Context
 import android.content.Intent
@@ -12,7 +12,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
-
 import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
 
@@ -40,6 +39,7 @@ class EventRidesActivity : AppCompatActivity() {
             startActivity(intent)
         }
         event = Database.getEvent(eventId)!!
+        Log.d(tag, "Created $tag with Event ID $eventId")
 
         toolbar_layout.title = event.name
 
@@ -81,7 +81,7 @@ class EventRidesActivity : AppCompatActivity() {
         override fun onCreateViewHolder(
             parent: ViewGroup,
             viewType: Int
-        ): MyAdapter.MyViewHolder {
+        ): MyViewHolder {
             // create a new view
             val cardView = LayoutInflater.from(parent.context)
                 .inflate(R.layout.card_ride, parent, false) as CardView
