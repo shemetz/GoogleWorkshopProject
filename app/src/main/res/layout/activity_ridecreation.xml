@@ -46,8 +46,8 @@
             android:id="@+id/num_seats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="How many passengers?"
             android:ems="10"
+            android:hint="How many passengers?"
             android:inputType="numberSigned" />
 
 
@@ -110,8 +110,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:hint="Additional Details"
-                android:maxLines="4"
-                android:inputType="textMultiLine" />
+                android:inputType="textMultiLine"
+                android:maxLines="4" />
 
         </android.support.design.widget.TextInputLayout>
 

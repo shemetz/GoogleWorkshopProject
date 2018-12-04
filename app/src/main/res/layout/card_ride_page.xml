@@ -1,39 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-                                    xmlns:app="http://schemas.android.com/apk/res-auto"
-                                    xmlns:tools="http://schemas.android.com/tools"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:id="@+id/cardView"
-                                    android:layout_marginBottom="10dp"
-                                    android:focusable="true"
-                                    android:foreground="?android:attr/selectableItemBackground"
-                                    app:cardCornerRadius="10dp" app:cardPreventCornerOverlap="false"
-                                    app:contentPadding="15dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="10dp"
+    app:cardPreventCornerOverlap="false"
+    app:contentPadding="15dp">
+
     <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:gravity="center">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
         <LinearLayout
-                android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="30"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/passengerName"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:layout_weight="30">
+                android:layout_height="wrap_content"
+                android:text="Name" />
+
             <TextView
-                    android:text="Name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/passengerName"/>
+                android:id="@+id/pickupSpot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Spot" />
+
             <TextView
-                    android:text="Spot"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/pickupSpot"/>
-            <TextView
-                    android:text="00:00"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/pickupTime"/>
+                android:id="@+id/pickupTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="00:00" />
         </LinearLayout>
+
         <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" app:srcCompat="@drawable/ic_face_black_24dp"
-                android:id="@+id/imageView2" android:layout_weight="90"/>
+            android:id="@+id/imageView2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="90"
+            app:srcCompat="@drawable/ic_face_black_24dp" />
     </LinearLayout>
 </android.support.v7.widget.CardView>

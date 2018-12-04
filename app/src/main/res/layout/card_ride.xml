@@ -20,9 +20,9 @@
             android:id="@+id/driverPicture"
             android:layout_width="45dp"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_face_black_24dp"
             android:layout_marginEnd="8dp"
             android:contentDescription="@string/content_description_profile_picture"
+            android:src="@drawable/ic_face_black_24dp"
             app:srcCompat="@drawable/example_profile_photo" />
 
         <LinearLayout
@@ -35,10 +35,10 @@
                 android:id="@+id/driverName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Dave Driverson"
+                android:textColor="@color/profileBlue"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@color/profileBlue" />
+                tools:text="Dave Driverson" />
 
             <TextView
                 android:id="@+id/originLocationName"
@@ -58,15 +58,15 @@
     </LinearLayout>
 
     <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/quickAddButton"-->
-        <!--android:layout_width="80dp"-->
-        <!--android:layout_height="80dp"-->
-        <!--android:src="@drawable/ic_add_black_24dp"-->
-        <!--android:scaleType="fitXY"-->
-        <!--android:elevation="5dp"-->
-        <!--android:layout_gravity="end|center"-->
-        <!--android:backgroundTint="@color/colorPrimary"-->
-        <!--android:tint="@android:color/white"-->
-        <!--app:fabSize="normal" />-->
+    <!--android:id="@+id/quickAddButton"-->
+    <!--android:layout_width="80dp"-->
+    <!--android:layout_height="80dp"-->
+    <!--android:src="@drawable/ic_add_black_24dp"-->
+    <!--android:scaleType="fitXY"-->
+    <!--android:elevation="5dp"-->
+    <!--android:layout_gravity="end|center"-->
+    <!--android:backgroundTint="@color/colorPrimary"-->
+    <!--android:tint="@android:color/white"-->
+    <!--app:fabSize="normal" />-->
 
 </android.support.v7.widget.CardView>

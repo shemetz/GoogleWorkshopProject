@@ -9,25 +9,25 @@
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
-        android:fitsSystemWindows="true"
-        android:layout_height="@dimen/app_bar_height"
         android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        android:fitsSystemWindows="true"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/toolbar_layout"
-            android:fitsSystemWindows="true"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:toolbarId="@+id/toolbar"
+            android:fitsSystemWindows="true"
+            app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
-            tools:title="Josh's Bat-Mitzva"
-            app:contentScrim="?attr/colorPrimary">
+            app:toolbarId="@+id/toolbar"
+            tools:title="Josh's Bat-Mitzva">
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
-                android:layout_height="?attr/actionBarSize"
                 android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
 
@@ -41,10 +41,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
+        android:backgroundTint="@color/carButtonBlue"
+        android:tint="@android:color/white"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@drawable/ic_directions_car_black_24dp"
-        android:backgroundTint="@color/carButtonBlue"
-        android:tint="@android:color/white"/>
+        app:srcCompat="@drawable/ic_directions_car_black_24dp" />
 
 </android.support.design.widget.CoordinatorLayout>
