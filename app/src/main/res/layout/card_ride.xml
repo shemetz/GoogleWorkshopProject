@@ -21,9 +21,9 @@
             android:layout_width="45dp"
             android:layout_height="match_parent"
             android:layout_marginEnd="8dp"
-            android:contentDescription="@string/content_description_profile_picture"
             android:src="@drawable/ic_face_black_24dp"
-            app:srcCompat="@drawable/example_profile_photo" />
+            app:srcCompat="@drawable/example_profile_photo"
+            tools:ignore="ContentDescription" />
 
         <LinearLayout
             android:layout_width="wrap_content"

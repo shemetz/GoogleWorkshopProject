@@ -31,7 +31,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="Name"
+                android:text="@string/driver_name"
                 android:textColor="@color/profileNameColor"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -41,28 +41,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="Model" />
+                android:text="@string/car_model" />
 
             <TextView
                 android:id="@+id/carColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="Color" />
+                android:text="@string/car_color" />
 
             <TextView
                 android:id="@+id/departureTimePage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="00:00" />
+                android:text="@string/departure_time_default_value" />
 
             <TextView
                 android:id="@+id/originLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="Origin" />
+                android:text="@string/ride_origin" />
         </LinearLayout>
 
         <ImageView
@@ -71,7 +71,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="80"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/example_profile_photo" />
+            app:srcCompat="@drawable/example_profile_photo"
+            tools:ignore="ContentDescription" />
     </LinearLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -91,7 +92,7 @@
             android:id="@+id/details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Details:" />
+            android:text="@string/ride_details" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.v7.widget.RecyclerView

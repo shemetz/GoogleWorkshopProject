@@ -1,13 +1,16 @@
 <resources>
+    <!-- General app strings -->
     <string name="app_name">Ride to Gather</string>
 
-    <!-- Strings related to Settings -->
+    <!-- Activity names/labels/titles -->
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_main">Main screen</string>
     <string name="title_activity_eventrides">Event rides</string>
     <string name="title_activity_ridecreation">Creating a new ride</string>
     <string name="title_activity_ridepage">Ride page</string>
+
+    <!-- Settings -->
     <string name="pref_title_login_settings">Login</string>
     <string name="pref_title_change_password">Change password</string>
     <string name="pref_title_change_password_hint">Change password hint</string>
@@ -23,20 +26,27 @@
     <string name="pref_key_upgrade">PREF_KEY_UPGRADE</string>
     <string name="pref_key_contact_us">PREF_KEY_CONTACT_US</string>
     <string name="pref_key_version">PREF_KEY_VERSION</string>
-    <!-- Strings related to the EventRidesActivity -->
+
+    <!-- Event Rides -->
     <string name="button_label_open_eventridesactivity">Look at all the rides for some event</string>
     <string name="content_description_profile_picture">Profile picture</string>
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <!-- Miscellaneous strings-->
     <string name="action_open_event_on_facebook">Open on Facebook</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
+
+    <!-- Ride -->
+    <string name="driver_name">Name</string>
+    <string name="car_model">Model</string>
+    <string name="car_color">Color</string>
+    <string name="departure_time_default_value">00:00</string>
+    <string name="ride_origin">Origin</string>
+    <string name="ride_details">Details:</string>
+    <!-- Pickup -->
+    <string name="passenger_name">Name</string>
+    <string name="passenger_pickup_spot">Spot</string>
+    <string name="passenger_pickup_time_default_value">00:00</string>
+
+    <!-- Error strings -->
+    <string name="error_field_required">This field is required</string>
+
+    <!-- Miscellaneous strings-->
 
 </resources>
