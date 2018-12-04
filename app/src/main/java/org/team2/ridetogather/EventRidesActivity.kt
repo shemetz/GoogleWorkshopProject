@@ -95,8 +95,9 @@ class EventRidesActivity : AppCompatActivity() {
             // - replace the contents of the view with that element
             val view = holder.cardView
             val ride = rides[position]
+            val driver = Database.getDriver(ride.driverId)!!
 
-            view.driverName.text = ride.driver.name
+            view.driverName.text = driver.name
             view.originLocationName.text = shortenedLocation(context, ride.origin)
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()

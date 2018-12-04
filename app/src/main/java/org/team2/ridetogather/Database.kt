@@ -4,7 +4,7 @@ import android.util.Log
 
 object Database {
     private val tag = Database::class.java.simpleName
-    fun getUser(userId: Int): User? {
+    fun getUser(userId: Id): User? {
         // MOCK
         return MockData.users[userId] ?: run {
             Log.e(tag, "No such user with ID = $userId")
@@ -12,7 +12,7 @@ object Database {
         }
     }
 
-    fun getEvent(eventId: Int): Event? {
+    fun getEvent(eventId: Id): Event? {
         // MOCK
         return MockData.events[eventId] ?: run {
             Log.e(tag, "No such event with ID = $eventId")
@@ -20,7 +20,7 @@ object Database {
         }
     }
 
-    fun getRide(rideId: Int): Ride? {
+    fun getRide(rideId: Id): Ride? {
         // MOCK
         return MockData.rides[rideId] ?: run {
             Log.e(tag, "No such ride with ID = $rideId")
@@ -28,7 +28,7 @@ object Database {
         }
     }
 
-    fun getPickup(pickupId: Int): Pickup? {
+    fun getPickup(pickupId: Id): Pickup? {
         // MOCK
         return MockData.pickups[pickupId] ?: run {
             Log.e(tag, "No such pickup with ID = $pickupId")
@@ -36,11 +36,16 @@ object Database {
         }
     }
 
+    fun getDriver(driverId: Id): Driver? {
+        // MOCK
+        return getUser(driverId)
+    }
+
     /**
      * Will return an empty list if there are no events for user, or
      * if there is no such user.
      */
-    fun getEventsForUser(userId: Int): List<Event> {
+    fun getEventsForUser(userId: Id): List<Event> {
         // MOCK
         val idsList = MockData.eventsOfUser[userId] ?: mutableListOf()
         return idsList.map { getEvent(it)!! }
@@ -50,7 +55,7 @@ object Database {
      * Will return an empty list if there are no pickups for the ride, or
      * if there is no such ride.
      */
-    fun getPickupsForRide(rideId: Int): List<Pickup> {
+    fun getPickupsForRide(rideId: Id): List<Pickup> {
         // MOCK
         val idsList = MockData.pickupsOfRide[rideId] ?: mutableListOf()
         return idsList.map { getPickup(it)!! }
@@ -60,14 +65,14 @@ object Database {
      * Will return an empty list if there are no rides for the event, or
      * if there is no such event.
      */
-    fun getRidesForEvent(eventId: Int): List<Ride> {
+    fun getRidesForEvent(eventId: Id): List<Ride> {
         // MOCK
         val idsList = MockData.ridesOfEvent[eventId] ?: mutableListOf()
         return idsList.map { getRide(it)!! }
     }
 
     fun createNewRide(
-        driver: Driver,
+        driverId: Id,
         event: Event,
         origin: Location,
         destination: Location,
@@ -81,7 +86,7 @@ object Database {
         val newRideId = MockData.rides.size + 1
         val newRide = Ride(
             id_ = newRideId,
-            driver = driver,
+            driverId = driverId,
             event = event,
             origin = origin,
             destination = destination,
@@ -96,22 +101,22 @@ object Database {
     }
 
     fun addUserPickup(
-        user: User,
-        ride: Ride,
+        userId: Id,
+        rideId: Id,
         pickupSpot: Location,
         pickupTime: TimeOfDay
     ): Pickup {
         val newPickupId = MockData.pickups.size + 1
         val newPickup = Pickup(
             newPickupId,
-            user,
-            ride,
+            userId,
+            rideId,
             pickupSpot,
             pickupTime
         )
         //MOCK
         MockData.pickups[newPickupId] = newPickup
-        MockData.pickupsOfRide.getOrPut(ride.id) { mutableListOf() }.add(newPickupId)
+        MockData.pickupsOfRide.getOrPut(rideId) { mutableListOf() }.add(newPickupId)
         return newPickup
     }
 

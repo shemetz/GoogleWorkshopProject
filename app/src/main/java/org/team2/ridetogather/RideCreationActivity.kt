@@ -32,7 +32,7 @@ class RideCreationActivity : AppCompatActivity() {
         val extraDetails = findViewById<TextView>(R.id.extra_details)
         val submitBtn = findViewById<Button>(R.id.btn_submit)
 
-        val driver: Driver = Database.getThisUser()
+        val driverId: Id = Database.getThisUser().getIdAsDriver()
         var timeOfDay: TimeOfDay? = null
         val origin = MockData.location3 // MOCK
         val destination = MockData.location2 // MOCK
@@ -63,13 +63,13 @@ class RideCreationActivity : AppCompatActivity() {
                 if (!focusMoved) {
                     focusMoved = view.requestFocus()
                 }
-                view.error = overrideErrorText ?: "This field is required."
+                view.error = overrideErrorText ?: getString(R.string.error_field_required)
                 return false
             }
 
             fun markError(view: TextView, overrideErrorText: String? = null): Boolean {
                 view.requestFocus()
-                view.error = overrideErrorText ?: "This field is required."
+                view.error = overrideErrorText ?: getString(R.string.error_field_required)
                 return false
             }
 
@@ -79,7 +79,7 @@ class RideCreationActivity : AppCompatActivity() {
             if (carColor.text.isBlank()) allIsGood = markError(carColor)
             if (passengerCount.text.isBlank()) allIsGood = markError(passengerCount)
             else if (passengerCount.text.toString().toInt() <= 0) allIsGood =
-                    markError(passengerCount, "Sorry, currently only positive numbers of passengers are allowed ;)")
+                    markError(passengerCount, getString(R.string.error_nonpositive_passenger_count))
             if (origin == null) allIsGood = TODO()
             if (destination == null) allIsGood = TODO()
             return allIsGood
@@ -91,7 +91,7 @@ class RideCreationActivity : AppCompatActivity() {
             }
 
             val newRide = Database.createNewRide(
-                driver, event, origin, destination, timeOfDay!!,
+                driverId, event, origin, destination, timeOfDay!!,
                 carModel.text.toString(), carColor.text.toString(),
                 passengerCount.text.toString().toInt(), extraDetails.text.toString()
             )

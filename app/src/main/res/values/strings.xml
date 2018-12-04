@@ -47,6 +47,7 @@
 
     <!-- Error strings -->
     <string name="error_field_required">This field is required</string>
+    <string name="error_nonpositive_passenger_count">Sorry, currently only positive numbers of passengers are allowed ;)</string>
 
     <!-- Miscellaneous strings-->
 

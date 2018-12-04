@@ -25,7 +25,7 @@ object MockData {
     )
     val ride1 = Ride(
         1,
-        user1,
+        user1.id,
         event1,
         location1,
         location3,
@@ -37,7 +37,7 @@ object MockData {
     )
     val ride2 = Ride(
         2,
-        user4,
+        user4.id,
         event1,
         location2,
         location3,
@@ -48,15 +48,15 @@ object MockData {
     )
     val pickup1 = Pickup(
         1,
-        user2,
-        ride1,
+        user2.id,
+        ride1.id,
         location1,
         TimeOfDay(12, 34)
     )
     val pickup2 = Pickup(
         2,
-        user3,
-        ride1,
+        user3.id,
+        ride1.id,
         location2,
         TimeOfDay(12, 55)
     )

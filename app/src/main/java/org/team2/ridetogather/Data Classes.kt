@@ -1,10 +1,12 @@
 package org.team2.ridetogather
 
-typealias Driver = User
+typealias Driver = User  // Currently, they are identical. driver ≡ user
+typealias Id = Int  // ID in our database
+typealias FacebookId = String // ID in Facebook's API
 typealias Location = android.location.Location
-typealias Datetime = java.util.Date
+typealias Datetime = java.util.Date  // Both a date (2018-12-04) and a time (11:04)
 
-open class DatabaseObject(val id: Int) {
+open class DatabaseObject(val id: Id) {
     override fun equals(other: Any?) =
         (other != null && other is DatabaseObject && other::class.java == this::class.java) && id == other.id
 
@@ -12,8 +14,8 @@ open class DatabaseObject(val id: Int) {
 }
 
 class Ride(
-    id_: Int,
-    var driver: Driver,
+    id_: Id,
+    var driverId: Id,
     val event: Event,
     var origin: Location,
     var destination: Location,
@@ -25,23 +27,25 @@ class Ride(
 ) : DatabaseObject(id_)
 
 class User(
-    id_: Int,
+    id_: Id,
     var name: String,
-    var facebookProfileId: String
-) : DatabaseObject(id_)
+    var facebookProfileId: FacebookId
+) : DatabaseObject(id_) {
+    fun getIdAsDriver() = id  // Currently, driver ≡ user
+}
 
 class Event(
-    id_: Int,
+    id_: Id,
     var name: String,
     var location: Location,
     var datetime: Datetime,
-    var facebookEventId: String
+    var facebookEventId: FacebookId
 ) : DatabaseObject(id_)
 
 class Pickup(
-    id_: Int,
-    val user: User,
-    val ride: Ride,
+    id_: Id,
+    val userId: Id,
+    val rideId: Id,
     var pickupSpot: Location,
     var pickupTime: TimeOfDay
 ) : DatabaseObject(id_)

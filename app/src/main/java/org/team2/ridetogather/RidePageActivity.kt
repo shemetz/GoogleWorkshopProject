@@ -27,9 +27,10 @@ class RidePageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_ride_page)
         //setSupportActionBar(toolbar)
         val rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
-        val ride = Database.getRide(rideId)!!
         Log.d(tag, "Created $tag with Ride ID $rideId")
-        driverNamePage.text = ride.driver.name
+        val ride = Database.getRide(rideId)!!
+        val driver = Database.getDriver(ride.driverId)!!
+        driverNamePage.text = driver.name
         carModel.text = ride.carModel
         carColor.text = ride.carColor
         originLocation.text = shortenedLocation(this, ride.origin)
@@ -93,8 +94,9 @@ class RidePageActivity : AppCompatActivity() {
             // - replace the contents of the view with that element
             val view = holder.cardView
             val pickup = pickups[position]
+            val user = Database.getUser(pickup.userId)!!
 
-            view.passengerName.text = pickup.user.name
+            view.passengerName.text = user.name
             view.pickupSpot.text = shortenedLocation(context, pickup.pickupSpot)
 //            view.driverPicture.drawable = ???
             view.pickupTime.text = pickup.pickupTime.shortenedTime()
