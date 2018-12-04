@@ -4,6 +4,8 @@ import android.util.Log
 
 object Database {
     private val tag = Database::class.java.simpleName
+    var idOfCurrentUser: Id = MockData.user1.id // MOCK
+
     fun getUser(userId: Id): User? {
         // MOCK
         return MockData.users[userId] ?: run {
@@ -73,7 +75,7 @@ object Database {
 
     fun createNewRide(
         driverId: Id,
-        event: Event,
+        eventId: Id,
         origin: Location,
         destination: Location,
         departureTime: TimeOfDay,
@@ -87,7 +89,7 @@ object Database {
         val newRide = Ride(
             id_ = newRideId,
             driverId = driverId,
-            event = event,
+            eventId = eventId,
             origin = origin,
             destination = destination,
             departureTime = departureTime,
@@ -120,8 +122,25 @@ object Database {
         return newPickup
     }
 
+    fun deleteRide(rideId: Id) {
+        // MOCK
+        // Remove ride from main table
+        MockData.rides.remove(rideId)
+        // Remove ride from related tables
+        for (rides in MockData.ridesOfEvent.values) {
+            rides.removeAll { it == rideId }
+        }
+        // Remove pickups of this ride
+        MockData.pickupsOfRide.remove(rideId)
+
+        Log.i(tag, "Deleted ride $rideId")
+    }
+
+    fun getThisUserId(): Id {
+        return idOfCurrentUser
+    }
+
     fun getThisUser(): User {
-        //MOCK
-        return MockData.user5
+        return getUser(getThisUserId())!!
     }
 }

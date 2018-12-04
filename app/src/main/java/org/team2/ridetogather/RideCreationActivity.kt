@@ -91,7 +91,7 @@ class RideCreationActivity : AppCompatActivity() {
             }
 
             val newRide = Database.createNewRide(
-                driverId, event, origin, destination, timeOfDay!!,
+                driverId, eventId, origin, destination, timeOfDay!!,
                 carModel.text.toString(), carColor.text.toString(),
                 passengerCount.text.toString().toInt(), extraDetails.text.toString()
             )

@@ -5,7 +5,7 @@
     <!-- Activity names/labels/titles -->
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="title_activity_main">Main screen</string>
+    <string name="title_activity_main">Ride to Gather</string>
     <string name="title_activity_eventrides">Event rides</string>
     <string name="title_activity_ridecreation">Creating a new ride</string>
     <string name="title_activity_ridepage">Ride page</string>
@@ -27,8 +27,11 @@
     <string name="pref_key_contact_us">PREF_KEY_CONTACT_US</string>
     <string name="pref_key_version">PREF_KEY_VERSION</string>
 
+    <!-- Main activity -->
+    <string name="temp_button_label_open_eventridesactivity">(temp) Look at all the rides for some event</string>
+    <string name="temp_button_label_switch_user">(temp) Switch to other user</string>
+
     <!-- Event Rides -->
-    <string name="button_label_open_eventridesactivity">Look at all the rides for some event</string>
     <string name="content_description_profile_picture">Profile picture</string>
     <string name="action_open_event_on_facebook">Open on Facebook</string>
 
@@ -39,6 +42,10 @@
     <string name="departure_time_default_value">00:00</string>
     <string name="ride_origin">Origin</string>
     <string name="ride_details">Details:</string>
+    <string name="action_edit_ride">Edit ride</string>
+    <string name="action_delete_ride">Delete ride</string>
+    <string name="delete_ride_title">Delete ride</string>
+    <string name="delete_ride_are_you_sure">Are you sure you want to permanently delete this ride?</string>
 
     <!-- Pickup -->
     <string name="passenger_name">Name</string>

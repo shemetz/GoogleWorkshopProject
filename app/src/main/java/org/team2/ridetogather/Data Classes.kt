@@ -16,7 +16,7 @@ open class DatabaseObject(val id: Id) {
 class Ride(
     id_: Id,
     var driverId: Id,
-    val event: Event,
+    val eventId: Id,
     var origin: Location,
     var destination: Location,
     var departureTime: TimeOfDay,

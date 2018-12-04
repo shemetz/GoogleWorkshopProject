@@ -26,7 +26,7 @@ object MockData {
     val ride1 = Ride(
         1,
         user1.id,
-        event1,
+        event1.id,
         location1,
         location3,
         TimeOfDay(12, 0),
@@ -38,7 +38,7 @@ object MockData {
     val ride2 = Ride(
         2,
         user4.id,
-        event1,
+        event1.id,
         location2,
         location3,
         TimeOfDay(12, 20),

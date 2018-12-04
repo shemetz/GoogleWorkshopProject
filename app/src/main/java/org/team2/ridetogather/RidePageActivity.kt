@@ -1,16 +1,20 @@
 package org.team2.ridetogather
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
 
@@ -20,16 +24,22 @@ class RidePageActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
+    private var rideId: Id = -1 // updates in onCreate
+    private lateinit var ride: Ride
+    private var driversPerspective: Boolean = false // updates in onCreate
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ride_page)
-        //setSupportActionBar(toolbar)
-        val rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
+//        setSupportActionBar(toolbar)
+        rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Ride ID $rideId")
-        val ride = Database.getRide(rideId)!!
+        ride = Database.getRide(rideId)!!
         val driver = Database.getDriver(ride.driverId)!!
+        val pickups = Database.getPickupsForRide(rideId).toTypedArray()
+        driversPerspective = driver.id == Database.getThisUser().getIdAsDriver()
+
         driverNamePage.text = driver.name
         carModel.text = ride.carModel
         carColor.text = ride.carColor
@@ -37,7 +47,6 @@ class RidePageActivity : AppCompatActivity() {
         departureTimePage.text = ride.departureTime.shortenedTime()
         details.text = ride.extraDetails
 
-        val pickups = Database.getPickupsForRide(rideId).toTypedArray()
         viewAdapter = MyAdapter(this, pickups)
 
         viewManager = LinearLayoutManager(this)
@@ -47,6 +56,16 @@ class RidePageActivity : AppCompatActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_ride_page, menu)
+        if (!driversPerspective) {
+            menu.findItem(R.id.action_edit_ride).isVisible = false
+            menu.findItem(R.id.action_delete_ride).isVisible = false
+        }
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -61,6 +80,36 @@ class RidePageActivity : AppCompatActivity() {
             android.R.id.home -> {
                 Log.i(tag, "OnBackPressed")
                 onBackPressed()
+                true
+            }
+            R.id.action_edit_ride -> {
+                val intent = Intent(applicationContext, RideCreationActivity::class.java)
+                intent.putExtra(Keys.RIDE_ID.name, rideId)
+                startActivity(intent)
+                true
+            }
+            R.id.action_delete_ride -> {
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.delete_ride_title)
+                    .setMessage(getString(R.string.delete_ride_are_you_sure))
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(
+                        android.R.string.yes
+                    ) { _, whichButton ->
+                        if (whichButton == DialogInterface.BUTTON_POSITIVE) {
+                            Database.deleteRide(rideId)
+                            Toast.makeText(
+                                this@RidePageActivity,
+                                "Your ride was deleted.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            val intent = Intent(applicationContext, EventRidesActivity::class.java)
+                            intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(intent)
+                        }
+                    }
+                    .setNegativeButton(android.R.string.no, null).show()
                 true
             }
             else -> super.onOptionsItemSelected(item)
