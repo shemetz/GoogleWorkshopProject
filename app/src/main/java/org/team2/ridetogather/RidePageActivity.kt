@@ -83,9 +83,9 @@ class RidePageActivity : AppCompatActivity() {
                 true
             }
             R.id.action_edit_ride -> {
-                val intent = Intent(applicationContext, RideCreationActivity::class.java)
-                intent.putExtra(Keys.RIDE_ID.name, rideId)
-                startActivity(intent)
+//                val intent = Intent(applicationContext, RideCreationActivity::class.java)
+//                intent.putExtra(Keys.RIDE_ID.name, rideId)
+//                startActivity(intent)
                 true
             }
             R.id.action_delete_ride -> {
