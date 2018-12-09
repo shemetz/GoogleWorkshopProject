@@ -36,7 +36,7 @@
 
     <include layout="@layout/content_eventrides" />
 
-    <android.support.design.widget.FloatingActionButton
+    <Button
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
