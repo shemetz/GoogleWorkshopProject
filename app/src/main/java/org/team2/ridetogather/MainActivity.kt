@@ -1,14 +1,20 @@
 package org.team2.ridetogather
+
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import com.facebook.AccessToken
+import com.facebook.GraphRequest
+import com.facebook.HttpMethod
+import com.facebook.login.LoginManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+
 
 class MainActivity : AppCompatActivity() {
     private val tag = MainActivity::class.java.simpleName
@@ -73,7 +79,35 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+
+            R.id.log_out_facebook -> {
+                Log.d("FBLOGIN", "in log out")
+                disconnectFromFacebook()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+
+    }
+
+    fun disconnectFromFacebook() {
+
+        if (AccessToken.getCurrentAccessToken() == null) {
+            return  // already logged out
+        }
+
+        GraphRequest(AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE,
+            GraphRequest.Callback {
+                LoginManager.getInstance().logOut()
+                goToFacebookLoginActivity()
+            }).executeAsync()
+    }
+
+    fun goToFacebookLoginActivity() {
+        // Go to MainActivity and start it
+        val intent = Intent(applicationContext, FacebookLoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
     }
 }

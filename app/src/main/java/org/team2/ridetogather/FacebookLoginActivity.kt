@@ -19,7 +19,7 @@ class FacebookLoginActivity : AppCompatActivity() {
 
 
         LoginManager.getInstance()
-            .logInWithReadPermissions(this, Arrays.asList("public_profile", "email", "user_events"))
+            .logInWithReadPermissions(this, Arrays.asList("public_profile", "email", "user_events", "user_friends"))
 
         LoginManager.getInstance().registerCallback(callbackManager,
             object : FacebookCallback<LoginResult> {
