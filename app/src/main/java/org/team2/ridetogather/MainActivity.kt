@@ -1,11 +1,12 @@
 package org.team2.ridetogather
-
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -17,6 +18,22 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         Log.d(tag, "Created $tag")
+        val availability = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
+        when (availability) {
+            ConnectionResult.SUCCESS -> {
+            }
+            ConnectionResult.SERVICE_MISSING,
+            ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED,
+            ConnectionResult.SERVICE_DISABLED -> {
+                Log.e(tag, "Google API is not available! availability = $availability")
+                GoogleApiAvailability.getInstance().getErrorDialog(this, availability, 17)  // 17 is not important
+            }
+            else -> {
+                Log.e(tag, "Google API is not available! availability = $availability")
+                Log.e(tag, "Exiting app now (google maps won't work)!")
+                finish()
+            }
+        }
 
         temp_main_activity_text.text = "Hello ${Database.getThisUser().name}!"
 

@@ -69,6 +69,11 @@
             android:name="com.facebook.FacebookContentProvider"
             android:authorities="com.facebook.app.FacebookContentProvider456799434726378"
             android:exported="true" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/SECRET_GOOGLE_API_KEY" />
+
     </application>
 
 </manifest>
