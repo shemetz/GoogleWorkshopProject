@@ -96,7 +96,7 @@ class RideCreationActivity : AppCompatActivity() {
                 passengerCount.text.toString().toInt(), extraDetails.text.toString()
             )
             val intent = Intent(applicationContext, RidePageActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             intent.putExtra(Keys.RIDE_ID.name, newRide.id)
             startActivity(intent)
 

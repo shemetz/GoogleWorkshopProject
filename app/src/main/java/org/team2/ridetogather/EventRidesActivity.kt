@@ -38,7 +38,7 @@ class EventRidesActivity : AppCompatActivity() {
             Log.e(tag, "No event ID found in intent or in saved state!")
             Log.w(tag, "Due to error, returning to main activity.")
             val intent = Intent(applicationContext, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
         event = Database.getEvent(eventId)!!

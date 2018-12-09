@@ -41,8 +41,7 @@ class FacebookLoginActivity : AppCompatActivity() {
                     request.executeAsync()
 
 
-                    // Go to MainActivity and start it
-                    startActivity(Intent(applicationContext, MainActivity::class.java))
+                    goToMainActivity()
                 }
 
                 override fun onCancel() {
@@ -57,6 +56,17 @@ class FacebookLoginActivity : AppCompatActivity() {
         val accessToken = AccessToken.getCurrentAccessToken()
         val isLoggedIn = accessToken != null && !accessToken.isExpired
         Log.i(tag, "is logged in: $isLoggedIn")
+        if (isLoggedIn) {
+            goToMainActivity()
+        }
+    }
+
+    fun goToMainActivity() {
+        // Go to MainActivity and start it
+        val intent = Intent(applicationContext, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
     }
 
 
