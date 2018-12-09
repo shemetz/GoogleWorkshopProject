@@ -10,8 +10,8 @@ import com.facebook.login.LoginResult
 import java.util.*
 
 class FacebookLoginActivity : AppCompatActivity() {
-
-    var callbackManager = CallbackManager.Factory.create()
+    private val tag = FacebookLoginActivity::class.java.simpleName
+    private val callbackManager = CallbackManager.Factory.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,19 +24,11 @@ class FacebookLoginActivity : AppCompatActivity() {
         LoginManager.getInstance().registerCallback(callbackManager,
             object : FacebookCallback<LoginResult> {
                 override fun onSuccess(loginResult: LoginResult) {
+                    Log.i(tag, "Facebook login successful!")
 
                     val request = GraphRequest.newMeRequest(loginResult.accessToken) { `object`, response ->
                         try {
-                            //here is the data that you want
-                            Log.d("FBLOGIN", `object`.toString())
-
-                            if (`object`.has("id")) {
-                                var email = response.getJSONObject().get("email").toString()
-                                Log.d("FBLOGIN mail", email)
-                            } else {
-                                Log.e("FBLOGIN_FAILD", `object`.toString())
-                            }
-
+                            Log.i(tag, "Facebook API is working!")
                         } catch (e: Exception) {
                             e.printStackTrace()
 
@@ -49,7 +41,7 @@ class FacebookLoginActivity : AppCompatActivity() {
                     request.executeAsync()
 
 
-                    Log.i("FBLOGIN", "hi there")
+                    // Go to MainActivity and start it
                     startActivity(Intent(applicationContext, MainActivity::class.java))
                 }
 
@@ -64,8 +56,7 @@ class FacebookLoginActivity : AppCompatActivity() {
             })
         val accessToken = AccessToken.getCurrentAccessToken()
         val isLoggedIn = accessToken != null && !accessToken.isExpired
-        Log.i("FBLOGIN", "is logged in: $isLoggedIn")
-
+        Log.i(tag, "is logged in: $isLoggedIn")
     }
 
 
