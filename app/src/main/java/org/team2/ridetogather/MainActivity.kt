@@ -2,6 +2,7 @@ package org.team2.ridetogather
 
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
@@ -82,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
             R.id.log_out_facebook -> {
                 Log.d("FBLOGIN", "in log out")
-                disconnectFromFacebook()
+                buildDialog()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -109,5 +110,21 @@ class MainActivity : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or
                 Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
+    }
+
+    fun buildDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Hey there :)")
+        builder.setMessage("Are you sure you want to log out?")
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+
+        builder.setPositiveButton(R.string.leave) { dialog, which ->
+            disconnectFromFacebook()
+        }
+        builder.setNegativeButton(R.string.stay) { dialog, which ->
+            goToFacebookLoginActivity()
+        }
+        builder.show()
+
     }
 }

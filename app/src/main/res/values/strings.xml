@@ -32,6 +32,12 @@
     <string name="temp_button_label_open_eventridesactivity">(temp) Look at all the rides for some event</string>
     <string name="temp_button_label_switch_user">(temp) Switch to other user</string>
 
+    <!-- Facebook login activity -->
+    <string name="login_again">try again</string>
+    <string name="exit_login">exit</string>
+    <string name="stay">return to app</string>
+    <string name="leave">exit</string>
+
     <!-- Event Rides -->
     <string name="content_description_profile_picture">Profile picture</string>
     <string name="action_open_event_on_facebook">Open on Facebook</string>
