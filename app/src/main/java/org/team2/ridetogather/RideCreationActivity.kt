@@ -24,20 +24,21 @@ class RideCreationActivity : AppCompatActivity() {
         val event = Database.getEvent(eventId)!!
         Log.d(tag, "Created $tag with Event ID $eventId")
 
-        val mPickTimeBtn = findViewById<Button>(R.id.pick_time_button)
+        val timePickButton = findViewById<Button>(R.id.pick_time_button)
         val departureTime = findViewById<TextView>(R.id.departure_time)
         val carModel = findViewById<TextView>(R.id.car_model)
         val carColor = findViewById<TextView>(R.id.car_color)
         val passengerCount = findViewById<TextView>(R.id.num_seats)
         val extraDetails = findViewById<TextView>(R.id.extra_details)
         val submitBtn = findViewById<Button>(R.id.btn_submit)
+        val originBtn = findViewById<Button>(R.id.btn_origin)
 
         val driverId: Id = Database.getThisUser().getIdAsDriver()
         var timeOfDay: TimeOfDay? = null
         val origin = MockData.location3 // MOCK
         val destination = MockData.location2 // MOCK
 
-        mPickTimeBtn.setOnClickListener {
+        timePickButton.setOnClickListener {
             val cal = Calendar.getInstance()
             val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
@@ -52,6 +53,12 @@ class RideCreationActivity : AppCompatActivity() {
                 true
             ).show()
             timeOfDay = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+        }
+
+        originBtn.setOnClickListener {
+            val intent = Intent(applicationContext, MapsActivity::class.java)
+            intent.putExtra(Keys.EVENT_ID.name, eventId)
+            startActivity(intent)
         }
 
         /**
@@ -74,7 +81,7 @@ class RideCreationActivity : AppCompatActivity() {
             }
 
             var allIsGood = true
-            if (timeOfDay == null) allIsGood = markError(mPickTimeBtn)
+            if (timeOfDay == null) allIsGood = markError(timePickButton)
             if (carModel.text.isBlank()) allIsGood = markError(carModel)
             if (carColor.text.isBlank()) allIsGood = markError(carColor)
             if (passengerCount.text.isBlank()) allIsGood = markError(passengerCount)
@@ -99,9 +106,7 @@ class RideCreationActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             intent.putExtra(Keys.RIDE_ID.name, newRide.id)
             startActivity(intent)
-
         }
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

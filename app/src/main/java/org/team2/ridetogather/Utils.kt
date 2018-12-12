@@ -3,6 +3,7 @@ package org.team2.ridetogather
 import android.content.Context
 import android.location.Geocoder
 import android.util.Log
+import com.google.android.gms.maps.model.LatLng
 import java.io.IOException
 import java.util.*
 import kotlin.math.absoluteValue
@@ -54,4 +55,8 @@ fun shortenedLocation(context: Context, location: Location): String {
         )
         return coordinatesString()
     }
+}
+
+fun Location.toLatLng(): LatLng {
+    return LatLng(latitude, longitude)
 }

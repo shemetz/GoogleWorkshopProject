@@ -9,7 +9,7 @@
     <string name="title_activity_eventrides">Event rides</string>
     <string name="title_activity_ridecreation">Creating a new ride</string>
     <string name="title_activity_ridepage">Ride page</string>
-    <string name="facebook_log_out">Log out</string>
+    <string name="title_activity_maps">Map</string>
 
     <!-- Settings -->
     <string name="pref_title_login_settings">Login</string>
@@ -37,6 +37,7 @@
     <string name="exit_login">exit</string>
     <string name="stay">return to app</string>
     <string name="leave">log out</string>
+    <string name="facebook_log_out">Log out</string>
 
     <!-- Event Rides -->
     <string name="content_description_profile_picture">Profile picture</string>
@@ -58,7 +59,6 @@
     <string name="passenger_name">Name</string>
     <string name="passenger_pickup_spot">Spot</string>
     <string name="passenger_pickup_time_default_value">00:00</string>
-
 
     <!-- Error strings -->
     <string name="error_field_required">This field is required</string>

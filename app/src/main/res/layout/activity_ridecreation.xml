@@ -73,19 +73,12 @@
             android:text="Departure Address"
             android:textSize="20sp" />
 
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <AutoCompleteTextView
-                android:id="@+id/origin_city"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:hint="City"
-                android:maxLines="1"
-                android:singleLine="true" />
-
-        </android.support.design.widget.TextInputLayout>
+        <Button
+            android:id="@+id/btn_origin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Choose starting point" />
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
