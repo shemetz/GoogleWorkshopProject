@@ -35,7 +35,7 @@
                 android:id="@+id/driverName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/profileBlue"
+                android:textColor="@color/profileNameColor"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 tools:text="Dave Driverson" />

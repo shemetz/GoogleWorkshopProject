@@ -36,7 +36,7 @@
     <string name="login_again">try again</string>
     <string name="exit_login">exit</string>
     <string name="stay">return to app</string>
-    <string name="leave">exit</string>
+    <string name="leave">log out</string>
 
     <!-- Event Rides -->
     <string name="content_description_profile_picture">Profile picture</string>

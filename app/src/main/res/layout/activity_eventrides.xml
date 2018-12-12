@@ -39,15 +39,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:textColor="@android:color/primary_text_dark"
                     android:text="@string/app_name"
-                    android:textSize="18sp" />
+                    android:textSize="20sp" />
 
                 <TextView
                     android:id="@+id/tv_description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
-                    android:textSize="15sp"
+                    android:textSize="16sp"
                     android:text="" />
             </LinearLayout>
 
@@ -68,7 +69,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
-        android:backgroundTint="@color/carButtonBlue"
+        android:backgroundTint="@color/carButton"
         android:tint="@android:color/white"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"

@@ -113,8 +113,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun buildDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Hey there :)")
+        val builder = AlertDialog.Builder(this, R.style.AlertDialogStyle)
+        //builder.setTitle("Hey there")
         builder.setMessage("Are you sure you want to log out?")
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
             disconnectFromFacebook()
         }
         builder.setNegativeButton(R.string.stay) { dialog, which ->
-            goToFacebookLoginActivity()
+            dialog.dismiss()
         }
         builder.show()
 

@@ -3,6 +3,7 @@ package org.team2.ridetogather
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
@@ -47,6 +48,7 @@ class EventRidesActivity : AppCompatActivity() {
             java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
 
         toolbar_layout.title = event.name
+        toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
         tv_description.text = "$eventShortLocation"
         tv_title.text = Html.fromHtml("$eventTime")
         Log.d(tag, "Created $tag with Event ID $eventId")

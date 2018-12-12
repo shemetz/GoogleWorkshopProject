@@ -89,10 +89,9 @@ class RidePageActivity : AppCompatActivity() {
                 true
             }
             R.id.action_delete_ride -> {
-                AlertDialog.Builder(this)
+                AlertDialog.Builder(this, R.style.AlertDialogStyle)
                     .setTitle(R.string.delete_ride_title)
                     .setMessage(getString(R.string.delete_ride_are_you_sure))
-                    .setIcon(android.R.drawable.ic_dialog_alert)
                     .setPositiveButton(
                         android.R.string.yes
                     ) { _, whichButton ->

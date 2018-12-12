@@ -6,7 +6,7 @@
         android:id="@+id/action_edit_ride"
         android:orderInCategory="1"
         android:title="@string/action_edit_ride"
-        android:icon="@drawable/ic_edit_black_24dp"
+        android:icon="@drawable/ic_edit_white_24dp"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_delete_ride"
