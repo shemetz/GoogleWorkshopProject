@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
 import com.facebook.*
-import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import java.util.*
@@ -101,10 +100,10 @@ class FacebookLoginActivity : AppCompatActivity() {
         }
     }
 
-    fun openLoginScreen() {
+    /*fun openLoginScreen() {
         LoginManager.getInstance()
             .logInWithReadPermissions(this, Arrays.asList("public_profile", "email", "user_events", "user_friends"))
-    }
+    }*/
 
     fun goToMainActivity() {
         // Go to MainActivity and start it
@@ -121,7 +120,7 @@ class FacebookLoginActivity : AppCompatActivity() {
     }
 
     /*fun buildDialog(){
-        val builder = AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this, R.style.AlertDialogStyle)
         builder.setTitle("Sorry,")
         builder.setMessage("This app currently requires a Facebook account.")
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))

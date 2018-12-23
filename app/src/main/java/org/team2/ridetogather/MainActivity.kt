@@ -62,6 +62,22 @@ class MainActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
+
+        val event_request = GraphRequest.newMeRequest(
+            AccessToken.getCurrentAccessToken()
+        ) { `object`, response ->
+            try {
+                Log.i(tag, "working")
+                Log.i(tag, `object`.toString())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        val parameters = Bundle()
+        parameters.putString("fields", "events.limit(1)")
+        event_request.parameters = parameters
+        event_request.executeAsync()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

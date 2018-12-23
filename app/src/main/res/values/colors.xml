@@ -9,7 +9,7 @@
     <color name="profileNameColor">#4A4A4A</color>
     <color name="errorRed">#B5042A</color>
     <color name="title_light">#beffffff</color>
+    <color name="firstScreen">#f0c47d</color>
     <!--template colors-->
-
 
 </resources>
