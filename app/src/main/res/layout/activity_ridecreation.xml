@@ -12,6 +12,10 @@
         android:id="@+id/new_ride_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:orientation="vertical">
 
         <android.support.design.widget.TextInputLayout
@@ -51,48 +55,18 @@
             android:inputType="numberSigned" />
 
 
-        <TextView
-            android:id="@+id/departure_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:text="Departure Time"
-            android:textSize="20sp" />
-
         <Button
             android:id="@+id/pick_time_button"
             android:layout_width="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_height="wrap_content"
             android:text="Pick Time" />
-
-        <TextView
-            android:id="@+id/departure_address"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:text="Departure Address"
-            android:textSize="20sp" />
-
         <Button
             android:id="@+id/btn_origin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="Choose starting point" />
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <AutoCompleteTextView
-                android:id="@+id/origin_street"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:hint="Street"
-                android:maxLines="1"
-                android:singleLine="true" />
-
-        </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
