@@ -25,7 +25,6 @@ class RideCreationActivity : AppCompatActivity() {
         Log.d(tag, "Created $tag with Event ID $eventId")
 
         val timePickButton = findViewById<Button>(R.id.pick_time_button)
-        val departureTime = findViewById<TextView>(R.id.departure_time)
         val carModel = findViewById<TextView>(R.id.car_model)
         val carColor = findViewById<TextView>(R.id.car_color)
         val passengerCount = findViewById<TextView>(R.id.num_seats)
@@ -43,7 +42,7 @@ class RideCreationActivity : AppCompatActivity() {
             val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
-                departureTime.text = SimpleDateFormat("HH:mm").format(cal.time)
+                timePickButton.text = SimpleDateFormat("HH:mm").format(cal.time)
             }
             TimePickerDialog(
                 this,

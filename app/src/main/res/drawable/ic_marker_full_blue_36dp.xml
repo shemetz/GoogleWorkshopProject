@@ -1,0 +1,6 @@
+<vector android:height="36dp"
+    android:viewportHeight="24.0" android:viewportWidth="24.0"
+    android:width="36dp" xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--I drew this background, hope it works. -itamar-->
+    <path android:fillColor="#FF3B5998" android:pathData="M12,2C8.14,2 5,5.14 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13c0,-3.86 -3.14,-7 -7,-7z"/>
+</vector>

@@ -60,13 +60,13 @@
             android:layout_width="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_height="wrap_content"
-            android:text="Pick Time" />
+            android:text="Pick departure time…" />
         <Button
             android:id="@+id/btn_origin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="Choose starting point" />
+            android:text="Pick departure location…" />
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
