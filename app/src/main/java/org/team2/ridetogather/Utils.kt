@@ -11,8 +11,18 @@ import kotlin.math.absoluteValue
 enum class Keys {
     RIDE_ID,
     EVENT_ID,
+    LOCATION,
 }
 
+/**
+ * Converts a location into a human-readable "shortened location".
+ * For example, the location {latitude = 32.055436; longitude = 34.753070} will
+ * cause the following shortened location string to return:
+ * "Mifrats Shlomo Promenade 5, Tel Aviv-Yafo, Israel"
+ *
+ * NOTE: This function is slow because it uses a Geocoder.
+ * Try to only use it in asynchronous stuff (e.g. when updating text fields).
+ */
 fun shortenedLocation(context: Context, location: Location): String {
     fun coordinatesString(): String {
         val absoluteLatitude = Location.convert(location.latitude.absoluteValue, Location.FORMAT_DEGREES)
@@ -58,5 +68,22 @@ fun shortenedLocation(context: Context, location: Location): String {
 }
 
 fun Location.toLatLng(): LatLng {
+    return LatLng(latitude, longitude)
+}
+
+fun LatLng.toLocation(): Location {
+    return Location("useless paramater")
+        .apply {
+            latitude = this@toLocation.latitude
+            longitude = this@toLocation.longitude
+        }
+}
+
+fun LatLng.encodeToString(): String {
+    return "$latitude    $longitude"
+}
+
+fun String.decodeToLatLng(): LatLng {
+    val (latitude, longitude) = this.split("    ").map { it.toDouble() }
     return LatLng(latitude, longitude)
 }

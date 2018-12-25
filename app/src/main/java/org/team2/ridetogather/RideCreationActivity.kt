@@ -1,6 +1,7 @@
 package org.team2.ridetogather
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
@@ -9,12 +10,14 @@ import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
+import kotlinx.android.synthetic.main.activity_ridecreation.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 
 class RideCreationActivity : AppCompatActivity() {
     private val tag = RideCreationActivity::class.java.simpleName
+    var originLocation: Location? = null
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,25 +27,16 @@ class RideCreationActivity : AppCompatActivity() {
         val event = Database.getEvent(eventId)!!
         Log.d(tag, "Created $tag with Event ID $eventId")
 
-        val timePickButton = findViewById<Button>(R.id.pick_time_button)
-        val carModel = findViewById<TextView>(R.id.car_model)
-        val carColor = findViewById<TextView>(R.id.car_color)
-        val passengerCount = findViewById<TextView>(R.id.num_seats)
-        val extraDetails = findViewById<TextView>(R.id.extra_details)
-        val submitBtn = findViewById<Button>(R.id.btn_submit)
-        val originBtn = findViewById<Button>(R.id.btn_origin)
-
         val driverId: Id = Database.getThisUser().getIdAsDriver()
         var timeOfDay: TimeOfDay? = null
-        val origin = MockData.location3 // MOCK
-        val destination = MockData.location2 // MOCK
+        val destinationLocation = event.location
 
-        timePickButton.setOnClickListener {
+        pick_time_button.setOnClickListener {
             val cal = Calendar.getInstance()
             val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
-                timePickButton.text = SimpleDateFormat("HH:mm").format(cal.time)
+                pick_time_button.text = SimpleDateFormat("HH:mm").format(cal.time)
             }
             TimePickerDialog(
                 this,
@@ -54,10 +48,12 @@ class RideCreationActivity : AppCompatActivity() {
             timeOfDay = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
         }
 
-        originBtn.setOnClickListener {
+        btn_origin.setOnClickListener {
             val intent = Intent(applicationContext, MapsActivity::class.java)
             intent.putExtra(Keys.EVENT_ID.name, eventId)
-            startActivity(intent)
+            intent.putExtra(Keys.LOCATION.name, originLocation?.toLatLng()?.encodeToString())
+            startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN.ordinal)
+            // Result will return to OnActivityResult()
         }
 
         /**
@@ -80,31 +76,47 @@ class RideCreationActivity : AppCompatActivity() {
             }
 
             var allIsGood = true
-            if (timeOfDay == null) allIsGood = markError(timePickButton)
-            if (carModel.text.isBlank()) allIsGood = markError(carModel)
-            if (carColor.text.isBlank()) allIsGood = markError(carColor)
-            if (passengerCount.text.isBlank()) allIsGood = markError(passengerCount)
-            else if (passengerCount.text.toString().toInt() <= 0) allIsGood =
-                    markError(passengerCount, getString(R.string.error_nonpositive_passenger_count))
-            if (origin == null) allIsGood = TODO()
-            if (destination == null) allIsGood = TODO()
+            if (timeOfDay == null) allIsGood = markError(pick_time_button)
+            if (car_model.text.isBlank()) allIsGood = markError(car_model)
+            if (car_color.text.isBlank()) allIsGood = markError(car_color)
+            if (num_seats.text.isBlank()) allIsGood = markError(num_seats)
+            else if (num_seats.text.toString().toInt() <= 0) allIsGood =
+                    markError(num_seats, getString(R.string.error_nonpositive_passenger_count))
+            if (originLocation == null) allIsGood = markError(btn_origin)
             return allIsGood
         }
 
-        submitBtn.setOnClickListener {
+        btn_submit.setOnClickListener {
             if (!checkThatAllFieldsWereFilledCorrectly()) {
                 return@setOnClickListener
             }
 
             val newRide = Database.createNewRide(
-                driverId, eventId, origin, destination, timeOfDay!!,
-                carModel.text.toString(), carColor.text.toString(),
-                passengerCount.text.toString().toInt(), extraDetails.text.toString()
+                driverId, eventId, originLocation!!, destinationLocation, timeOfDay!!,
+                car_model.text.toString(), car_color.text.toString(),
+                num_seats.text.toString().toInt(), extra_details.text.toString()
             )
             val intent = Intent(applicationContext, RidePageActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             intent.putExtra(Keys.RIDE_ID.name, newRide.id)
             startActivity(intent)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN.ordinal -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val originLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
+                    originLocation = originLocationStr!!.decodeToLatLng().toLocation()
+                    val locationStr = shortenedLocation(this, originLocation!!)
+                    btn_origin.text = locationStr
+                    Log.d(tag, "Returned to $tag with location $locationStr")
+                } // else Activity.RESULT_CANCELED, so we will just do nothing
+            }
+            else -> {
+                Log.e(tag, "This is not supposed to happen!!! $requestCode $resultCode")
+            }
         }
     }
 
