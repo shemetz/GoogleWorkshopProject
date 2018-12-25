@@ -72,10 +72,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         originMarker.tag = TheOriginMarker
         if (preexistingLocation == null) {
             setPinned(false)
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(eventLocation, startingZoomLevel / 2))
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultOriginLocation, startingZoomLevel))
         } else {
             setPinned(true)
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(preexistingLocation, startingZoomLevel))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(preexistingLocation, startingZoomLevel))
         }
 
         map.isBuildingsEnabled = true
@@ -127,7 +128,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             finish()
         }
         fab_pin_or_unpin.setOnClickListener {
-            pinOrUnpin()
+            val shouldMoveCamera = pinOrUnpin()
+            if (!shouldMoveCamera) {
+                map.animateCamera(CameraUpdateFactory.newLatLng(originMarker.position), 500, null)
+            }
         }
     }
 
@@ -141,7 +145,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             originMarker.alpha = 1.0f
             fab_confirm_location.visibility = View.VISIBLE
             fab_confirm_location.isClickable = true
-            fab_pin_or_unpin.setImageDrawable(getDrawable(R.drawable.ic_edit_location_black_24dp))
+            fab_pin_or_unpin.setImageDrawable(getDrawable(R.drawable.ic_edit_black_24dp))
         } else {
             originMarker.alpha = 0.5f
             fab_confirm_location.visibility = View.GONE
@@ -151,7 +155,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun pinOrUnpin(): Boolean {
-        if (!TheOriginMarker.isFollowingCamera) {
+        return if (!TheOriginMarker.isFollowingCamera) {
             originMarker.isDraggable = true
             setPinned(false)
             val handler = Handler()
@@ -159,12 +163,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             handler.postDelayed({
                 TheOriginMarker.isFollowingCamera = true
             }, 500)
-            return false // move camera to marker, display info
+            false // move camera to marker, display info
         } else {
             TheOriginMarker.isFollowingCamera = false
             originMarker.isDraggable = false
             setPinned(true)
-            return true
+            true
         }
     }
 

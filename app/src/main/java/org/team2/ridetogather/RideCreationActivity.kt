@@ -11,6 +11,10 @@ import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_ridecreation.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -109,9 +113,15 @@ class RideCreationActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     val originLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
                     originLocation = originLocationStr!!.decodeToLatLng().toLocation()
-                    val locationStr = shortenedLocation(this, originLocation!!)
-                    btn_origin.text = locationStr
-                    Log.d(tag, "Returned to $tag with location $locationStr")
+                    btn_origin.setAllCaps(false)
+                    btn_origin.text = "(Updating…)"
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val locationStr = shortenedLocation(this@RideCreationActivity, originLocation!!)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            btn_origin.text = locationStr
+                        }
+                        Log.d(tag, "Returned to $tag with location $locationStr")
+                    }
                 } // else Activity.RESULT_CANCELED, so we will just do nothing
             }
             else -> {

@@ -16,6 +16,9 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
 class EventRidesActivity : AppCompatActivity() {
@@ -43,14 +46,18 @@ class EventRidesActivity : AppCompatActivity() {
             startActivity(intent)
         }
         event = Database.getEvent(eventId)!!
-        val eventShortLocation = shortenedLocation(this, event.location)
         val eventTime =
             java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
 
         toolbar_layout.title = event.name
         toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
-        tv_description.text = "$eventShortLocation"
-        tv_title.text = Html.fromHtml("$eventTime")
+        CoroutineScope(Dispatchers.Default).launch {
+            val eventShortLocation = shortenedLocation(this@EventRidesActivity, event.location)
+            CoroutineScope(Dispatchers.Main).launch {
+                tv_description.text = eventShortLocation
+            }
+        }
+        tv_title.text = Html.fromHtml(eventTime)
         Log.d(tag, "Created $tag with Event ID $eventId")
 
         toolbar_layout.title = event.name
