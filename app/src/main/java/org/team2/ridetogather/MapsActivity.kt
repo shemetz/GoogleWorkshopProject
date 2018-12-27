@@ -82,6 +82,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map.isBuildingsEnabled = true
         map.isIndoorEnabled = true
         map.isTrafficEnabled = true
+        map.uiSettings.isMapToolbarEnabled = false
+        map.uiSettings.isZoomControlsEnabled = false
         map.setOnCameraMoveListener {
             if (TheOriginMarker.isFollowingCamera) {
                 moveMarker(originMarker, map.cameraPosition.target)
