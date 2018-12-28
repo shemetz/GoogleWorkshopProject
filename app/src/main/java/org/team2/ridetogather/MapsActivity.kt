@@ -21,7 +21,12 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlin.math.max
 import android.content.pm.PackageManager
-
+import android.graphics.Color
+import android.widget.Toast
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import org.json.JSONObject
+import com.google.maps.android.PolyUtil
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val tag = MapsActivity::class.java.simpleName
@@ -30,6 +35,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var originMarker: Marker
     private lateinit var eventMarker: Marker
     private var savedInstanceState: Bundle? = null // in case phone rotates
+    private var drawnRoute: Polyline? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,6 +116,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (TheOriginMarker.isFollowingCamera) {
                 moveMarker(originMarker, map.cameraPosition.target)
                 originMarker.hideInfoWindow()
+                drawnRoute?.remove()
             }
         }
         map.setOnMarkerClickListener { marker: Marker? ->
@@ -218,7 +225,56 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             TheOriginMarker.isFollowingCamera = false
             originMarker.isDraggable = false
             setPinned(true)
+            calculateRoute()
             true
+        }
+    }
+
+    private fun calculateRoute() {
+        // Getting URL to the Google Directions API
+        val origin = originMarker.position
+        val destination = eventMarker.position
+        Log.i(tag, "Requesting route from Google Maps API…")
+        khttp.async.get(
+            url = "https://maps.googleapis.com/maps/api/directions/json",
+            params = mapOf(
+                "key" to getString(R.string.SECRET_GOOGLE_API_KEY),
+                "origin" to "${origin.latitude},${origin.longitude}",
+                "destination" to "${destination.latitude},${destination.longitude}"
+            ),
+            onResponse = {
+                Log.i(tag, "Got a response! \\o/")
+//                Log.i(tag, this.text)
+                drawRoute(this.jsonObject)
+            }
+        )
+    }
+
+    /**
+     * NOTE: This function doesn't run on the main (UI) thread.
+     */
+    private fun drawRoute(json: JSONObject) {
+        val routes = json.getJSONArray("routes")
+        if (routes.length() == 0) {
+            Log.e(tag, "Failed to find any route..!")
+            Log.e(tag, json.toString(4))
+            runOnUiThread {
+                Toast.makeText(this, "Sorry, Google Maps API call failed :(", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+        val legs = routes.getJSONObject(0).getJSONArray("legs")
+        val steps = legs.getJSONObject(0).getJSONArray("steps")
+        val path = mutableListOf<List<LatLng>>()
+        for (i in 0 until steps.length()) {
+            val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
+            path.add(PolyUtil.decode(points))
+        }
+        for (i in 0 until path.size) {
+            runOnUiThread {
+                drawnRoute?.remove()
+                drawnRoute = map.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
+            }
         }
     }
 
