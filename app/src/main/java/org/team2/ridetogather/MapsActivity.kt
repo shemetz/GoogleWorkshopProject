@@ -1,10 +1,10 @@
 package org.team2.ridetogather
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
@@ -20,6 +20,7 @@ import android.view.View
 import com.google.android.gms.maps.model.BitmapDescriptor
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlin.math.max
+import android.content.pm.PackageManager
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -27,9 +28,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
     private lateinit var originMarker: Marker
+    private lateinit var eventMarker: Marker
+    private var savedInstanceState: Bundle? = null // in case phone rotates
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        this.savedInstanceState = savedInstanceState
         setContentView(R.layout.activity_maps)
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -50,18 +54,29 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map = googleMap
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         Log.d(tag, "Map is ready for Event ID $eventId")
+
+        setupMarkers()
+        setupMapStartingPosition()
+        setupMapOptions()
+        setupButtons()
+        if (savedInstanceState != null)
+            setupWithSavedInstanceBundle()
+    }
+
+    private fun setupMarkers() {
+        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         val preexistingLocation = intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
         val event = Database.getEvent(eventId)!!
         val eventLocation = event.location.toLatLng()
-        val defaultOriginLocation = LatLng(eventLocation.latitude - 0.01, eventLocation.longitude)
-        val startingZoomLevel = 13.0f
         val eventMarkerOptions = MarkerOptions()
             .title(event.name)
             .position(eventLocation)
             .icon(createCombinedMarker(R.drawable.ic_check_circle_green_sub_icon, 48))
             .zIndex(1f)
-        val eventMarker = map.addMarker(eventMarkerOptions)
+        eventMarker = map.addMarker(eventMarkerOptions)
         eventMarker.tag = "The event marker - probably not gonna get used"
+
+        val defaultOriginLocation = LatLng(eventLocation.latitude - 0.01, eventLocation.longitude)
         val originTitle = "Your ride starts here"  // NOTICE: We're using this as the unique identifier
         val originMarkerOptions = MarkerOptions()
             .position(preexistingLocation ?: defaultOriginLocation)
@@ -70,15 +85,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .zIndex(2f)
         originMarker = map.addMarker(originMarkerOptions)
         originMarker.tag = TheOriginMarker
+    }
+
+    private fun setupMapStartingPosition() {
+        val preexistingLocation = intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
+        val startingZoomLevel = 13.0f
         if (preexistingLocation == null) {
             setPinned(false)
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(eventLocation, startingZoomLevel / 2))
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultOriginLocation, startingZoomLevel))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(eventMarker.position, startingZoomLevel / 2))
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(originMarker.position, startingZoomLevel))
         } else {
             setPinned(true)
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(preexistingLocation, startingZoomLevel))
         }
+    }
 
+    private fun setupMapOptions() {
         map.isBuildingsEnabled = true
         map.isIndoorEnabled = true
         map.isTrafficEnabled = true
@@ -92,11 +114,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         map.setOnMarkerClickListener { marker: Marker? ->
             if (marker!!.tag == TheOriginMarker) {
-                return@setOnMarkerClickListener pinOrUnpin()
+                return@setOnMarkerClickListener onPinButtonClick()
             }
             return@setOnMarkerClickListener false // move camera to marker, display info
         }
-        map.setOnMarkerDragListener(object: GoogleMap.OnMarkerDragListener {
+
+        // The marker dragging might not be working, but I'm leaving it here just in case it is
+        map.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
             override fun onMarkerDragStart(p0: Marker?) {
                 Log.i(tag, "Starting to drag a marker!")
                 if (p0 == null || p0.tag != TheOriginMarker) {
@@ -122,6 +146,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
 
+        // If location is enabled, we'll add a location marker and a button to go there
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            map.isMyLocationEnabled = true
+            map.uiSettings.isMyLocationButtonEnabled = true
+        }
+
+        map.setPadding(0, 50, 0, 0)
+    }
+
+    private fun setupButtons() {
         fab_confirm_location.setOnClickListener {
             val resultIntent = Intent()
             val locationStr = map.cameraPosition.target.encodeToString()
@@ -130,10 +166,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             finish()
         }
         fab_pin_or_unpin.setOnClickListener {
-            val shouldMoveCamera = pinOrUnpin()
+            val shouldMoveCamera = onPinButtonClick()
             if (!shouldMoveCamera) {
                 map.animateCamera(CameraUpdateFactory.newLatLng(originMarker.position), 500, null)
             }
+        }
+    }
+
+    private fun setupWithSavedInstanceBundle() {
+        val savedInstanceState = this.savedInstanceState!!
+        val cameraPosition = savedInstanceState.getParcelable<CameraPosition>(StoredInstanceKeys.CAMERA_POSITION.name)
+        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+        val originLocation = savedInstanceState.getParcelable<LatLng>(StoredInstanceKeys.ORIGIN_LOCATION.name)
+        originMarker.position = originLocation
+        val pinned = savedInstanceState.getBoolean(StoredInstanceKeys.ORIGIN_IS_PINNED.name)
+        if (pinned && TheOriginMarker.isFollowingCamera) {
+            onPinButtonClick()
         }
     }
 
@@ -156,7 +204,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun pinOrUnpin(): Boolean {
+    private fun onPinButtonClick(): Boolean {
         return if (!TheOriginMarker.isFollowingCamera) {
             originMarker.isDraggable = true
             setPinned(false)
@@ -174,15 +222,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun getMarkerIconFromDrawable(drawable: Drawable): BitmapDescriptor {
-        val canvas = Canvas()
-        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-        canvas.setBitmap(bitmap)
-        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
-        drawable.draw(canvas)
-        return BitmapDescriptorFactory.fromBitmap(bitmap)
-    }
-
+    private val markerHandlers: MutableMap<Marker, Handler> = mutableMapOf()
     /**
      * From https://stackoverflow.com/a/13912034/1703463
      */
@@ -194,9 +234,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val duration: Long = 10
 
         val interpolator = LinearInterpolator()
-
+        markerHandlers[marker] = handler
         handler.post(object : Runnable {
             override fun run() {
+                if (markerHandlers[marker] != handler) {
+                    // We have multiple move handlers for this marker - let's ignore them if
+                    // they're not the most recent one
+                    return
+                }
                 val elapsed = SystemClock.uptimeMillis() - start
                 val fractionOfTheWayThrough = max(0f, elapsed.toFloat() / duration)
                 val t = interpolator.getInterpolation(fractionOfTheWayThrough)
@@ -206,6 +251,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 if (t < 1.0) {
                     handler.postDelayed(this, 0)
+                }
+                if (t <= 0) {
+                    markerHandlers.remove(marker)
                 }
             }
         })
@@ -251,9 +299,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putParcelable(StoredInstanceKeys.CAMERA_POSITION.name, map.cameraPosition)
+        outState.putParcelable(StoredInstanceKeys.ORIGIN_LOCATION.name, originMarker.position)
+        outState.putBoolean(StoredInstanceKeys.ORIGIN_IS_PINNED.name, !TheOriginMarker.isFollowingCamera)
+        super.onSaveInstanceState(outState)
+    }
+
     companion object {
         enum class RequestCode {
             PICK_DRIVER_ORIGIN
+        }
+
+        enum class StoredInstanceKeys {
+            CAMERA_POSITION,
+            ORIGIN_LOCATION,
+            ORIGIN_IS_PINNED,
         }
     }
 }
