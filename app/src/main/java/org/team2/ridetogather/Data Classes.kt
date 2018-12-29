@@ -18,7 +18,6 @@ class Ride(
     var driverId: Id,
     val eventId: Id,
     var origin: Location,
-    var destination: Location,
     var departureTime: TimeOfDay,
     var carModel: String,
     var carColor: String,
@@ -29,7 +28,8 @@ class Ride(
 class User(
     id_: Id,
     var name: String,
-    var facebookProfileId: FacebookId
+    var facebookProfileId: FacebookId,
+    var credits: Int
 ) : DatabaseObject(id_) {
     fun getIdAsDriver() = id  // Currently, driver ≡ user
 }
@@ -47,7 +47,8 @@ class Pickup(
     val userId: Id,
     val rideId: Id,
     var pickupSpot: Location,
-    var pickupTime: TimeOfDay
+    var pickupTime: TimeOfDay,
+    var inRide: Boolean
 ) : DatabaseObject(id_)
 
 data class TimeOfDay(

@@ -5,11 +5,11 @@ import java.util.*
 
 object MockData {
 
-    val user1 = User(1, "Adam Driver", "fake facebook profile id 1")
-    val user2 = User(2, "Billy Bobson", "fake facebook profile id 2")
-    val user3 = User(3, "Claire White", "fake facebook profile id 3")
-    val user4 = User(4, "Donna Spielstein", "fake facebook profile id 4")
-    val user5 = User(5, "Eugene Smith", "fake facebook profile id 5")
+    val user1 = User(1, "Adam Driver", "fake facebook profile id 1",0)
+    val user2 = User(2, "Billy Bobson", "fake facebook profile id 2",0)
+    val user3 = User(3, "Claire White", "fake facebook profile id 3",0)
+    val user4 = User(4, "Donna Spielstein", "fake facebook profile id 4",0)
+    val user5 = User(5, "Eugene Smith", "fake facebook profile id 5",0)
     val location1 = Location("useless paramater")
         .apply { latitude = 32.113859; longitude = 34.804167 } // TAU
     val location2 = Location("useless paramater")
@@ -28,7 +28,6 @@ object MockData {
         user1.id,
         event1.id,
         location1,
-        location3,
         TimeOfDay(12, 0),
         "Tesla S",
         "Black",
@@ -40,7 +39,6 @@ object MockData {
         user4.id,
         event1.id,
         location2,
-        location3,
         TimeOfDay(12, 20),
         "Honda",
         "Red",
@@ -51,14 +49,16 @@ object MockData {
         user2.id,
         ride1.id,
         location1,
-        TimeOfDay(12, 34)
+        TimeOfDay(12, 34),
+        true
     )
     val pickup2 = Pickup(
         2,
         user3.id,
         ride1.id,
         location2,
-        TimeOfDay(12, 55)
+        TimeOfDay(12, 55),
+        true
     )
 
     // main tables
