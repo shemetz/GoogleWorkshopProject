@@ -43,7 +43,7 @@ class RidePageActivity : AppCompatActivity() {
         driverNamePage.text = driver.name
         carModel.text = ride.carModel
         carColor.text = ride.carColor
-        originLocation.text = shortenedLocation(this, ride.origin)
+        originLocation.text = readableLocation(this, ride.origin)
         departureTimePage.text = ride.departureTime.shortenedTime()
         details.text = ride.extraDetails
 
@@ -145,7 +145,7 @@ class RidePageActivity : AppCompatActivity() {
             val user = Database.getUser(pickup.userId)!!
 
             view.passengerName.text = user.name
-            view.pickupSpot.text = shortenedLocation(context, pickup.pickupSpot)
+            view.pickupSpot.text = readableLocation(context, pickup.pickupSpot)
 //            view.driverPicture.drawable = ???
             view.pickupTime.text = pickup.pickupTime.shortenedTime()
 

@@ -2,6 +2,7 @@ package org.team2.ridetogather
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -10,10 +11,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Html
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.ViewGroup
+import android.view.*
 import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
 import kotlinx.coroutines.CoroutineScope
@@ -52,7 +50,7 @@ class EventRidesActivity : AppCompatActivity() {
         toolbar_layout.title = event.name
         toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
         CoroutineScope(Dispatchers.Default).launch {
-            val eventShortLocation = shortenedLocation(this@EventRidesActivity, event.location)
+            val eventShortLocation = readableLocation(this@EventRidesActivity, event.location)
             CoroutineScope(Dispatchers.Main).launch {
                 tv_description.text = eventShortLocation
             }
@@ -79,7 +77,16 @@ class EventRidesActivity : AppCompatActivity() {
             setHasFixedSize(true)
             layoutManager = viewManager
             adapter = viewAdapter
+            addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val rides = Database.getRidesForEvent(event.id).toTypedArray()
+        viewAdapter = MyAdapter(this, rides)
+        viewAdapter.notifyDataSetChanged()
+        recyclerView.adapter = viewAdapter
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -117,7 +124,7 @@ class EventRidesActivity : AppCompatActivity() {
             val driver = Database.getDriver(ride.driverId)!!
 
             view.driverName.text = driver.name
-            view.originLocationName.text = shortenedLocation(context, ride.origin)
+            view.originLocationName.text = readableLocation(context, ride.origin)
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()
             holder.cardView.setOnClickListener {
@@ -147,6 +154,22 @@ class EventRidesActivity : AppCompatActivity() {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    class MarginItemDecoration(private val spaceHeight: Int) : RecyclerView.ItemDecoration() {
+        override fun getItemOffsets(
+            outRect: Rect, view: View,
+            parent: RecyclerView, state: RecyclerView.State
+        ) {
+            with(outRect) {
+                if (parent.getChildAdapterPosition(view) == 0) {
+                    top = spaceHeight
+                }
+                left = spaceHeight
+                right = spaceHeight
+                bottom = spaceHeight
+            }
         }
     }
 }

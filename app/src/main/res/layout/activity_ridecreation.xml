@@ -16,6 +16,9 @@
             android:layout_marginEnd="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:descendantFocusability="beforeDescendants"
             android:orientation="vertical">
 
         <android.support.design.widget.TextInputLayout
@@ -90,14 +93,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
+                    android:textAllCaps="false"
                     android:text="PICK LOCATION"/>
         </LinearLayout>
 
         <TextView
+                android:id="@+id/ride_time_and_distance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textColor="@android:color/darker_gray"
+                android:visibility="invisible"
                 android:text="The ride should take about $time ($distance)."/>
 
         <android.support.design.widget.TextInputLayout

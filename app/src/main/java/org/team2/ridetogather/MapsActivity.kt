@@ -101,7 +101,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(eventMarker.position, startingZoomLevel / 2))
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(originMarker.position, startingZoomLevel))
         } else {
-            setPinned(true)
+            onPinButtonClick()
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(preexistingLocation, startingZoomLevel))
         }
     }
@@ -168,7 +168,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupButtons() {
         fab_confirm_location.setOnClickListener {
             val resultIntent = Intent()
-            val locationStr = map.cameraPosition.target.encodeToString()
+            val locationStr = originMarker.position.encodeToString()
             resultIntent.putExtra(Keys.LOCATION.name, locationStr)
             resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
             setResult(Activity.RESULT_OK, resultIntent)
@@ -188,8 +188,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         val originLocation = savedInstanceState.getParcelable<LatLng>(StoredInstanceKeys.ORIGIN_LOCATION.name)
         originMarker.position = originLocation
-        val pinned = savedInstanceState.getBoolean(StoredInstanceKeys.ORIGIN_IS_PINNED.name)
-        if (pinned && TheOriginMarker.isFollowingCamera) {
+        if (TheOriginMarker.isFollowingCamera) {
             onPinButtonClick()
         }
         val routeJsonStr = savedInstanceState.getString(StoredInstanceKeys.ROUTE_JSON.name)
@@ -385,7 +384,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(StoredInstanceKeys.CAMERA_POSITION.name, map.cameraPosition)
         outState.putParcelable(StoredInstanceKeys.ORIGIN_LOCATION.name, originMarker.position)
-        outState.putBoolean(StoredInstanceKeys.ORIGIN_IS_PINNED.name, !TheOriginMarker.isFollowingCamera)
         outState.putString(StoredInstanceKeys.ROUTE_JSON.name, routeJson?.toString() ?: "")
         super.onSaveInstanceState(outState)
     }
@@ -398,7 +396,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         enum class StoredInstanceKeys {
             CAMERA_POSITION,
             ORIGIN_LOCATION,
-            ORIGIN_IS_PINNED,
             ROUTE_JSON,
         }
     }

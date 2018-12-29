@@ -99,6 +99,7 @@ object Database {
             extraDetails = extraDetails
         )
         MockData.rides[newRideId] = newRide
+        MockData.ridesOfEvent[eventId]!!.add(newRideId)
         return newRide
     }
 

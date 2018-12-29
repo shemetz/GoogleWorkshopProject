@@ -3,17 +3,18 @@ package org.team2.ridetogather
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_ridecreation.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
@@ -97,16 +98,34 @@ class RideCreationActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            getSharedPreferences(tag, Context.MODE_PRIVATE).edit().apply {
+                putString(Preferences.CAR_COLOR.name, car_color.text.toString())
+                putString(Preferences.CAR_MODEL.name, car_model.text.toString())
+                putString(Preferences.NUMBER_OF_SEATS.name, num_seats.text.toString())
+                putString(Preferences.LAST_ORIGIN_LOCATION__LAT_LNG.name, originLocation!!.toLatLng().encodeToString())
+                putString(Preferences.LAST_ORIGIN_LOCATION__READABLE.name, btn_origin.text.toString())
+                apply()
+            }
+
             val newRide = Database.createNewRide(
                 driverId, eventId, originLocation!!, destinationLocation, timeOfDay!!,
                 car_model.text.toString(), car_color.text.toString(),
                 num_seats.text.toString().toInt(), extra_details.text.toString()
             )
             val intent = Intent(applicationContext, RidePageActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             intent.putExtra(Keys.RIDE_ID.name, newRide.id)
             startActivity(intent)
+            finish()
         }
+        new_ride_form.requestFocus()
+
+        val sharedPrefs = getSharedPreferences(tag, Context.MODE_PRIVATE)
+        sharedPrefs.getString(Preferences.CAR_MODEL.name, null)?.apply { car_model.setText(this) }
+        sharedPrefs.getString(Preferences.CAR_COLOR.name, null)?.apply { car_color.setText(this) }
+        sharedPrefs.getString(Preferences.NUMBER_OF_SEATS.name, null)?.apply { num_seats.setText(this) }
+        sharedPrefs.getString(Preferences.LAST_ORIGIN_LOCATION__LAT_LNG.name, null)?.apply { originLocation = this.decodeToLatLng().toLocation() }
+        sharedPrefs.getString(Preferences.LAST_ORIGIN_LOCATION__READABLE.name, null)?.apply { btn_origin.text = this }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -116,10 +135,9 @@ class RideCreationActivity : AppCompatActivity() {
                     val originLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
                     originLocation = originLocationStr!!.decodeToLatLng().toLocation()
                     val routeJsonStr = data.getStringExtra(Keys.ROUTE_JSON.name)
-                    btn_origin.setAllCaps(false)
                     btn_origin.text = "(Updating…)"
                     CoroutineScope(Dispatchers.Default).launch {
-                        val locationStr = shortenedLocation(this@RideCreationActivity, originLocation!!)
+                        val locationStr = readableLocation(this@RideCreationActivity, originLocation!!)
                         CoroutineScope(Dispatchers.Main).launch {
                             btn_origin.text = locationStr
                         }
@@ -139,10 +157,12 @@ class RideCreationActivity : AppCompatActivity() {
                                     "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
                                 )
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    btn_origin.text = "$locationStr\n$distanceInText ($durationInText)"
+                                    ride_time_and_distance.text = "The ride should take about $durationInText ($distanceInText)."
+                                    ride_time_and_distance.visibility = View.VISIBLE
                                 }
                             } catch (e: JSONException) {
                                 Log.e(tag, "Error in route json parsing, probably undefined distance", e)
+                                ride_time_and_distance.visibility = View.INVISIBLE
                             }
                         } else Log.i(tag, "Did not get a route JSON in return.")
                     }

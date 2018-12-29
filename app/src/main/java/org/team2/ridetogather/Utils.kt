@@ -15,16 +15,24 @@ enum class Keys {
     ROUTE_JSON,
 }
 
+enum class Preferences {
+    CAR_MODEL,
+    CAR_COLOR,
+    NUMBER_OF_SEATS,
+    LAST_ORIGIN_LOCATION__LAT_LNG,
+    LAST_ORIGIN_LOCATION__READABLE,
+}
+
 /**
- * Converts a location into a human-readable "shortened location".
+ * Converts a location into a human-readable string.
  * For example, the location {latitude = 32.055436; longitude = 34.753070} will
- * cause the following shortened location string to return:
+ * cause the following readable location string to be returned:
  * "Mifrats Shlomo Promenade 5, Tel Aviv-Yafo, Israel"
  *
  * NOTE: This function is slow because it uses a Geocoder.
  * Try to only use it in asynchronous stuff (e.g. when updating text fields).
  */
-fun shortenedLocation(context: Context, location: Location): String {
+fun readableLocation(context: Context, location: Location): String {
     fun coordinatesString(): String {
         val absoluteLatitude = Location.convert(location.latitude.absoluteValue, Location.FORMAT_DEGREES)
         val absoluteLongitude = Location.convert(location.longitude.absoluteValue, Location.FORMAT_DEGREES)
@@ -54,15 +62,13 @@ fun shortenedLocation(context: Context, location: Location): String {
     } catch (ioException: IOException) {
         // Catch network or other I/O problems.
         Log.e(
-            "Shortened Location", "IO error encountered while reverse-geocoding. Latitude = $location.latitude , " +
-                    "Longitude =  $location.longitude", ioException
+            "Shortened Location", "IO error encountered while reverse-geocoding. Location = $location", ioException
         )
         return coordinatesString()
     } catch (illegalArgumentException: IllegalArgumentException) {
         // Catch invalid latitude or longitude values.
         Log.e(
-            "Shortened Location", "IO error encountered while reverse-geocoding. Latitude = $location.latitude , " +
-                    "Longitude =  $location.longitude", illegalArgumentException
+            "Shortened Location", "IO error encountered while reverse-geocoding. Latitude = $location", illegalArgumentException
         )
         return coordinatesString()
     }
