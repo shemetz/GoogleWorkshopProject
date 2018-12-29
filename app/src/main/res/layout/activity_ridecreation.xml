@@ -1,93 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".RideCreationActivity">
+                                            xmlns:app="http://schemas.android.com/apk/res-auto"
+                                            xmlns:tools="http://schemas.android.com/tools"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                                            tools:context=".RideCreationActivity">
 
 
     <LinearLayout
-        android:id="@+id/new_ride_form"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:orientation="vertical">
+            android:id="@+id/new_ride_form"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical">
 
         <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
             <AutoCompleteTextView
-                android:id="@+id/car_model"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Car Model"
-                android:maxLines="1"
-                android:singleLine="true" />
+                    android:id="@+id/car_model"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Car Model"
+                    android:maxLines="1"
+                    android:singleLine="true"/>
 
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
             <AutoCompleteTextView
-                android:id="@+id/car_color"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:hint="Car Color"
-                android:maxLines="1"
-                android:singleLine="true" />
+                    android:id="@+id/car_color"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="Car Color"
+                    android:maxLines="1"
+                    android:singleLine="true"/>
 
         </android.support.design.widget.TextInputLayout>
 
         <EditText
-            android:id="@+id/num_seats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="How many passengers?"
-            android:inputType="numberSigned" />
+                android:id="@+id/num_seats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="How many passengers?"
+                android:inputType="numberSigned"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:text="You depart at "/>
+            <Button
+                    android:id="@+id/pick_time_button"
+                    android:layout_width="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_height="wrap_content"
+                    android:text="PICK TIME"/>
+        </LinearLayout>
 
 
-        <Button
-            android:id="@+id/pick_time_button"
-            android:layout_width="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_height="wrap_content"
-            android:text="Pick departure time…" />
-        <Button
-            android:id="@+id/btn_origin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="Pick departure location…" />
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:text="You depart from "/>
+            <Button
+                    android:id="@+id/btn_origin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="PICK LOCATION"/>
+        </LinearLayout>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="@android:color/darker_gray"
+                android:text="The ride should take about $time ($distance)."/>
 
         <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
             <EditText
-                android:id="@+id/extra_details"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:hint="Additional Details"
-                android:inputType="textMultiLine"
-                android:maxLines="4" />
+                    android:id="@+id/extra_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:hint="Additional details…"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine"
+                    android:maxLines="4"/>
 
         </android.support.design.widget.TextInputLayout>
 
         <Button
-            android:id="@+id/btn_submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="Submit" />
+                android:id="@+id/btn_submit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Submit"/>
     </LinearLayout>
 
 

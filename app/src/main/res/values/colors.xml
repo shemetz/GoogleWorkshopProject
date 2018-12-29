@@ -11,6 +11,7 @@
     <color name="title_light">#beffffff</color>
     <color name="firstScreen">#f0c47d</color>
     <color name="confirmation">#04B518</color>
+    <color name="routeColor">#0055ff</color>
     <!--template colors-->
 
 </resources>

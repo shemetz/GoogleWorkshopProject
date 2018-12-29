@@ -21,7 +21,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlin.math.max
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.widget.Toast
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
@@ -35,7 +34,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var originMarker: Marker
     private lateinit var eventMarker: Marker
     private var savedInstanceState: Bundle? = null // in case phone rotates
-    private var drawnRoute: Polyline? = null
+    private var drawnRoute: MutableList<Polyline> = mutableListOf()
+    private var routeJson: JSONObject? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +88,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .position(preexistingLocation ?: defaultOriginLocation)
             .title(originTitle)
             .icon(createCombinedMarker(R.drawable.ic_car_white_sub_icon, 36))
-            .zIndex(2f)
+            .zIndex(5f)
         originMarker = map.addMarker(originMarkerOptions)
         originMarker.tag = TheOriginMarker
     }
@@ -108,15 +108,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun setupMapOptions() {
         map.isBuildingsEnabled = true
-        map.isIndoorEnabled = true
-        map.isTrafficEnabled = true
+        map.isIndoorEnabled = false
+        map.isTrafficEnabled = false
         map.uiSettings.isMapToolbarEnabled = false
         map.uiSettings.isZoomControlsEnabled = false
         map.setOnCameraMoveListener {
             if (TheOriginMarker.isFollowingCamera) {
                 moveMarker(originMarker, map.cameraPosition.target)
                 originMarker.hideInfoWindow()
-                drawnRoute?.remove()
+                drawnRoute.forEach { it.remove() }
+                routeJson = null
             }
         }
         map.setOnMarkerClickListener { marker: Marker? ->
@@ -169,6 +170,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val resultIntent = Intent()
             val locationStr = map.cameraPosition.target.encodeToString()
             resultIntent.putExtra(Keys.LOCATION.name, locationStr)
+            resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
@@ -189,6 +191,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val pinned = savedInstanceState.getBoolean(StoredInstanceKeys.ORIGIN_IS_PINNED.name)
         if (pinned && TheOriginMarker.isFollowingCamera) {
             onPinButtonClick()
+        }
+        val routeJsonStr = savedInstanceState.getString(StoredInstanceKeys.ROUTE_JSON.name)
+        if (routeJsonStr.isNotBlank()) {
+            routeJson = JSONObject(routeJsonStr)
+            drawRoute(routeJson!!)
         }
     }
 
@@ -213,6 +220,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun onPinButtonClick(): Boolean {
         return if (!TheOriginMarker.isFollowingCamera) {
+            Log.d(tag, "Unpinning origin marker")
             originMarker.isDraggable = true
             setPinned(false)
             val handler = Handler()
@@ -222,10 +230,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }, 500)
             false // move camera to marker, display info
         } else {
+            Log.d(tag, "Pinning origin marker")
             TheOriginMarker.isFollowingCamera = false
             originMarker.isDraggable = false
             setPinned(true)
-            calculateRoute()
+            if (routeJson == null)
+                calculateRoute()
             true
         }
     }
@@ -245,7 +255,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             onResponse = {
                 Log.i(tag, "Got a response! \\o/")
 //                Log.i(tag, this.text)
-                drawRoute(this.jsonObject)
+                routeJson = this.jsonObject
+                drawRoute(routeJson!!)
             }
         )
     }
@@ -263,18 +274,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             return
         }
-        val legs = routes.getJSONObject(0).getJSONArray("legs")
-        val steps = legs.getJSONObject(0).getJSONArray("steps")
+        if (routes.length() > 1)
+            Log.w(tag, "There's more than one route!?")
+        val onlyRoute = routes.getJSONObject(0)
+        if (onlyRoute.getJSONArray("warnings").length() > 0) {
+            Log.w(tag, "WARNINGS")
+            Log.w(tag, onlyRoute.getJSONArray("warnings").join("\n"))
+        }
+        val legs = onlyRoute.getJSONArray("legs")
+        if (legs.length() > 1)
+            Log.w(tag, "There's more than one leg of the journey!?")
+        val onlyLeg = legs.getJSONObject(0)
+        val steps = onlyLeg.getJSONArray("steps")
         val path = mutableListOf<List<LatLng>>()
         for (i in 0 until steps.length()) {
             val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
             path.add(PolyUtil.decode(points))
         }
-        for (i in 0 until path.size) {
-            runOnUiThread {
-                drawnRoute?.remove()
-                drawnRoute = map.addPolyline(PolylineOptions().addAll(path[i]).color(Color.RED))
-            }
+        val combinedPath = path.flatten()
+        runOnUiThread {
+            drawnRoute.forEach { it.remove() }
+            val polyLine = map.addPolyline(
+                PolylineOptions()
+                    .addAll(combinedPath)
+                    .color(ContextCompat.getColor(this, R.color.routeColor))
+                    .zIndex(-300f)
+                    .width(16f)
+            )
+            drawnRoute.add(polyLine)
         }
     }
 
@@ -359,6 +386,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         outState.putParcelable(StoredInstanceKeys.CAMERA_POSITION.name, map.cameraPosition)
         outState.putParcelable(StoredInstanceKeys.ORIGIN_LOCATION.name, originMarker.position)
         outState.putBoolean(StoredInstanceKeys.ORIGIN_IS_PINNED.name, !TheOriginMarker.isFollowingCamera)
+        outState.putString(StoredInstanceKeys.ROUTE_JSON.name, routeJson?.toString() ?: "")
         super.onSaveInstanceState(outState)
     }
 
@@ -371,6 +399,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             CAMERA_POSITION,
             ORIGIN_LOCATION,
             ORIGIN_IS_PINNED,
+            ROUTE_JSON,
         }
     }
 }

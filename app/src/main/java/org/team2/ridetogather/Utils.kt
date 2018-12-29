@@ -12,6 +12,7 @@ enum class Keys {
     RIDE_ID,
     EVENT_ID,
     LOCATION,
+    ROUTE_JSON,
 }
 
 /**

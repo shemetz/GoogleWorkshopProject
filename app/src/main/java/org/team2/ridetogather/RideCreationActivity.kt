@@ -15,6 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.json.JSONException
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -113,6 +115,7 @@ class RideCreationActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     val originLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
                     originLocation = originLocationStr!!.decodeToLatLng().toLocation()
+                    val routeJsonStr = data.getStringExtra(Keys.ROUTE_JSON.name)
                     btn_origin.setAllCaps(false)
                     btn_origin.text = "(Updating…)"
                     CoroutineScope(Dispatchers.Default).launch {
@@ -120,7 +123,28 @@ class RideCreationActivity : AppCompatActivity() {
                         CoroutineScope(Dispatchers.Main).launch {
                             btn_origin.text = locationStr
                         }
-                        Log.d(tag, "Returned to $tag with location $locationStr")
+                        Log.d(tag, "Back in $tag with location $locationStr")
+                        if (routeJsonStr.isNotBlank()) {
+                            val routeJson = JSONObject(routeJsonStr)
+                            val onlyRoute = routeJson.getJSONArray("routes").getJSONObject(0)
+                            val legs = onlyRoute.getJSONArray("legs")
+                            val onlyLeg = legs.getJSONObject(0)
+                            try {
+//                                val distanceInMeters = onlyLeg.getJSONObject("distance").getInt("value")
+                                val distanceInText = onlyLeg.getJSONObject("distance").getString("text")
+//                                val durationInSeconds = onlyLeg.getJSONObject("duration").getInt("value")
+                                val durationInText = onlyLeg.getJSONObject("duration").getString("text")
+                                Log.i(
+                                    tag,
+                                    "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
+                                )
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    btn_origin.text = "$locationStr\n$distanceInText ($durationInText)"
+                                }
+                            } catch (e: JSONException) {
+                                Log.e(tag, "Error in route json parsing, probably undefined distance", e)
+                            }
+                        } else Log.i(tag, "Did not get a route JSON in return.")
                     }
                 } // else Activity.RESULT_CANCELED, so we will just do nothing
             }
