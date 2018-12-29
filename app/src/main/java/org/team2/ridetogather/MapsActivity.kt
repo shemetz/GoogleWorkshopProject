@@ -21,7 +21,12 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlin.math.max
 import android.content.pm.PackageManager
+import android.widget.RelativeLayout
 import android.widget.Toast
+import com.google.android.gms.common.api.Status
+import com.google.android.gms.location.places.Place
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment
+import com.google.android.gms.location.places.ui.PlaceSelectionListener
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONObject
@@ -65,6 +70,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         setupMapStartingPosition()
         setupMapOptions()
         setupButtons()
+        setupPlaceAutocomplete()
         if (savedInstanceState != null)
             setupWithSavedInstanceBundle()
     }
@@ -116,8 +122,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (TheOriginMarker.isFollowingCamera) {
                 moveMarker(originMarker, map.cameraPosition.target)
                 originMarker.hideInfoWindow()
-                drawnRoute.forEach { it.remove() }
-                routeJson = null
+                cancelCurrentRoute()
             }
         }
         map.setOnMarkerClickListener { marker: Marker? ->
@@ -182,6 +187,37 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun setupPlaceAutocomplete() {
+        val placeFragment =
+            fragmentManager.findFragmentById(R.id.place_autocomplete_fragment) as PlaceAutocompleteFragment
+        placeFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+            override fun onPlaceSelected(place: Place?) {
+                place!!
+                Log.i(tag, "User selected place from autocomplete place picker: ${place.name} = ${place.address}")
+                originMarker.position = place.latLng
+                map.moveCamera(CameraUpdateFactory.newLatLng(place.latLng))
+                setPinned(false)
+                TheOriginMarker.isFollowingCamera = true
+                cancelCurrentRoute()
+                onPinButtonClick()
+            }
+
+            override fun onError(status: Status?) {
+                Log.e(tag, "An error occurred in the place fragment! status=$status")
+            }
+        })
+
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        val mapView = mapFragment.view!!
+        val locationButton =
+            (mapView.findViewById<View>(Integer.parseInt("1")).parent as View).findViewById<View>(Integer.parseInt("2"))
+        val rlp = locationButton.layoutParams as (RelativeLayout.LayoutParams)
+        // position on top right, but with margin due to place autocomplete fragment
+        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0)
+        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+        rlp.setMargins(0, 96, 16, 0)
+    }
+
     private fun setupWithSavedInstanceBundle() {
         val savedInstanceState = this.savedInstanceState!!
         val cameraPosition = savedInstanceState.getParcelable<CameraPosition>(StoredInstanceKeys.CAMERA_POSITION.name)
@@ -237,6 +273,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 calculateRoute()
             true
         }
+    }
+
+    private fun cancelCurrentRoute() {
+        drawnRoute.forEach { it.remove() }
+        routeJson = null
     }
 
     private fun calculateRoute() {

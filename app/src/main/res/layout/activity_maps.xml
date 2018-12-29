@@ -17,6 +17,21 @@
               tools:context=".MapsActivity">
     </fragment>
 
+    <android.support.v7.widget.CardView
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/place_autocomplete_card_view"
+            android:layout_gravity="top"
+            android:layout_margin="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            card_view:cardCornerRadius="4dp">
+        <fragment
+                android:id="@+id/place_autocomplete_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+        />
+    </android.support.v7.widget.CardView>
 
     <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_pin_or_unpin"
