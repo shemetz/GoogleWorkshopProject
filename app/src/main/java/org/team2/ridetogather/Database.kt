@@ -369,8 +369,8 @@ object Database {
         requestQueue.add(jsonObjectRequest)
     }
 
-    fun removeUserFromEvent(pickupId: Id, eventId: Id) {
-        val url = "$SERVER_URL/removeUserFromEvent/$pickupId/$eventId"
+    fun removeUserFromEvent(userId: Id, eventId: Id) {
+        val url = "$SERVER_URL/removeUserFromEvent/$userId/$eventId"
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
             Response.Listener { response ->
