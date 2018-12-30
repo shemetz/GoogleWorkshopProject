@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Geocoder
 import android.util.Log
 import com.google.android.gms.maps.model.LatLng
+import org.json.JSONObject
 import java.io.IOException
 import java.util.*
 import kotlin.math.absoluteValue
@@ -73,6 +74,11 @@ fun readableLocation(context: Context, location: Location): String {
         return coordinatesString()
     }
 }
+
+
+fun <K, V> jsonObjOf(vararg pairs: Pair<K, V>): JSONObject =
+    JSONObject(if (pairs.isNotEmpty()) pairs.toMap(LinkedHashMap(pairs.size * 4 / 3)) else emptyMap<K, V>())
+
 
 fun Location.toLatLng(): LatLng {
     return LatLng(latitude, longitude)

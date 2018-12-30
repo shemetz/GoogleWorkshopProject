@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Database.initializeRequestQueue(this)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         Log.d(tag, "Created $tag")
