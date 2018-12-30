@@ -69,7 +69,9 @@ fun readableLocation(context: Context, location: Location): String {
     } catch (illegalArgumentException: IllegalArgumentException) {
         // Catch invalid latitude or longitude values.
         Log.e(
-            "Shortened Location", "IO error encountered while reverse-geocoding. Latitude = $location", illegalArgumentException
+            "Shortened Location",
+            "IO error encountered while reverse-geocoding. Latitude = $location",
+            illegalArgumentException
         )
         return coordinatesString()
     }

@@ -8,7 +8,9 @@ import com.android.volley.Response
 import com.android.volley.toolbox.Volley
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
+import com.google.android.gms.maps.model.LatLng
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -16,63 +18,64 @@ import java.util.*
 
 object JsonParse {
 
-    fun ride(jsonObject: JSONObject): Ride {
-        val rideId = jsonObject.getInt("id")
-        val driverId = jsonObject.getInt("driver")
-        val eventId = jsonObject.getInt("event")
-        val origin = Location("useless paramater")
-            .apply { latitude = jsonObject.getDouble("originLat"); longitude = jsonObject.getDouble("originLong") }
-        val departureTime = TimeOfDay(jsonObject.getInt("departureHour"), jsonObject.getInt("departureMinute"))
-        val carModel = jsonObject.getString("carModel")
-        val carColor = jsonObject.getString("carColor")
-        val passengerCount = jsonObject.getInt("passengerCount")
-        val extraDetails = jsonObject.getString("extraDetails")
+    fun ride(rideJson: JSONObject): Ride {
+        val rideId = rideJson.getInt("id")
+        val driverId = rideJson.getInt("driver")
+        val eventId = rideJson.getInt("event")
+        val origin = LatLng(
+            rideJson.getDouble("originLat"),
+            rideJson.getDouble("originLong")
+        ).toLocation()
+        val departureTime = TimeOfDay(rideJson.getInt("departureHour"), rideJson.getInt("departureMinute"))
+        val carModel = rideJson.getString("carModel")
+        val carColor = rideJson.getString("carColor")
+        val passengerCount = rideJson.getInt("passengerCount")
+        val extraDetails = rideJson.getString("extraDetails")
 
         return Ride(rideId, driverId, eventId, origin, departureTime, carModel, carColor, passengerCount, extraDetails)
     }
 
-    fun pickups(jsonArray: JSONArray): ArrayList<Pickup> {
-        val pickups = arrayListOf<Pickup>()
-        for (i in 0 until jsonArray.length()) {
-            // Get current json object
-            val pickupJson = jsonArray.getJSONObject(i)
-            val pickupId = pickupJson.getInt("id")
-            val userId = pickupJson.getInt("user")
-            val rideId = pickupJson.getInt("ride")
-            val pickupSpot = Location("useless paramater")
-                .apply { latitude = pickupJson.getDouble("pickupLat"); longitude = pickupJson.getDouble("pickupLong") }
-            val pickupTime = TimeOfDay(pickupJson.getInt("pickupHour"), pickupJson.getInt("pickupMinute"))
-            val inRide = pickupJson.getBoolean("inRide")
-            pickups.add(Pickup(pickupId, userId, rideId, pickupSpot, pickupTime, inRide))
-        }
-        return pickups
+    fun pickup(pickupJson: JSONObject): Pickup {
+        val pickupId = pickupJson.getInt("id")
+        val userId = pickupJson.getInt("user")
+        val rideId = pickupJson.getInt("ride")
+        val pickupSpot = LatLng(
+            pickupJson.getDouble("pickupLat"),
+            pickupJson.getDouble("pickupLong")
+        ).toLocation()
+        val pickupTime = TimeOfDay(pickupJson.getInt("pickupHour"), pickupJson.getInt("pickupMinute"))
+        val inRide = pickupJson.getBoolean("inRide")
+        return Pickup(pickupId, userId, rideId, pickupSpot, pickupTime, inRide)
     }
 
-    fun user(jsonObject: JSONObject): User {
-        val userId = jsonObject.getInt("id")
-        val name = jsonObject.getString("name")
-        val facebookProfileId = jsonObject.getString("facebookProfileId")
-        val credits = jsonObject.getInt("credits")
+    fun user(userJson: JSONObject): User {
+        val userId = userJson.getInt("id")
+        val name = userJson.getString("name")
+        val facebookProfileId = userJson.getString("facebookProfileId")
+        val credits = userJson.getInt("credits")
         return User(userId, name, facebookProfileId, credits)
     }
 
-    fun events(jsonArray: JSONArray): ArrayList<Event> {
-        val events = arrayListOf<Event>()
+    fun event(eventJson: JSONObject): Event {
+        val eventId = eventJson.getInt("id")
+        val eventName = eventJson.getString("name")
+        val eventLocation = LatLng(
+            eventJson.getDouble("locationLat"),
+            eventJson.getDouble("locationLong")
+        ).toLocation()
+        val eventDatetime =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY)
+                .parse(eventJson.getString("datetime"))
+        val facebookEventId = eventJson.getString("facebookEventId")
+        return Event(eventId, eventName, eventLocation, eventDatetime, facebookEventId)
+    }
+
+    fun <T> array(jsonArray: JSONArray, specificFunction: (JSONObject) -> T): List<T> {
+        val things = mutableListOf<T>()
         for (i in 0 until jsonArray.length()) {
-            // Get current json object
-            val eventJson = jsonArray.getJSONObject(i)
-            val eventId = eventJson.getInt("id")
-            val eventName = eventJson.getString("name")
-            val eventLocation = Location("useless paramater")
-                .apply {
-                    latitude = eventJson.getDouble("locationLat"); longitude = eventJson.getDouble("locationLong")
-                }
-            val eventDatetime =
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse(eventJson.getString("datetime"))
-            val facebookEventId = eventJson.getString("facebookEventId")
-            events.add(Event(eventId, eventName, eventLocation, eventDatetime, facebookEventId))
+            things.add(specificFunction(jsonArray.getJSONObject(i)))
         }
-        return events
+        return things
     }
 }
 
@@ -88,12 +91,18 @@ object Database {
         requestQueue = Volley.newRequestQueue(context.applicationContext)
     }
 
-    fun getUser(userId: Id): User? {
-        // MOCK
-        return MockData.users[userId] ?: run {
-            Log.e(tag, "No such user with ID = $userId")
-            null
-        }
+    fun getUser(userId: Id, successCallback: (User) -> Unit) {
+        val url = "$SERVER_URL/getUser/$userId"
+
+        val request = JsonObjectRequest(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                successCallback(JsonParse.user(response))
+            },
+            Response.ErrorListener { error ->
+                Log.e(tag, "Response error for $url", error)
+            }
+        )
+        requestQueue.add(request)
     }
 
     fun getEvent(eventId: Id): Event? {
@@ -104,12 +113,18 @@ object Database {
         }
     }
 
-    fun getRide(rideId: Id): Ride? {
-        // MOCK
-        return MockData.rides[rideId] ?: run {
-            Log.e(tag, "No such ride with ID = $rideId")
-            null
-        }
+    fun getRide(rideId: Id, successCallback: (Ride) -> Unit) {
+        val url = "$SERVER_URL/getRide/$rideId"
+
+        val request = JsonObjectRequest(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                successCallback(JsonParse.ride(response))
+            },
+            Response.ErrorListener { error ->
+                Log.e(tag, "Response error for $url", error)
+            }
+        )
+        requestQueue.add(request)
     }
 
     fun getPickup(pickupId: Id): Pickup? {
@@ -120,9 +135,9 @@ object Database {
         }
     }
 
-    fun getDriver(driverId: Id): Driver? {
-        // MOCK
-        return getUser(driverId)
+    fun getDriver(driverId: Id, successCallback: (Driver) -> Unit) {
+        // Currently drivers are identical to users!
+        return getUser(driverId, successCallback)
     }
 
     /**
@@ -136,23 +151,38 @@ object Database {
     }
 
     /**
-     * Will return an empty list if there are no pickups for the ride, or
-     * if there is no such ride.
+     * Will return an empty list if there are no pickups for the ride
      */
-    fun getPickupsForRide(rideId: Id): List<Pickup> {
-        // MOCK
-        val idsList = MockData.pickupsOfRide[rideId] ?: mutableListOf()
-        return idsList.map { getPickup(it)!! }
+    fun getPickupsForRide(rideId: Id, successCallback: (List<Pickup>) -> Unit) {
+        val url = "$SERVER_URL/getPickupsForRide/$rideId"
+
+        val request = JsonArrayRequest(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                successCallback(JsonParse.array(response, JsonParse::pickup))
+            },
+            Response.ErrorListener { error ->
+                Log.e(tag, "Response error for $url", error)
+            }
+        )
+        requestQueue.add(request)
     }
 
     /**
      * Will return an empty list if there are no rides for the event, or
      * if there is no such event.
      */
-    fun getRidesForEvent(eventId: Id): List<Ride> {
-        // MOCK
-        val idsList = MockData.ridesOfEvent[eventId] ?: mutableListOf()
-        return idsList.map { getRide(it)!! }
+    fun getRidesForEvent(eventId: Id, successCallback: (List<Ride>) -> Unit) {
+        val url = "$SERVER_URL/getRidesForEvent/$eventId"
+
+        val request = JsonArrayRequest(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                successCallback(JsonParse.array(response, JsonParse::ride))
+            },
+            Response.ErrorListener { error ->
+                Log.e(tag, "Response error for $url", error)
+            }
+        )
+        requestQueue.add(request)
     }
 
     fun addUser(name: String, facebookProfileId: String, credits: Int) {
@@ -202,7 +232,8 @@ object Database {
 
     fun addRide(
         driverId: Id, eventId: Id, origin: Location, departureTime: TimeOfDay,
-        carModel: String, carColor: String, passengerCount: Int, extraDetails: String
+        carModel: String, carColor: String, passengerCount: Int, extraDetails: String,
+        successCallback: (Ride) -> Unit
     ) {
         val postParams = jsonObjOf(
             "driver" to driverId,
@@ -220,9 +251,8 @@ object Database {
 
         val request = JsonObjectRequest(Request.Method.POST, url, postParams,
             Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
+                Log.v(tag, "Response success for $url")
+                successCallback(JsonParse.ride(response))
             },
             Response.ErrorListener { error ->
                 Log.e(tag, "Response error for $url", error)
@@ -451,11 +481,9 @@ object Database {
         requestQueue.add(request)
     }
 
+    lateinit var thisUser: User
+
     fun getThisUserId(): Id {
         return idOfCurrentUser
-    }
-
-    fun getThisUser(): User {
-        return getUser(getThisUserId())!!
     }
 }

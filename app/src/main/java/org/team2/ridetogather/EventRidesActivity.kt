@@ -66,27 +66,32 @@ class EventRidesActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // MOCK
-        val rides = Database.getRidesForEvent(event.id).toTypedArray()
-
         viewManager = LinearLayoutManager(this)
-        viewAdapter = MyAdapter(this, rides)
 
-        recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
-            // changes in content do not change the layout size of the RecyclerView
-            setHasFixedSize(true)
-            layoutManager = viewManager
-            adapter = viewAdapter
-            addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
+        Database.getRidesForEvent(event.id) { rides: List<Ride> ->
+            viewAdapter = MyAdapter(this, rides.toTypedArray())
+
+            recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
+                // changes in content do not change the layout size of the RecyclerView
+                setHasFixedSize(true)
+                layoutManager = viewManager
+                adapter = viewAdapter
+                addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
+            }
+        }
+    }
+
+    private fun refreshRecyclerView() {
+        Database.getRidesForEvent(event.id) { rides: List<Ride> ->
+            viewAdapter = MyAdapter(this, rides.toTypedArray())
+            viewAdapter.notifyDataSetChanged()
+            recyclerView.adapter = viewAdapter
         }
     }
 
     override fun onResume() {
         super.onResume()
-        val rides = Database.getRidesForEvent(event.id).toTypedArray()
-        viewAdapter = MyAdapter(this, rides)
-        viewAdapter.notifyDataSetChanged()
-        recyclerView.adapter = viewAdapter
+        refreshRecyclerView()
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -121,9 +126,9 @@ class EventRidesActivity : AppCompatActivity() {
             // - replace the contents of the view with that element
             val view = holder.cardView
             val ride = rides[position]
-            val driver = Database.getDriver(ride.driverId)!!
-
-            view.driverName.text = driver.name
+            Database.getDriver(ride.driverId) { driver: Driver ->
+                view.driverName.text = driver.name
+            }
             view.originLocationName.text = readableLocation(context, ride.origin)
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()
