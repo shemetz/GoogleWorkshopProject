@@ -36,11 +36,9 @@ class RequestsQueue constructor(context: Context) {
     }
 }
 
-object Database {
-    private val tag = Database::class.java.simpleName
-    var idOfCurrentUser: Id = MockData.user1.id // MOCK
+object JsonParse {
 
-    fun jsonToRide(jsonObject: JSONObject): Ride {
+    fun ride(jsonObject: JSONObject): Ride {
         val rideId = jsonObject.getInt("id")
         val driverId = jsonObject.getInt("driver")
         val eventId = jsonObject.getInt("event")
@@ -55,7 +53,7 @@ object Database {
         return Ride(rideId, driverId, eventId, origin, departureTime, carModel, carColor, passengerCount, extraDetails)
     }
 
-    fun jsonArrayToPickups(jsonArray: JSONArray): ArrayList<Pickup> {
+    fun pickups(jsonArray: JSONArray): ArrayList<Pickup> {
         val pickups = arrayListOf<Pickup>()
         for (i in 0 until jsonArray.length()) {
             // Get current json object
@@ -72,7 +70,7 @@ object Database {
         return pickups
     }
 
-    fun jsonToUser(jsonObject: JSONObject): User {
+    fun user(jsonObject: JSONObject): User {
         val userId = jsonObject.getInt("id")
         val name = jsonObject.getString("name")
         val facebookProfileId = jsonObject.getString("facebookProfileId")
@@ -80,7 +78,7 @@ object Database {
         return User(userId, name, facebookProfileId, credits)
     }
 
-    fun jsonArrayToEvents(jsonArray: JSONArray): ArrayList<Event> {
+    fun events(jsonArray: JSONArray): ArrayList<Event> {
         val events = arrayListOf<Event>()
         for (i in 0 until jsonArray.length()) {
             // Get current json object
@@ -98,6 +96,12 @@ object Database {
         }
         return events
     }
+}
+
+object Database {
+    private val tag = Database::class.java.simpleName
+    private const val SERVER_URL = "https://ridetogather.herokuapp.com"
+    var idOfCurrentUser: Id = MockData.user1.id // MOCK
 
     fun getUser(userId: Id): User? {
         // MOCK
@@ -105,7 +109,6 @@ object Database {
             Log.e(tag, "No such user with ID = $userId")
             null
         }
-
     }
 
     fun getEvent(eventId: Id): Event? {
@@ -173,7 +176,7 @@ object Database {
         postparams.put("name", name)
         postparams.put("facebookProfileId", facebookProfileId)
         postparams.put("credits", credits)
-        val url = "https://ridetogather.herokuapp.com/addUser/"
+        val url = "$SERVER_URL/addUser/"
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
             Response.Listener { response ->
@@ -182,9 +185,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -198,7 +199,7 @@ object Database {
         postparams.put("locationLong", location.longitude)
         postparams.put("datetime", datetime.toString())
         postparams.put("facebookEventId", facebookEventId)
-        val url = "https://ridetogather.herokuapp.com/addEvent/"
+        val url = "$SERVER_URL/addEvent/"
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
             Response.Listener { response ->
@@ -207,9 +208,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -232,7 +231,7 @@ object Database {
         postparams.put("carColor", carColor)
         postparams.put("passengerCount", passengerCount)
         postparams.put("extraDetails", extraDetails)
-        val url = "https://ridetogather.herokuapp.com/addRide/"
+        val url = "$SERVER_URL/addRide/"
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
             Response.Listener { response ->
@@ -241,9 +240,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -254,7 +251,7 @@ object Database {
         val postparams = JSONObject()
         postparams.put("user", userId)
         postparams.put("event", eventId)
-        val url = "https://ridetogather.herokuapp.com/addAttending/"
+        val url = "$SERVER_URL/addAttending/"
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
             Response.Listener { response ->
@@ -263,9 +260,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -280,7 +275,7 @@ object Database {
         postparams.put("pickupLong", pickupSpot.longitude)
         postparams.put("pickupHour", pickupTime.hours)
         postparams.put("pickupMinute", pickupTime.minutes)
-        val url = "https://ridetogather.herokuapp.com/addPickup/"
+        val url = "$SERVER_URL/addPickup/"
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
             Response.Listener { response ->
@@ -289,9 +284,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -299,7 +292,7 @@ object Database {
 
     fun delUser(context: Context, userId: Id) {
         val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deleteUser/"
+        val baseUrl = "$SERVER_URL/deleteUser/"
         val url = baseUrl + userId
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
@@ -309,7 +302,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                // TODO: Handle error
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonObjectRequest)
@@ -317,7 +310,7 @@ object Database {
 
     fun delRide(context: Context, rideId: Id) {
         val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deleteRide/"
+        val baseUrl = "$SERVER_URL/deleteRide/"
         val url = baseUrl + rideId
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
@@ -327,7 +320,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                // TODO: Handle error
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonObjectRequest)
@@ -335,7 +328,7 @@ object Database {
 
     fun delEvent(context: Context, eventId: Id) {
         val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deleteEvent/"
+        val baseUrl = "$SERVER_URL/deleteEvent/"
         val url = baseUrl + eventId
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
@@ -345,7 +338,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                // TODO: Handle error
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonObjectRequest)
@@ -353,7 +346,7 @@ object Database {
 
     fun delPickup(context: Context, pickupId: Id) {
         val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deletePickup/"
+        val baseUrl = "$SERVER_URL/deletePickup/"
         val url = baseUrl + pickupId
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
@@ -363,7 +356,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                // TODO: Handle error
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonObjectRequest)
@@ -371,7 +364,7 @@ object Database {
 
     fun removeUserFromEvent(context: Context, pickupId: Id, eventId: Id) {
         val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/removeUserFromEvent/"
+        val baseUrl = "$SERVER_URL/removeUserFromEvent/"
         val url = baseUrl + pickupId + "/" + eventId
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
@@ -381,7 +374,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                // TODO: Handle error
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonObjectRequest)
@@ -393,7 +386,7 @@ object Database {
         postparams.put("name", user.name)
         postparams.put("facebookProfileId", user.facebookProfileId)
         postparams.put("credits", user.credits)
-        val baseUrl = "https://ridetogather.herokuapp.com/updateUser/"
+        val baseUrl = "$SERVER_URL/updateUser/"
         val url = baseUrl + user.id.toString()
 
         val jsonobj = JsonObjectRequest(Request.Method.PUT, url, postparams,
@@ -403,9 +396,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -419,7 +410,7 @@ object Database {
         postparams.put("locationLong", event.location.longitude)
         postparams.put("datetime", event.datetime.toString())
         postparams.put("facebookEventId", event.facebookEventId)
-        val baseurl = "https://ridetogather.herokuapp.com/addEvent/"
+        val baseurl = "$SERVER_URL/addEvent/"
         val url = baseurl + event.id.toString()
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
@@ -429,9 +420,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -450,7 +439,7 @@ object Database {
         postparams.put("carColor", ride.carColor)
         postparams.put("passengerCount", ride.passengerCount)
         postparams.put("extraDetails", ride.extraDetails)
-        val baseurl = "https://ridetogather.herokuapp.com/updateRide/"
+        val baseurl = "$SERVER_URL/updateRide/"
         val url = baseurl + ride.id.toString()
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
@@ -460,9 +449,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)
@@ -477,7 +464,7 @@ object Database {
         postparams.put("pickupLong", pickup.pickupSpot.longitude)
         postparams.put("pickupHour", pickup.pickupTime.hours)
         postparams.put("pickupMinute", pickup.pickupTime.minutes)
-        val baseurl = "https://ridetogather.herokuapp.com/addPickup/"
+        val baseurl = "$SERVER_URL/addPickup/"
         val url = baseurl + pickup.id.toString()
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
@@ -487,9 +474,7 @@ object Database {
                 }*/
             },
             Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
+                Log.e(tag, "Response error for $url", error)
             }
         )
         queue.add(jsonobj)

@@ -69,7 +69,7 @@ class RidePageActivity : AppCompatActivity() {
         val rideJsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, rideUrl, null,
             Response.Listener { response ->
-                val ride = Database.jsonToRide(response)
+                val ride = JsonParse.ride(response)
                 showRideDetails(ride)
                 driverNamePage.text = response.getString("driverName")
                 driversPerspective = ride.driverId == Database.getThisUser().getIdAsDriver()
@@ -102,7 +102,7 @@ class RidePageActivity : AppCompatActivity() {
             null,
             Response.Listener { response ->
                 try {
-                    val pickups = Database.jsonArrayToPickups(response)
+                    val pickups = JsonParse.pickups(response)
                     viewAdapter = MyAdapter(this, pickups)
                     recyclerView = findViewById<RecyclerView>(R.id.ride_page_recyclerview).apply {
                         // changes in content do not change the layout size of the RecyclerView
@@ -216,7 +216,7 @@ class RidePageActivity : AppCompatActivity() {
             val userJsonObjectRequest = JsonObjectRequest(
                 Request.Method.GET, userUrl, null,
                 Response.Listener { response ->
-                    val user = Database.jsonToUser(response)
+                    val user = JsonParse.user(response)
                     view.passengerName.text = user.name
                 },
                 Response.ErrorListener { error ->
