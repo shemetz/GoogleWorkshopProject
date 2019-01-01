@@ -92,6 +92,7 @@ class RidePageActivity : AppCompatActivity() {
             adapter = viewAdapter
         }
 
+        //TODO: check on db if there is a request pending/declined
         joinRideButton.isEnabled = intent.getBooleanExtra(Keys.CHANGE_BTN.name, true)
         joinRideButton.setOnClickListener{
             val intent = Intent(applicationContext,JoinRideActivity::class.java)
