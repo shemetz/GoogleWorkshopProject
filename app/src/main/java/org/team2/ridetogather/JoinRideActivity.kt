@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_join_ride.*
+import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,7 +16,7 @@ import org.json.JSONObject
 
 class JoinRideActivity : AppCompatActivity() {
     private val tag = JoinRideActivity::class.java.simpleName
-    var driverOriginLocation: Location? = null
+    var pickedLocation : Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,30 +29,42 @@ class JoinRideActivity : AppCompatActivity() {
         val driverId: Id = Database.getThisUser().getIdAsDriver()
         var timeOfDay: TimeOfDay? = null
         val destinationLocation = event.location
-
+        submitPickupRequest.isEnabled=false
 
         pickLocation.setOnClickListener {
             val intent = Intent(applicationContext, MapsActivity::class.java)
             intent.putExtra(Keys.EVENT_ID.name, eventId)
-            intent.putExtra(Keys.LOCATION.name, driverOriginLocation?.toLatLng()?.encodeToString())
+            intent.putExtra(Keys.LOCATION.name, pickedLocation?.toLatLng()?.encodeToString())
             startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
             // Result will return to OnActivityResult()
         }
-    }
 
+        submitPickupRequest.setOnClickListener{
+            Database.addPickup(applicationContext,rideId,Database.getThisUserId(),pickedLocation!!)
+            val intent = Intent(applicationContext, RidePageActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            intent.putExtra(Keys.RIDE_ID.name, rideId)
+            intent.putExtra(Keys.CHANGE_BTN.name, 1)
+            joinRideButton!!.text="Edit Request"
+            //joinRideButton!!.isEnabled=false
+            startActivity(intent)
+            finish()
+        }
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val driverOriginLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
-                    driverOriginLocation = driverOriginLocationStr!!.decodeToLatLng().toLocation()
+                    val pickedLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
+                    pickedLocation = pickedLocationStr!!.decodeToLatLng().toLocation()
                     val routeJsonStr = data.getStringExtra(Keys.ROUTE_JSON.name)
                     pickedLocationTextBox.text = "(Updating…)"
                     CoroutineScope(Dispatchers.Default).launch {
-                        val locationStr = readableLocation(this@JoinRideActivity, driverOriginLocation!!)
+                        val locationStr = readableLocation(this@JoinRideActivity, pickedLocation!!)
                         CoroutineScope(Dispatchers.Main).launch {
                             pickedLocationTextBox.text = locationStr
+                            submitPickupRequest.isEnabled=true
                         }
                         Log.d(tag, "Back in $tag with location $locationStr")
                         if (routeJsonStr.isNotBlank()) {

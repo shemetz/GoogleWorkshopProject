@@ -13,6 +13,7 @@ enum class Keys {
     EVENT_ID,
     LOCATION,
     ROUTE_JSON,
+    CHANGE_BTN,
 }
 
 enum class Preferences {

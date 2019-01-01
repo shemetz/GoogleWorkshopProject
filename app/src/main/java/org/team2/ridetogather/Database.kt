@@ -264,15 +264,16 @@ object Database {
         queue.add(jsonobj)
     }
 
-    fun addPickup(context: Context,rideId: Id,userId: Id,pickupSpot: Location,pickupTime: TimeOfDay){
+    fun addPickup(context: Context,rideId: Id,userId: Id,pickupSpot: Location?){
         val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
         val postparams = JSONObject()
         postparams.put("ride",rideId)
         postparams.put("user",userId)
-        postparams.put("pickupLat",pickupSpot.latitude)
+        postparams.put("pickupLat",pickupSpot!!.latitude)
         postparams.put("pickupLong",pickupSpot.longitude)
-        postparams.put("pickupHour",pickupTime.hours)
-        postparams.put("pickupMinute",pickupTime.minutes)
+        //TODO: update pickup time by driver
+        //postparams.put("pickupHour",pickupTime.hours)
+        //postparams.put("pickupMinute",pickupTime.minutes)
         val url = "https://ridetogather.herokuapp.com/addPickup/"
 
         val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
