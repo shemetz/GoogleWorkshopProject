@@ -6,31 +6,22 @@ import android.content.SharedPreferences
 /**
  * Created by Lincoln on 05/05/16.
  */
-class PrefManager(internal var _context: Context) {
-    internal var pref: SharedPreferences
-    internal var editor: SharedPreferences.Editor
-
-    // shared pref mode
-    internal var PRIVATE_MODE = 0
+class PrefManager(_context: Context) {
+    private var pref: SharedPreferences
 
     var isFirstTimeLaunch: Boolean
         get() = pref.getBoolean(IS_FIRST_TIME_LAUNCH, true)
-        set(isFirstTime) {
-            editor.putBoolean(IS_FIRST_TIME_LAUNCH, isFirstTime)
-            editor.commit()
-        }
+        set(value) = pref.edit().putBoolean(IS_FIRST_TIME_LAUNCH, value).apply()
 
     init {
-        pref = _context.getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        editor = pref.edit()
+        pref = _context.getSharedPreferences(PREFERENCES_FILE_NAME, 0) // 0 = PRIVATE MODE
     }
 
     companion object {
-
         // Shared preferences file name
-        private val PREF_NAME = "androidhive-welcome"
+        private const val PREFERENCES_FILE_NAME = "local_preferences"
 
-        private val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
+        private const val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
     }
 
 }

@@ -29,6 +29,10 @@ class SettingsActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         Log.d(tag, "Created $tag")
 
+        // small temporary hack to allow revisiting the welcome screen
+        val prefManager = PrefManager(this)
+        prefManager.isFirstTimeLaunch = true
+
         // android.R.id.content is probably for old style activity
         supportFragmentManager.beginTransaction()
                 // .replace(android.R.id.content, SettingsFragment())
