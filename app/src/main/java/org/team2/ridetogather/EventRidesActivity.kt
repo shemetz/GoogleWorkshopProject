@@ -119,10 +119,10 @@ class EventRidesActivity : AppCompatActivity() {
                 intent.putExtra(Keys.RIDE_ID.name, rideID)
                 view.context.startActivity(intent)
             }
-            holder.cardView.joinRidePlusButton.setOnClickListener{
+            /*holder.cardView.joinRidePlusButton.setOnClickListener{
                 val intent = Intent(context,JoinRideActivity::class.java)
                 intent.putExtra(Keys.RIDE_ID.name, ride.id)
-                startActivity(context, intent,null)}
+                startActivity(context, intent,null)}*/
         }
 
         override fun getItemCount() = rides.size

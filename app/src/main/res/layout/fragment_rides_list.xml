@@ -13,11 +13,13 @@
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/fab_margin"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="65dp"
             android:tint="@android:color/white"
             app:backgroundTint="@color/carButton"
             android:layout_gravity="bottom|end"
-            app:layout_anchor="@id/app_bar"
+            app:layout_anchorGravity="bottom|right|end"
+            app:layout_anchor="@id/rides_list_recycler_view"
             app:srcCompat="@drawable/ic_directions_car_black_24dp"/>
 
 </FrameLayout>
