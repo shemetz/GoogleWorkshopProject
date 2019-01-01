@@ -1,7 +1,6 @@
 package org.team2.ridetogather
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -10,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.content_eventrides.*
-import kotlinx.android.synthetic.main.fragment_rides_list.*
 
 
 /**
@@ -47,12 +45,6 @@ class RidesListFragment : Fragment() {
             layoutManager = viewManager
             adapter = viewAdapter
             addItemDecoration(EventRidesActivity.MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
-        }
-
-        fab.setOnClickListener {
-            val intent = Intent(context, RideCreationActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name, eventId)
-            startActivity(intent)
         }
     }
 

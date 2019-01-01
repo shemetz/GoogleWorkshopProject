@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.support.design.widget.TabLayout
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AppCompatActivity
@@ -49,6 +50,19 @@ class EventRidesActivity : AppCompatActivity() {
         viewpager_main.adapter = fragmentAdapter
 
         tabs_main.setupWithViewPager(viewpager_main)
+        tabs_main.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                if (tab!!.position == 0)
+                    fab_create_ride.show()
+                else
+                    fab_create_ride.hide()
+            }
+
+        })
         event = Database.getEvent(eventId)!!
         val eventTime =
             java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
@@ -71,7 +85,11 @@ class EventRidesActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-
+        fab_create_ride.setOnClickListener {
+            val intent = Intent(this, RideCreationActivity::class.java)
+            intent.putExtra(Keys.EVENT_ID.name, eventId)
+            startActivity(intent)
+        }
     }
 
 

@@ -24,10 +24,10 @@ class PassengersListFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         eventId = arguments!!.getInt(Keys.EVENT_ID.name)
-        //mock
-        val rides = Database.getRidesForEvent(eventId).toTypedArray()
+        //mock - we don't have passenger cards yet!
+        val passengers = emptyList<Ride>().toTypedArray()
         viewManager = LinearLayoutManager(context)
-        viewAdapter = EventRidesActivity.MyAdapter(context, rides)
+        viewAdapter = EventRidesActivity.MyAdapter(context, passengers)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -51,9 +51,6 @@ class PassengersListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        val rides = Database.getRidesForEvent(eventId).toTypedArray()
-        viewAdapter = EventRidesActivity.MyAdapter(context!!, rides)
-        viewAdapter.notifyDataSetChanged()
-        recyclerView.adapter = viewAdapter
+        // MOCK - do something here
     }
 }
