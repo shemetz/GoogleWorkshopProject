@@ -44,16 +44,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        temp_main_activity_text.text = "Hello ${Database.getThisUser().name}!"
-
-        // MOCK
-        temp_button_rides_list.setOnClickListener {
-            val intent = Intent(applicationContext, EventRidesActivity::class.java)
-            val eventID = MockData.event1.id
-            intent.putExtra(Keys.EVENT_ID.name, eventID)
-            startActivity(intent)
-        }
-
         // MOCK
         temp_button_switch_user.setOnClickListener {
             Database.idOfCurrentUser = if (Database.getThisUserId() == MockData.user1.id)
@@ -81,7 +71,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, eventsNameList)
                 listView.adapter = adapter
-
+                listView.setOnItemClickListener { parent, view, position, id ->
+                    val intent = Intent(applicationContext, EventRidesActivity::class.java)
+                    // MOCK
+                    val eventID = MockData.event1.id
+                    intent.putExtra(Keys.EVENT_ID.name, eventID)
+                    startActivity(intent)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
