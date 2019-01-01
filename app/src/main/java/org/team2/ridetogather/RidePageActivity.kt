@@ -92,7 +92,7 @@ class RidePageActivity : AppCompatActivity() {
             adapter = viewAdapter
         }
 
-        joinRideButton.isEnabled=intent.getBooleanExtra(Keys.RIDE_ID.name, true)
+        joinRideButton.isEnabled = intent.getBooleanExtra(Keys.CHANGE_BTN.name, true)
         joinRideButton.setOnClickListener{
             val intent = Intent(applicationContext,JoinRideActivity::class.java)
             intent.putExtra(Keys.RIDE_ID.name, rideId)

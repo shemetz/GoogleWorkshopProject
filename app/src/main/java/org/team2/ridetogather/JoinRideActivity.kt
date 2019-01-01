@@ -48,7 +48,6 @@ class JoinRideActivity : AppCompatActivity() {
            // joinRideButton!!.text="Edit Request"
             //joinRideButton!!.isEnabled=false
             startActivity(intent)
-            finish()
         }
     }
 
