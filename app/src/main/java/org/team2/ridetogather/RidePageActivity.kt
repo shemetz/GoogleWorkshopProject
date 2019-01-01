@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.card_ride_page.view.*
 import android.support.design.widget.Snackbar
 import android.widget.Adapter
 import android.widget.AdapterView
+import android.widget.Button
 import com.android.volley.VolleyError
 import org.json.JSONException
 import org.json.JSONObject
@@ -90,6 +91,10 @@ class RidePageActivity : AppCompatActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
+        joinRideButton.setOnClickListener{
+            val intent = Intent(applicationContext,JoinRideActivity::class.java)
+            intent.putExtra(Keys.RIDE_ID.name, rideId)
+            startActivity(intent)}
     }
 
     fun updatePassengers(rideId: Id){

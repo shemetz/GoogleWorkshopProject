@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
@@ -13,6 +14,8 @@ import android.text.Html
 import android.util.Log
 import android.view.*
 import kotlinx.android.synthetic.main.activity_eventrides.*
+import kotlinx.android.synthetic.main.activity_ride_page.*
+import kotlinx.android.synthetic.main.card_ride.*
 import kotlinx.android.synthetic.main.card_ride.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,7 +62,6 @@ class EventRidesActivity : AppCompatActivity() {
         Log.d(tag, "Created $tag with Event ID $eventId")
 
         toolbar_layout.title = event.name
-
         fab.setOnClickListener {
             val intent = Intent(applicationContext, RideCreationActivity::class.java)
             intent.putExtra(Keys.EVENT_ID.name, event.id)
@@ -127,12 +129,16 @@ class EventRidesActivity : AppCompatActivity() {
             view.originLocationName.text = readableLocation(context, ride.origin)
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()
+            val intent = Intent(view.context, RidePageActivity::class.java)
             holder.cardView.setOnClickListener {
-                val intent = Intent(view.context, RidePageActivity::class.java)
                 val rideID = ride.id
                 intent.putExtra(Keys.RIDE_ID.name, rideID)
                 view.context.startActivity(intent)
             }
+            holder.cardView.joinRidePlusButton.setOnClickListener{
+                val intent = Intent(context,JoinRideActivity::class.java)
+                intent.putExtra(Keys.RIDE_ID.name, ride.id)
+                startActivity(context, intent,null)}
         }
 
         override fun getItemCount() = rides.size

@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#04a1b6</color>
-    <color name="colorPrimaryDark">#025D69</color>
-    <color name="colorAccent">#04B518</color>
+    <color name="colorPrimary">#00acc1</color>
+    <color name="colorPrimaryDark">#007c91</color>
+    <color name="colorLight">#5ddef4</color>
+    <color name="colorAccent">#00e1ff</color>
+    <color name="greenAccent">#00c853</color>
     <color name="nicePurple">#D81BF0</color>
     <color name="carButton">#02464f</color>
     <color name="carButtonAlternative">#7201ff</color>
     <color name="profileNameColor">#4A4A4A</color>
     <color name="errorRed">#B5042A</color>
     <color name="title_light">#beffffff</color>
-    <color name="firstScreen">#f0c47d</color>
+    <color name="firstScreen">#006064</color>
     <color name="confirmation">#04B518</color>
     <color name="routeColor">#0055ff</color>
     <!--template colors-->
