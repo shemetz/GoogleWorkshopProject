@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
-import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Html
 import android.util.Log
@@ -43,6 +42,10 @@ class EventRidesActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
+        val fragmentAdapter = MyPagerAdapter(supportFragmentManager, eventId)
+        viewpager_main.adapter = fragmentAdapter
+
+        tabs_main.setupWithViewPager(viewpager_main)
         event = Database.getEvent(eventId)!!
         val eventTime =
             java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
@@ -60,34 +63,9 @@ class EventRidesActivity : AppCompatActivity() {
 
         toolbar_layout.title = event.name
 
-        fab.setOnClickListener {
-            val intent = Intent(applicationContext, RideCreationActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name, event.id)
-            startActivity(intent)
-        }
 
-        // MOCK
-        val rides = Database.getRidesForEvent(event.id).toTypedArray()
-
-        viewManager = LinearLayoutManager(this)
-        viewAdapter = MyAdapter(this, rides)
-
-        recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
-            // changes in content do not change the layout size of the RecyclerView
-            setHasFixedSize(true)
-            layoutManager = viewManager
-            adapter = viewAdapter
-            addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
-        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        val rides = Database.getRidesForEvent(event.id).toTypedArray()
-        viewAdapter = MyAdapter(this, rides)
-        viewAdapter.notifyDataSetChanged()
-        recyclerView.adapter = viewAdapter
-    }
 
     override fun onSaveInstanceState(outState: Bundle?) {
         outState?.putInt(Keys.EVENT_ID.name, event.id)

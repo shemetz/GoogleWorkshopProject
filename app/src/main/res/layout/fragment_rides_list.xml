@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             tools:context="org.team2.ridetogather.DriverFragment">
+
+
+    <include layout="@layout/content_eventrides"/>
+
+    <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
+            android:tint="@android:color/white"
+            app:backgroundTint="@color/carButton"
+            android:layout_gravity="bottom|end"
+            app:layout_anchor="@id/app_bar"
+            app:srcCompat="@drawable/ic_directions_car_black_24dp"/>
+
+</FrameLayout>

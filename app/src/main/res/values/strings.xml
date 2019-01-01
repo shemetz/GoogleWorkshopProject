@@ -67,7 +67,12 @@
 
     <!-- Error strings -->
     <string name="error_field_required">This field is required</string>
-    <string name="error_nonpositive_passenger_count">Sorry, currently only positive numbers of passengers are allowed ;)</string>
+    <string name="error_nonpositive_passenger_count">Sorry, currently only positive numbers of passengers are allowed
+        ;)
+    </string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- Miscellaneous strings-->
 
