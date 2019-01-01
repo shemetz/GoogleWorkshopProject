@@ -45,7 +45,7 @@ class JoinRideActivity : AppCompatActivity() {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             intent.putExtra(Keys.RIDE_ID.name, rideId)
             intent.putExtra(Keys.CHANGE_BTN.name, 1)
-            joinRideButton!!.text="Edit Request"
+           // joinRideButton!!.text="Edit Request"
             //joinRideButton!!.isEnabled=false
             startActivity(intent)
             finish()
