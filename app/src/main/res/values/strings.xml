@@ -60,6 +60,11 @@
     <string name="passenger_pickup_spot">Spot</string>
     <string name="passenger_pickup_time_default_value">00:00</string>
 
+    <!-- Slider -->
+    <string name="next">NEXT</string>
+    <string name="skip">SKIP</string>
+    <string name="start">GOT IT</string>
+
     <!-- Error strings -->
     <string name="error_field_required">This field is required</string>
     <string name="error_nonpositive_passenger_count">Sorry, currently only positive numbers of passengers are allowed ;)</string>
