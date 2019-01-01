@@ -10,6 +10,8 @@
     <string name="title_activity_ridecreation">Creating a new ride</string>
     <string name="title_activity_ridepage">Ride page</string>
     <string name="title_activity_maps">Map</string>
+    <string name="title_activity_joinride">Join ride</string>
+
 
     <!-- Settings -->
     <string name="pref_title_login_settings">Login</string>
