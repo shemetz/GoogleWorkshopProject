@@ -91,99 +91,99 @@ object Database {
         requestQueue = Volley.newRequestQueue(context.applicationContext)
     }
 
-    fun getUser(userId: Id, successCallback: (User) -> Unit) {
-        val url = "$SERVER_URL/getUser/$userId"
-
-        val request = JsonObjectRequest(Request.Method.GET, url, null,
-            Response.Listener { response ->
-                successCallback(JsonParse.user(response))
+    private fun requestJsonObject(
+        method: Int,
+        url: String,
+        postParameters: JSONObject? = null,
+        successListener: Response.Listener<JSONObject>? = null,
+        errorListener: Response.ErrorListener? = null
+    ) {
+        val request = JsonObjectRequest(method, url, postParameters,
+            successListener ?: Response.Listener { response ->
+                Log.v(tag, "Response success for $url, logging response now")
+                Log.v(tag, response.toString(4))
             },
-            Response.ErrorListener { error ->
+            errorListener ?: Response.ErrorListener { error ->
                 Log.e(tag, "Response error for $url", error)
-            }
-        )
+            })
         requestQueue.add(request)
     }
 
-    fun getEvent(eventId: Id): Event? {
-        // MOCK
-        return MockData.events[eventId] ?: run {
-            Log.e(tag, "No such event with ID = $eventId")
-            null
-        }
-    }
-
-    fun getRide(rideId: Id, successCallback: (Ride) -> Unit) {
-        val url = "$SERVER_URL/getRide/$rideId"
-
-        val request = JsonObjectRequest(Request.Method.GET, url, null,
-            Response.Listener { response ->
-                successCallback(JsonParse.ride(response))
+    private fun requestJsonArray(
+        method: Int,
+        url: String,
+        // No post parameters - this is only used for GET right now, because
+        // apparently JsonArrayRequests wants post params to also be an array :/
+        successListener: Response.Listener<JSONArray>? = null,
+        errorListener: Response.ErrorListener? = null
+    ) {
+        val request = JsonArrayRequest(method, url, null,
+            successListener ?: Response.Listener { response ->
+                Log.v(tag, "Response success for $url, logging response now")
+                Log.v(tag, response.toString(4))
             },
-            Response.ErrorListener { error ->
+            errorListener ?: Response.ErrorListener { error ->
                 Log.e(tag, "Response error for $url", error)
-            }
-        )
+            })
         requestQueue.add(request)
     }
 
-    fun getPickup(pickupId: Id): Pickup? {
-        // MOCK
-        return MockData.pickups[pickupId] ?: run {
-            Log.e(tag, "No such pickup with ID = $pickupId")
-            null
-        }
+    private fun <T> generifiedGet(
+        someId: Id,
+        name: String,
+        parseFunction: (JSONObject) -> T,
+        successCallback: (T) -> Unit
+    ) {
+        val url = "$SERVER_URL/get$name/$someId"
+
+        requestJsonObject(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                successCallback(parseFunction(response))
+            }
+        )
     }
+
+    fun getUser(userId: Id, successCallback: (User) -> Unit) =
+        generifiedGet(userId, "User", JsonParse::user, successCallback)
+
+    fun getEvent(eventId: Id, successCallback: (Event) -> Unit) =
+        generifiedGet(eventId, "Event", JsonParse::event, successCallback)
+
+    fun getRide(rideId: Id, successCallback: (Ride) -> Unit) =
+        generifiedGet(rideId, "Ride", JsonParse::ride, successCallback)
+
+    fun getPickup(pickupId: Id, successCallback: (Pickup) -> Unit) =
+        generifiedGet(pickupId, "Pickup", JsonParse::pickup, successCallback)
 
     fun getDriver(driverId: Id, successCallback: (Driver) -> Unit) {
         // Currently drivers are identical to users!
         return getUser(driverId, successCallback)
     }
 
-    /**
-     * Will return an empty list if there are no events for user, or
-     * if there is no such user.
-     */
-    fun getEventsForUser(userId: Id): List<Event> {
-        // MOCK
-        val idsList = MockData.eventsOfUser[userId] ?: mutableListOf()
-        return idsList.map { getEvent(it)!! }
-    }
+    private fun <T> generifiedGet1sFor2(
+        id2: Id,
+        name1s: String,
+        name2: String,
+        parseFunction: (JSONObject) -> T,
+        successCallback: (List<T>) -> Unit
+    ) {
+        val url = "$SERVER_URL/get${name1s}For$name2/$id2"
 
-    /**
-     * Will return an empty list if there are no pickups for the ride
-     */
-    fun getPickupsForRide(rideId: Id, successCallback: (List<Pickup>) -> Unit) {
-        val url = "$SERVER_URL/getPickupsForRide/$rideId"
-
-        val request = JsonArrayRequest(Request.Method.GET, url, null,
+        requestJsonArray(Request.Method.GET, url,
             Response.Listener { response ->
-                successCallback(JsonParse.array(response, JsonParse::pickup))
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
+                successCallback(JsonParse.array(response, parseFunction))
             }
         )
-        requestQueue.add(request)
     }
 
-    /**
-     * Will return an empty list if there are no rides for the event, or
-     * if there is no such event.
-     */
-    fun getRidesForEvent(eventId: Id, successCallback: (List<Ride>) -> Unit) {
-        val url = "$SERVER_URL/getRidesForEvent/$eventId"
+    fun getEventsForUser(userId: Id, successCallback: (List<Event>) -> Unit) =
+        generifiedGet1sFor2(userId, "Events", "User", JsonParse::event, successCallback)
 
-        val request = JsonArrayRequest(Request.Method.GET, url, null,
-            Response.Listener { response ->
-                successCallback(JsonParse.array(response, JsonParse::ride))
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
-            }
-        )
-        requestQueue.add(request)
-    }
+    fun getPickupsForRide(rideId: Id, successCallback: (List<Pickup>) -> Unit) =
+        generifiedGet1sFor2(rideId, "Pickups", "Ride", JsonParse::pickup, successCallback)
+
+    fun getRidesForEvent(eventID: Id, successCallback: (List<Ride>) -> Unit) =
+        generifiedGet1sFor2(eventID, "Rides", "Event", JsonParse::ride, successCallback)
 
     fun addUser(name: String, facebookProfileId: String, credits: Int) {
         val postParams = jsonObjOf(
@@ -193,17 +193,13 @@ object Database {
         )
         val url = "$SERVER_URL/addUser/"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
     fun addEvent(name: String, location: Location, datetime: Datetime, facebookEventId: String) {
@@ -216,17 +212,13 @@ object Database {
         )
         val url = "$SERVER_URL/addEvent/"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
 
@@ -249,17 +241,13 @@ object Database {
         )
         val url = "$SERVER_URL/addRide/"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
-                Log.v(tag, "Response success for $url")
                 successCallback(JsonParse.ride(response))
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
+
 
     fun addEventToUser(userId: Id, eventId: Id) {
         val postParams = jsonObjOf(
@@ -268,17 +256,13 @@ object Database {
         )
         val url = "$SERVER_URL/addAttending/"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
     fun addPickup(rideId: Id, userId: Id, pickupSpot: Location, pickupTime: TimeOfDay) {
@@ -292,97 +276,73 @@ object Database {
         )
         val url = "$SERVER_URL/addPickup/"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
     fun deleteUser(userId: Id) {
         val url = "$SERVER_URL/deleteUser/$userId"
 
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
+        requestJsonObject(Request.Method.DELETE, url, null,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(jsonObjectRequest)
     }
 
     fun deleteRide(rideId: Id) {
         val url = "$SERVER_URL/deleteRide/$rideId"
 
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
+        requestJsonObject(Request.Method.DELETE, url, null,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(jsonObjectRequest)
     }
 
     fun deleteEvent(eventId: Id) {
         val url = "$SERVER_URL/deleteEvent/$eventId"
 
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
+        requestJsonObject(Request.Method.DELETE, url, null,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(jsonObjectRequest)
     }
 
     fun deletePickup(pickupId: Id) {
         val url = "$SERVER_URL/deletePickup/$pickupId"
 
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
+        requestJsonObject(Request.Method.DELETE, url, null,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(jsonObjectRequest)
     }
 
     fun removeUserFromEvent(userId: Id, eventId: Id) {
         val url = "$SERVER_URL/removeUserFromEvent/$userId/$eventId"
 
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
+        requestJsonObject(Request.Method.DELETE, url, null,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(jsonObjectRequest)
     }
 
     fun updateUser(user: User) {
@@ -393,17 +353,13 @@ object Database {
         )
         val url = "$SERVER_URL/updateUser/${user.id}"
 
-        val request = JsonObjectRequest(Request.Method.PUT, url, postParams,
+        requestJsonObject(Request.Method.PUT, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
     fun updateEvent(event: Event) {
@@ -416,17 +372,13 @@ object Database {
         )
         val url = "$SERVER_URL/addEvent/${event.id}"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
     fun updateRide(ride: Ride) {
@@ -444,17 +396,13 @@ object Database {
         )
         val url = "$SERVER_URL/updateRide/${ride.id}"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
     fun updatePickup(pickup: Pickup) {
@@ -468,17 +416,13 @@ object Database {
         )
         val url = "$SERVER_URL/addPickup/${pickup.id}"
 
-        val request = JsonObjectRequest(Request.Method.POST, url, postParams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
             }
         )
-        requestQueue.add(request)
     }
 
     lateinit var thisUser: User

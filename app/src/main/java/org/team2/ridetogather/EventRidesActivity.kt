@@ -43,32 +43,34 @@ class EventRidesActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
-        event = Database.getEvent(eventId)!!
-        val eventTime =
-            java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
+        Database.getEvent(eventId) { event: Event ->
+            this.event = event
+            val eventTime =
+                java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
 
-        toolbar_layout.title = event.name
-        toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
-        CoroutineScope(Dispatchers.Default).launch {
-            val eventShortLocation = readableLocation(this@EventRidesActivity, event.location)
-            CoroutineScope(Dispatchers.Main).launch {
-                tv_description.text = eventShortLocation
+            toolbar_layout.title = event.name
+            toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
+            CoroutineScope(Dispatchers.Default).launch {
+                val eventShortLocation = readableLocation(this@EventRidesActivity, event.location)
+                CoroutineScope(Dispatchers.Main).launch {
+                    tv_description.text = eventShortLocation
+                }
             }
-        }
-        tv_title.text = Html.fromHtml(eventTime)
-        Log.d(tag, "Created $tag with Event ID $eventId")
+            tv_title.text = Html.fromHtml(eventTime)
+            Log.d(tag, "Created $tag with Event ID $eventId")
 
-        toolbar_layout.title = event.name
+            toolbar_layout.title = event.name
+        }
 
         fab.setOnClickListener {
             val intent = Intent(applicationContext, RideCreationActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name, event.id)
+            intent.putExtra(Keys.EVENT_ID.name, eventId)
             startActivity(intent)
         }
 
         viewManager = LinearLayoutManager(this)
 
-        Database.getRidesForEvent(event.id) { rides: List<Ride> ->
+        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
             viewAdapter = MyAdapter(this, rides.toTypedArray())
 
             recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
