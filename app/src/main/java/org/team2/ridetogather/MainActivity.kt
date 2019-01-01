@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
 import com.facebook.HttpMethod
@@ -63,19 +65,30 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        val listView = findViewById<ListView>(R.id.events_list)
         val event_request = GraphRequest.newMeRequest(
             AccessToken.getCurrentAccessToken()
-        ) { `object`, response ->
+        ) { Json, response ->
             try {
                 Log.i(tag, "working")
-                Log.i(tag, `object`.toString())
+                Log.i(tag, Json.toString(4))
+                val eventsArray = Json.getJSONObject("events").getJSONArray("data")
+                val eventsNameList = arrayOfNulls<String>(eventsArray.length())
+                for (i in 0..(eventsArray.length() - 1)) {
+                    val eventName = eventsArray.optJSONObject(i).getString("name")
+                    Log.i(tag, "Event name = $eventName")
+                    eventsNameList[i] = eventName
+                }
+                val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, eventsNameList)
+                listView.adapter = adapter
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
 
         val parameters = Bundle()
-        parameters.putString("fields", "events.limit(1)")
+        parameters.putString("fields", "events")
         event_request.parameters = parameters
         event_request.executeAsync()
     }
