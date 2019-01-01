@@ -64,6 +64,9 @@
     <string name="next">NEXT</string>
     <string name="skip">SKIP</string>
     <string name="start">GOT IT</string>
+    <string name="welcome_screen_1_text">Share your ride with others.</string>
+    <string name="welcome_screen_2_text">Join other rides.</string>
+    <string name="welcome_screen_3_text">Earn credits for sharing!</string>
 
     <!-- Error strings -->
     <string name="error_field_required">This field is required</string>
