@@ -431,7 +431,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     companion object {
         enum class RequestCode {
-            PICK_DRIVER_ORIGIN
+            PICK_DRIVER_ORIGIN,
+            PICK_PASSENGER_LOCATION
         }
 
         enum class StoredInstanceKeys {
