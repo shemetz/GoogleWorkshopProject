@@ -91,6 +91,8 @@ class RidePageActivity : AppCompatActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
+
+        joinRideButton.isEnabled=intent.getBooleanExtra(Keys.RIDE_ID.name, true)
         joinRideButton.setOnClickListener{
             val intent = Intent(applicationContext,JoinRideActivity::class.java)
             intent.putExtra(Keys.RIDE_ID.name, rideId)
