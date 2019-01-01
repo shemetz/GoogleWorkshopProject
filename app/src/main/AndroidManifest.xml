@@ -1,90 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.team2.ridetogather">
+    package="org.team2.ridetogather">
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.READ_PROFILE"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality. 
     -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
-            android:allowBackup="true"
-            android:fullBackupContent="true"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name"
-            android:roundIcon="@mipmap/ic_launcher_round"
-            android:supportsRtl="true"
-            android:theme="@style/AppTheme">
+        android:allowBackup="true"
+        android:fullBackupContent="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
         <activity
-                android:name=".MainActivity"
-                android:label="@string/title_activity_main"
-                android:theme="@style/AppTheme.NoActionBar">
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
         <activity
-                android:name=".EventRidesActivity"
-                android:label="@string/title_activity_eventrides"
-                android:parentActivityName=".MainActivity"
-                android:theme="@style/AppTheme.NoActionBar"/>
+            android:name=".EventRidesActivity"
+            android:label="@string/title_activity_eventrides"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
-                android:name=".SettingsActivity"
-                android:label="@string/title_activity_settings"
-                android:theme="@style/AppTheme.NoActionBar"/>
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
-                android:name=".RidePageActivity"
-                android:label="@string/title_activity_ridepage"
-                android:parentActivityName=".EventRidesActivity"/>
+                android:name=".WelcomeActivity"
+                android:label="Welcome"
+                android:theme="@style/AppTheme.NoActionBar">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        </activity>
         <activity
-                android:name=".RideCreationActivity"
-                android:label="@string/title_activity_ridecreation"
-                android:parentActivityName=".EventRidesActivity"
-                android:windowSoftInputMode="adjustResize"/>
+            android:name=".RidePageActivity"
+            android:label="@string/title_activity_ridepage"
+            android:parentActivityName=".EventRidesActivity" />
+        <activity
+            android:name=".RideCreationActivity"
+            android:label="@string/title_activity_ridecreation"
+            android:parentActivityName=".EventRidesActivity"
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".FacebookLoginActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <action android:name="android.intent.action.VIEW"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <meta-data
-                android:name="com.facebook.sdk.ApplicationId"
-                android:value="@string/facebook_app_id"/>
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
 
         <activity
-                android:name="com.facebook.FacebookActivity"
-                android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-                android:label="@string/app_name"
-                android:noHistory="true"/>
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:noHistory="true" />
 
         <!-- If you're sharing links, images or video via the Facebook for Android app, you also need to declare the FacebookContentProvider in the manifest. -->
         <!-- Append your app id to the end of the authorities value. For example if your Facebook app id is 1533993016893247 -->
         <provider
-                android:name="com.facebook.FacebookContentProvider"
-                android:authorities="com.facebook.app.FacebookContentProvider456799434726378"
-                android:exported="true"/>
+            android:name="com.facebook.FacebookContentProvider"
+            android:authorities="com.facebook.app.FacebookContentProvider456799434726378"
+            android:exported="true" />
 
         <meta-data
-                android:name="com.google.android.geo.API_KEY"
-                android:value="@string/SECRET_GOOGLE_API_KEY"/>
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/SECRET_GOOGLE_API_KEY" />
 
         <activity
                 android:name=".MapsActivity"
                 android:label="@string/title_activity_maps"
                 android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".JoinRideActivity">
+        <activity
+                android:name=".JoinRideActivity">
         </activity>
     </application>
 
