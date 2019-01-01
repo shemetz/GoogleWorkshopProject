@@ -69,6 +69,7 @@
                     android:textSize="16sp"
                     android:text="You depart at "/>
             <Button
+                    style="@style/Widget.AppCompat.Button.Colored"
                     android:id="@+id/pick_time_button"
                     android:layout_width="wrap_content"
                     android:layout_gravity="center_horizontal"
@@ -89,6 +90,7 @@
                     android:textSize="16sp"
                     android:text="You depart from "/>
             <Button
+                    style="@style/Widget.AppCompat.Button.Colored"
                     android:id="@+id/btn_origin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -122,6 +124,7 @@
         </android.support.design.widget.TextInputLayout>
 
         <Button
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:id="@+id/btn_submit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
