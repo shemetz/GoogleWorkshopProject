@@ -3,6 +3,7 @@ package org.team2.ridetogather
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -22,7 +23,7 @@ import java.util.*
 class EventRidesActivity : AppCompatActivity() {
     private val tag = EventRidesActivity::class.java.simpleName
 
-    private lateinit var event: Event
+    private var eventId: Id = -1
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
@@ -34,7 +35,7 @@ class EventRidesActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         // The next line gets the event ID either from the intent extras or from the saved activity state.
-        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
+        eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
 
         if (eventId == -1) {
             Log.e(tag, "No event ID found in intent or in saved state!")
@@ -44,7 +45,6 @@ class EventRidesActivity : AppCompatActivity() {
             startActivity(intent)
         }
         Database.getEvent(eventId) { event: Event ->
-            this.event = event
             val eventTime =
                 java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
 
@@ -56,7 +56,12 @@ class EventRidesActivity : AppCompatActivity() {
                     tv_description.text = eventShortLocation
                 }
             }
-            tv_title.text = Html.fromHtml(eventTime)
+            tv_title.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Html.fromHtml(eventTime, Html.FROM_HTML_MODE_LEGACY)
+            } else {
+                @Suppress("DEPRECATION")
+                Html.fromHtml(eventTime)
+            }
             Log.d(tag, "Created $tag with Event ID $eventId")
 
             toolbar_layout.title = event.name
@@ -84,7 +89,7 @@ class EventRidesActivity : AppCompatActivity() {
     }
 
     private fun refreshRecyclerView() {
-        Database.getRidesForEvent(event.id) { rides: List<Ride> ->
+        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
             viewAdapter = MyAdapter(this, rides.toTypedArray())
             viewAdapter.notifyDataSetChanged()
             recyclerView.adapter = viewAdapter
@@ -97,7 +102,7 @@ class EventRidesActivity : AppCompatActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
-        outState?.putInt(Keys.EVENT_ID.name, event.id)
+        outState?.putInt(Keys.EVENT_ID.name, eventId)
         super.onSaveInstanceState(outState)
     }
 

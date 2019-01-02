@@ -4,15 +4,16 @@ package org.team2.ridetogather
 
 import android.content.Context
 import android.util.Log
-import com.android.volley.Response
-import com.android.volley.toolbox.Volley
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONArray
 import org.json.JSONObject
+import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -106,6 +107,9 @@ object Database {
             errorListener ?: Response.ErrorListener { error ->
                 Log.e(tag, "Response error for $url", error)
             })
+        Log.v("Database_JSON_request", request.url)
+        if (request.body != null)
+            Log.v("Database_JSON_request", request.body.toString(Charset.forName("utf-8")))
         requestQueue.add(request)
     }
 
@@ -230,8 +234,8 @@ object Database {
         val postParams = jsonObjOf(
             "driver" to driverId,
             "event" to eventId,
-            "originLat" to origin.latitude,
-            "originLong" to origin.longitude,
+            "originLat" to origin.latitude.roundToLessDigits(),
+            "originLong" to origin.longitude.roundToLessDigits(),
             "departureHour" to departureTime.hours,
             "departureMinute" to departureTime.minutes,
             "carModel" to carModel,
@@ -424,8 +428,6 @@ object Database {
             }
         )
     }
-
-    lateinit var thisUser: User
 
     fun getThisUserId(): Id {
         return idOfCurrentUser

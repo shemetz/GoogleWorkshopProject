@@ -15,19 +15,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Toast
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
-import android.support.design.widget.Snackbar
-import android.widget.Adapter
-import android.widget.AdapterView
-import com.android.volley.VolleyError
-import org.json.JSONException
-import org.json.JSONObject
-import org.json.JSONArray
-import com.android.volley.toolbox.JsonArrayRequest
 
 
 class RidePageActivity : AppCompatActivity() {
@@ -60,7 +49,7 @@ class RidePageActivity : AppCompatActivity() {
             Database.getDriver(ride.driverId) { driver: Driver ->
                 driverNamePage.text = driver.name
             }
-            driversPerspective = ride.driverId == Database.thisUser.getIdAsDriver()
+            driversPerspective = ride.driverId == Database.getThisUserId()
             updatePassengers(ride.id)
         }
 

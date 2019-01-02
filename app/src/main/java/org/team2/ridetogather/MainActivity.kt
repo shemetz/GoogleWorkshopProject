@@ -44,24 +44,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         // MOCK
-        temp_main_activity_text.text = "Hello ${Database.thisUser.name}!"
-
-        // MOCK
         temp_button_rides_list.setOnClickListener {
             val intent = Intent(applicationContext, EventRidesActivity::class.java)
             val eventID = MockData.event1.id
             intent.putExtra(Keys.EVENT_ID.name, eventID)
-            startActivity(intent)
-        }
-
-        // MOCK
-        temp_button_switch_user.setOnClickListener {
-            Database.idOfCurrentUser = if (Database.thisUser.id == MockData.user1.id)
-                MockData.user2.id
-            else
-                MockData.user1.id
-            val intent = Intent(applicationContext, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
 
