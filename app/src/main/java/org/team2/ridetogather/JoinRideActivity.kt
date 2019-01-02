@@ -2,11 +2,10 @@ package org.team2.ridetogather
 
 import android.app.Activity
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_join_ride.*
-import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,39 +15,37 @@ import org.json.JSONObject
 
 class JoinRideActivity : AppCompatActivity() {
     private val tag = JoinRideActivity::class.java.simpleName
-    var pickedLocation : Location? = null
+    private var pickedLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_join_ride)
-        pickedLocationTextBox.text="Choose a pickup location! "
+        pickedLocationTextBox.text = getString(R.string.choose_a_pick_up_location)
         val rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
-        val ride = Database.getRide(rideId)!!
-        val eventId = ride.eventId
-        val event = Database.getEvent(eventId)!!
-        val driverId: Id = Database.getThisUser().getIdAsDriver()
-        var timeOfDay: TimeOfDay? = null
-        val destinationLocation = event.location
-        submitPickupRequest.isEnabled=false
+        submitPickupRequest.isEnabled = false
+        Database.getRide(rideId) { ride ->
+            val eventId = ride.eventId
+            Database.getEvent(eventId) {
+                pickLocation.setOnClickListener {
+                    val intent = Intent(applicationContext, MapsActivity::class.java)
+                    intent.putExtra(Keys.EVENT_ID.name, eventId)
+                    intent.putExtra(Keys.LOCATION.name, pickedLocation?.toLatLng()?.encodeToString())
+                    startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
+                    // Result will return to OnActivityResult()
+                }
 
-        pickLocation.setOnClickListener {
-            val intent = Intent(applicationContext, MapsActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name, eventId)
-            intent.putExtra(Keys.LOCATION.name, pickedLocation?.toLatLng()?.encodeToString())
-            startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
-            // Result will return to OnActivityResult()
-        }
-
-        submitPickupRequest.setOnClickListener{
-            Database.addPickup(applicationContext,rideId,Database.getThisUserId(),pickedLocation!!)
-            val intent = Intent(applicationContext, RidePageActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            intent.putExtra(Keys.RIDE_ID.name, rideId)
-            //TODO: Change it to onActivityResult with resultCode.
-            intent.putExtra(Keys.CHANGE_BTN.name, false)
-           // joinRideButton!!.text="Edit Request"
-            //joinRideButton!!.isEnabled=false
-            startActivity(intent)
+                submitPickupRequest.setOnClickListener {
+                    Database.addPickup(rideId, Database.getThisUserId(), pickedLocation!!)
+                    val intent = Intent(applicationContext, RidePageActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    intent.putExtra(Keys.RIDE_ID.name, rideId)
+                    //TODO: Change it to onActivityResult with resultCode.
+                    intent.putExtra(Keys.CHANGE_BTN.name, false)
+                    // joinRideButton!!.text="Edit Request"
+                    //joinRideButton!!.isEnabled=false
+                    startActivity(intent)
+                }
+            }
         }
     }
 
@@ -64,7 +61,7 @@ class JoinRideActivity : AppCompatActivity() {
                         val locationStr = readableLocation(this@JoinRideActivity, pickedLocation!!)
                         CoroutineScope(Dispatchers.Main).launch {
                             pickedLocationTextBox.text = locationStr
-                            submitPickupRequest.isEnabled=true
+                            submitPickupRequest.isEnabled = true
                         }
                         Log.d(tag, "Back in $tag with location $locationStr")
                         if (routeJsonStr.isNotBlank()) {

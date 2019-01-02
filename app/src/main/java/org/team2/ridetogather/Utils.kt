@@ -6,8 +6,6 @@ import android.util.Log
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONObject
 import java.io.IOException
-import java.math.BigDecimal
-import java.math.MathContext
 import java.util.*
 import kotlin.math.absoluteValue
 
@@ -108,11 +106,4 @@ fun LatLng.encodeToString(): String {
 fun String.decodeToLatLng(): LatLng {
     val (latitude, longitude) = this.split("    ").map { it.toDouble() }
     return LatLng(latitude, longitude)
-}
-
-/**
- * TEMPORARY - remove this (and usages) when server allows numbers with more than 6 decimal places
- */
-fun Number.roundToLessDigits(): BigDecimal {
-    return this.toDouble().toBigDecimal().round(MathContext(8))
 }

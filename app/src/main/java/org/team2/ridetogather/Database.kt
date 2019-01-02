@@ -44,7 +44,7 @@ object JsonParse {
             pickupJson.getDouble("pickupLat"),
             pickupJson.getDouble("pickupLong")
         ).toLocation()
-        val pickupTime = TimeOfDay(pickupJson.getInt("pickupHour"), pickupJson.getInt("pickupMinute"))
+        val pickupTime = TimeOfDay(pickupJson.optInt("pickupHour"), pickupJson.optInt("pickupMinute"))
         val inRide = pickupJson.getBoolean("inRide")
         return Pickup(pickupId, userId, rideId, pickupSpot, pickupTime, inRide)
     }
@@ -234,8 +234,8 @@ object Database {
         val postParams = jsonObjOf(
             "driver" to driverId,
             "event" to eventId,
-            "originLat" to origin.latitude.roundToLessDigits(),
-            "originLong" to origin.longitude.roundToLessDigits(),
+            "originLat" to origin.latitude,
+            "originLong" to origin.longitude,
             "departureHour" to departureTime.hours,
             "departureMinute" to departureTime.minutes,
             "carModel" to carModel,
@@ -269,12 +269,12 @@ object Database {
         )
     }
 
-    fun addPickup(rideId: Id, userId: Id, pickupSpot: Location, pickupTime: TimeOfDay) {
+    fun addPickup(rideId: Id, userId: Id, pickupSpot: Location) {
         val postParams = jsonObjOf(
             "ride" to rideId,
             "user" to userId,
             "pickupLat" to pickupSpot.latitude,
-            "pickupLong" to pickupSpot.longitude,
+            "pickupLong" to pickupSpot.longitude
             //TODO: update pickup time by driver
 //            "pickupHour" to pickupTime.hours,
 //            "pickupMinute" to pickupTime.minutes
