@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
+import com.facebook.GraphResponse
 import com.facebook.HttpMethod
 import com.facebook.login.LoginManager
 import com.google.android.gms.common.ConnectionResult
@@ -87,6 +88,17 @@ class MainActivity : AppCompatActivity() {
         parameters.putString("fields", "events")
         event_request.parameters = parameters
         event_request.executeAsync()
+
+        val eventID_request = GraphRequest.newGraphPathRequest(
+            AccessToken.getCurrentAccessToken(),
+            "/{event-id}", GraphRequest.Callback() { response: GraphResponse ->
+                try {
+                    Log.i(tag, "working")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            })
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
