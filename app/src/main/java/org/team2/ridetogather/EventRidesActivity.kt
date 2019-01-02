@@ -3,6 +3,7 @@ package org.team2.ridetogather
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.content.ContextCompat
@@ -25,7 +26,7 @@ import java.util.*
 class EventRidesActivity : AppCompatActivity() {
     private val tag = EventRidesActivity::class.java.simpleName
 
-    private lateinit var event: Event
+    private var eventId: Id = -1
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
@@ -37,7 +38,7 @@ class EventRidesActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         // The next line gets the event ID either from the intent extras or from the saved activity state.
-        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
+        eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
 
         if (eventId == -1) {
             Log.e(tag, "No event ID found in intent or in saved state!")
@@ -63,26 +64,42 @@ class EventRidesActivity : AppCompatActivity() {
             }
 
         })
-        event = Database.getEvent(eventId)!!
-        val eventTime =
-            java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
+        Database.getEvent(eventId) { event: Event ->
+            val eventTime =
+                java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
 
-        toolbar_layout.title = event.name
-        toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
-        CoroutineScope(Dispatchers.Default).launch {
-            val eventShortLocation = readableLocation(this@EventRidesActivity, event.location)
-            CoroutineScope(Dispatchers.Main).launch {
-                tv_description.text = eventShortLocation
+            toolbar_layout.title = event.name
+            toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
+            CoroutineScope(Dispatchers.Default).launch {
+                val eventShortLocation = readableLocation(this@EventRidesActivity, event.location)
+                CoroutineScope(Dispatchers.Main).launch {
+                    tv_description.text = eventShortLocation
+                }
             }
-        }
-        tv_title.text = Html.fromHtml(eventTime)
-        Log.d(tag, "Created $tag with Event ID $eventId")
+            tv_title.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Html.fromHtml(eventTime, Html.FROM_HTML_MODE_LEGACY)
+            } else {
+                @Suppress("DEPRECATION")
+                Html.fromHtml(eventTime)
+            }
+            Log.d(tag, "Created $tag with Event ID $eventId")
 
-        toolbar_layout.title = event.name
-        fab.setOnClickListener {
-            val intent = Intent(applicationContext, RideCreationActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name, event.id)
-            startActivity(intent)
+            toolbar_layout.title = event.name
+        }
+
+
+        viewManager = LinearLayoutManager(this)
+
+        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
+            viewAdapter = MyAdapter(this, rides.toTypedArray())
+
+            recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
+                // changes in content do not change the layout size of the RecyclerView
+                setHasFixedSize(true)
+                layoutManager = viewManager
+                adapter = viewAdapter
+                addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
+            }
         }
 
         fab_create_ride.setOnClickListener {
@@ -92,9 +109,21 @@ class EventRidesActivity : AppCompatActivity() {
         }
     }
 
+    private fun refreshRecyclerView() {
+        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
+            viewAdapter = MyAdapter(this, rides.toTypedArray())
+            viewAdapter.notifyDataSetChanged()
+            recyclerView.adapter = viewAdapter
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshRecyclerView()
+    }
 
     override fun onSaveInstanceState(outState: Bundle?) {
-        outState?.putInt(Keys.EVENT_ID.name, event.id)
+        outState?.putInt(Keys.EVENT_ID.name, eventId)
         super.onSaveInstanceState(outState)
     }
 
@@ -125,14 +154,14 @@ class EventRidesActivity : AppCompatActivity() {
             // - replace the contents of the view with that element
             val view = holder.cardView
             val ride = rides[position]
-            val driver = Database.getDriver(ride.driverId)!!
-
-            view.driverName.text = driver.name
+            Database.getDriver(ride.driverId) { driver: Driver ->
+                view.driverName.text = driver.name
+            }
             view.originLocationName.text = readableLocation(context, ride.origin)
 //            view.driverPicture.drawable = ???
             view.departureTime.text = ride.departureTime.shortenedTime()
-            val intent = Intent(view.context, RidePageActivity::class.java)
             holder.cardView.setOnClickListener {
+                val intent = Intent(view.context, RidePageActivity::class.java)
                 val rideID = ride.id
                 intent.putExtra(Keys.RIDE_ID.name, rideID)
                 view.context.startActivity(intent)

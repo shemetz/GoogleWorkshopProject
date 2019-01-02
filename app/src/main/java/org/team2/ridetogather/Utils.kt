@@ -4,7 +4,10 @@ import android.content.Context
 import android.location.Geocoder
 import android.util.Log
 import com.google.android.gms.maps.model.LatLng
+import org.json.JSONObject
 import java.io.IOException
+import java.math.BigDecimal
+import java.math.MathContext
 import java.util.*
 import kotlin.math.absoluteValue
 
@@ -81,12 +84,17 @@ fun readableLocation(context: Context, location: Location): String {
     }
 }
 
+
+fun jsonObjOf(vararg pairs: Pair<String, Any?>): JSONObject =
+    JSONObject(mapOf(*pairs))
+
+
 fun Location.toLatLng(): LatLng {
     return LatLng(latitude, longitude)
 }
 
 fun LatLng.toLocation(): Location {
-    return Location("useless paramater")
+    return Location("useless parameter")
         .apply {
             latitude = this@toLocation.latitude
             longitude = this@toLocation.longitude
@@ -100,4 +108,11 @@ fun LatLng.encodeToString(): String {
 fun String.decodeToLatLng(): LatLng {
     val (latitude, longitude) = this.split("    ").map { it.toDouble() }
     return LatLng(latitude, longitude)
+}
+
+/**
+ * TEMPORARY - remove this (and usages) when server allows numbers with more than 6 decimal places
+ */
+fun Number.roundToLessDigits(): BigDecimal {
+    return this.toDouble().toBigDecimal().round(MathContext(8))
 }

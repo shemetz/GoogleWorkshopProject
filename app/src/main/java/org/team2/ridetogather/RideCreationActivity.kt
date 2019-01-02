@@ -31,12 +31,10 @@ class RideCreationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ridecreation)
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
-        val event = Database.getEvent(eventId)!!
         Log.d(tag, "Created $tag with Event ID $eventId")
 
-        val driverId: Id = Database.getThisUser().getIdAsDriver()
+        val driverId: Id = Database.getThisUserId()
         var timeOfDay: TimeOfDay? = null
-        val destinationLocation = event.location
 
         pick_time_button.setOnClickListener {
             val cal = Calendar.getInstance()
@@ -107,16 +105,17 @@ class RideCreationActivity : AppCompatActivity() {
                 apply()
             }
 
-            val newRide = Database.createNewRide(
-                driverId, eventId, originLocation!!, destinationLocation, timeOfDay!!,
+            Database.addRide(
+                driverId, eventId, originLocation!!, timeOfDay!!,
                 car_model.text.toString(), car_color.text.toString(),
                 num_seats.text.toString().toInt(), extra_details.text.toString()
-            )
-            val intent = Intent(applicationContext, RidePageActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            intent.putExtra(Keys.RIDE_ID.name, newRide.id)
-            startActivity(intent)
-            finish()
+            ) { newRide: Ride ->
+                val intent = Intent(applicationContext, RidePageActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                intent.putExtra(Keys.RIDE_ID.name, newRide.id)
+                startActivity(intent)
+                finish()
+            }
         }
         new_ride_form.requestFocus()
 
@@ -124,7 +123,8 @@ class RideCreationActivity : AppCompatActivity() {
         sharedPrefs.getString(Preferences.CAR_MODEL.name, null)?.apply { car_model.setText(this) }
         sharedPrefs.getString(Preferences.CAR_COLOR.name, null)?.apply { car_color.setText(this) }
         sharedPrefs.getString(Preferences.NUMBER_OF_SEATS.name, null)?.apply { num_seats.setText(this) }
-        sharedPrefs.getString(Preferences.LAST_ORIGIN_LOCATION__LAT_LNG.name, null)?.apply { originLocation = this.decodeToLatLng().toLocation() }
+        sharedPrefs.getString(Preferences.LAST_ORIGIN_LOCATION__LAT_LNG.name, null)
+            ?.apply { originLocation = this.decodeToLatLng().toLocation() }
         sharedPrefs.getString(Preferences.LAST_ORIGIN_LOCATION__READABLE.name, null)?.apply { btn_origin.text = this }
     }
 
@@ -157,7 +157,8 @@ class RideCreationActivity : AppCompatActivity() {
                                     "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
                                 )
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    ride_time_and_distance.text = "The ride should take about $durationInText ($distanceInText)."
+                                    ride_time_and_distance.text =
+                                            "The ride should take about $durationInText ($distanceInText)."
                                     ride_time_and_distance.visibility = View.VISIBLE
                                 }
                             } catch (e: JSONException) {

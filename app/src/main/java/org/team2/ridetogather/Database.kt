@@ -1,562 +1,436 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package org.team2.ridetogather
 
 import android.content.Context
 import android.util.Log
-import com.android.volley.Response
-import com.android.volley.toolbox.Volley
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import com.google.android.gms.maps.model.LatLng
 import org.json.JSONArray
 import org.json.JSONObject
+import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
 
-class RequestsQueue constructor(context: Context) {
-    companion object {
-        @Volatile
-        private var INSTANCE: RequestsQueue? = null
-        fun getInstance(context: Context) =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: RequestsQueue(context).also {
-                    INSTANCE = it
-                }
-            }
+object JsonParse {
+
+    fun ride(rideJson: JSONObject): Ride {
+        val rideId = rideJson.getInt("id")
+        val driverId = rideJson.getInt("driver")
+        val eventId = rideJson.getInt("event")
+        val origin = LatLng(
+            rideJson.getDouble("originLat"),
+            rideJson.getDouble("originLong")
+        ).toLocation()
+        val departureTime = TimeOfDay(rideJson.getInt("departureHour"), rideJson.getInt("departureMinute"))
+        val carModel = rideJson.getString("carModel")
+        val carColor = rideJson.getString("carColor")
+        val passengerCount = rideJson.getInt("passengerCount")
+        val extraDetails = rideJson.getString("extraDetails")
+
+        return Ride(rideId, driverId, eventId, origin, departureTime, carModel, carColor, passengerCount, extraDetails)
     }
 
-    val requestQueue: RequestQueue by lazy {
-        // applicationContext is key, it keeps you from leaking the
-        // Activity or BroadcastReceiver if someone passes one in.
-        Volley.newRequestQueue(context.applicationContext)
+    fun pickup(pickupJson: JSONObject): Pickup {
+        val pickupId = pickupJson.getInt("id")
+        val userId = pickupJson.getInt("user")
+        val rideId = pickupJson.getInt("ride")
+        val pickupSpot = LatLng(
+            pickupJson.getDouble("pickupLat"),
+            pickupJson.getDouble("pickupLong")
+        ).toLocation()
+        val pickupTime = TimeOfDay(pickupJson.getInt("pickupHour"), pickupJson.getInt("pickupMinute"))
+        val inRide = pickupJson.getBoolean("inRide")
+        return Pickup(pickupId, userId, rideId, pickupSpot, pickupTime, inRide)
     }
-    fun <T> addToRequestQueue(req: Request<T>) {
-        requestQueue.add(req)
+
+    fun user(userJson: JSONObject): User {
+        val userId = userJson.getInt("id")
+        val name = userJson.getString("name")
+        val facebookProfileId = userJson.getString("facebookProfileId")
+        val credits = userJson.getInt("credits")
+        return User(userId, name, facebookProfileId, credits)
+    }
+
+    fun event(eventJson: JSONObject): Event {
+        val eventId = eventJson.getInt("id")
+        val eventName = eventJson.getString("name")
+        val eventLocation = LatLng(
+            eventJson.getDouble("locationLat"),
+            eventJson.getDouble("locationLong")
+        ).toLocation()
+        val eventDatetime =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY)
+                .parse(eventJson.getString("datetime"))
+        val facebookEventId = eventJson.getString("facebookEventId")
+        return Event(eventId, eventName, eventLocation, eventDatetime, facebookEventId)
+    }
+
+    fun <T> array(jsonArray: JSONArray, specificFunction: (JSONObject) -> T): List<T> {
+        val things = mutableListOf<T>()
+        for (i in 0 until jsonArray.length()) {
+            things.add(specificFunction(jsonArray.getJSONObject(i)))
+        }
+        return things
     }
 }
 
 object Database {
+    private lateinit var requestQueue: RequestQueue
     private val tag = Database::class.java.simpleName
+    private const val SERVER_URL = "https://ridetogather.herokuapp.com"
     var idOfCurrentUser: Id = MockData.user1.id // MOCK
 
-    fun jsonToRide(jsonObject: JSONObject): Ride{
-        val rideId = jsonObject.getInt("id")
-        val driverId = jsonObject.getInt("driver")
-        val eventId = jsonObject.getInt("event")
-        val origin = Location("useless paramater")
-            .apply { latitude = jsonObject.getDouble("originLat"); longitude = jsonObject.getDouble("originLong") }
-        val departureTime = TimeOfDay(jsonObject.getInt("departureHour"),jsonObject.getInt("departureMinute"))
-        val carModel = jsonObject.getString("carModel")
-        val carColor = jsonObject.getString("carColor")
-        val passengerCount = jsonObject.getInt("passengerCount")
-        val extraDetails = jsonObject.getString("extraDetails")
-
-        return Ride(rideId,driverId,eventId,origin,departureTime,carModel,carColor,passengerCount,extraDetails)
+    fun initializeRequestQueue(context: Context) {
+        // applicationContext is key, it keeps you from leaking the
+        // Activity or BroadcastReceiver if someone passes one in.
+        requestQueue = Volley.newRequestQueue(context.applicationContext)
     }
 
-    fun jsonArrayToPickups(jsonArray: JSONArray): ArrayList<Pickup>{
-        val pickups = arrayListOf<Pickup>()
-        for (i in 0 until jsonArray.length()) {
-            // Get current json object
-            val pickupJson = jsonArray.getJSONObject(i)
-            val pickupId = pickupJson.getInt("id")
-            val userId = pickupJson.getInt("user")
-            val rideId = pickupJson.getInt("ride")
-            val pickupSpot = Location("useless paramater")
-                .apply { latitude = pickupJson.getDouble("pickupLat"); longitude = pickupJson.getDouble("pickupLong") }
-            val pickupTime = TimeOfDay(pickupJson.getInt("pickupHour"),pickupJson.getInt("pickupMinute"))
-            val inRide = pickupJson.getBoolean("inRide")
-            pickups.add(Pickup(pickupId,userId,rideId,pickupSpot,pickupTime,inRide))
-        }
-        return pickups
+    private fun requestJsonObject(
+        method: Int,
+        url: String,
+        postParameters: JSONObject? = null,
+        successListener: Response.Listener<JSONObject>? = null,
+        errorListener: Response.ErrorListener? = null
+    ) {
+        val request = JsonObjectRequest(method, url, postParameters,
+            successListener ?: Response.Listener { response ->
+                Log.v(tag, "Response success for $url, logging response now")
+                Log.v(tag, response.toString(4))
+            },
+            errorListener ?: Response.ErrorListener { error ->
+                Log.e(tag, "Response error for $url", error)
+            })
+        Log.v("Database_JSON_request", request.url)
+        if (request.body != null)
+            Log.v("Database_JSON_request", request.body.toString(Charset.forName("utf-8")))
+        requestQueue.add(request)
     }
 
-    fun jsonToUser(jsonObject: JSONObject):User{
-        val userId = jsonObject.getInt("id")
-        val name = jsonObject.getString("name")
-        val facebookProfileId = jsonObject.getString("facebookProfileId")
-        val credits = jsonObject.getInt("credits")
-        return User(userId,name,facebookProfileId,credits)
+    private fun requestJsonArray(
+        method: Int,
+        url: String,
+        // No post parameters - this is only used for GET right now, because
+        // apparently JsonArrayRequests wants post params to also be an array :/
+        successListener: Response.Listener<JSONArray>? = null,
+        errorListener: Response.ErrorListener? = null
+    ) {
+        val request = JsonArrayRequest(method, url, null,
+            successListener ?: Response.Listener { response ->
+                Log.v(tag, "Response success for $url, logging response now")
+                Log.v(tag, response.toString(4))
+            },
+            errorListener ?: Response.ErrorListener { error ->
+                Log.e(tag, "Response error for $url", error)
+            })
+        requestQueue.add(request)
     }
 
-    fun jsonArrayToEvents(jsonArray: JSONArray):ArrayList<Event>{
-        val events = arrayListOf<Event>()
-        for (i in 0 until jsonArray.length()) {
-            // Get current json object
-            val eventJson = jsonArray.getJSONObject(i)
-            val eventId = eventJson.getInt("id")
-            val eventName = eventJson.getString("name")
-            val eventLocation = Location("useless paramater")
-                .apply { latitude = eventJson.getDouble("locationLat"); longitude = eventJson.getDouble("locationLong") }
-            val eventDatetime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse(eventJson.getString("datetime"))
-            val facebookEventId = eventJson.getString("facebookEventId")
-            events.add(Event(eventId,eventName,eventLocation,eventDatetime,facebookEventId))
-        }
-        return events
+    private fun <T> generifiedGet(
+        someId: Id,
+        name: String,
+        parseFunction: (JSONObject) -> T,
+        successCallback: (T) -> Unit
+    ) {
+        val url = "$SERVER_URL/get$name/$someId"
+
+        requestJsonObject(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                successCallback(parseFunction(response))
+            }
+        )
     }
 
-    fun getUser(userId: Id): User? {
-        // MOCK
-        return MockData.users[userId] ?: run {
-            Log.e(tag, "No such user with ID = $userId")
-            null
-        }
+    fun getUser(userId: Id, successCallback: (User) -> Unit) =
+        generifiedGet(userId, "User", JsonParse::user, successCallback)
 
+    fun getEvent(eventId: Id, successCallback: (Event) -> Unit) =
+        generifiedGet(eventId, "Event", JsonParse::event, successCallback)
+
+    fun getRide(rideId: Id, successCallback: (Ride) -> Unit) =
+        generifiedGet(rideId, "Ride", JsonParse::ride, successCallback)
+
+    fun getPickup(pickupId: Id, successCallback: (Pickup) -> Unit) =
+        generifiedGet(pickupId, "Pickup", JsonParse::pickup, successCallback)
+
+    fun getDriver(driverId: Id, successCallback: (Driver) -> Unit) {
+        // Currently drivers are identical to users!
+        return getUser(driverId, successCallback)
     }
 
-    fun getEvent(eventId: Id): Event? {
-        // MOCK
-        return MockData.events[eventId] ?: run {
-            Log.e(tag, "No such event with ID = $eventId")
-            null
-        }
+    private fun <T> generifiedGet1sFor2(
+        id2: Id,
+        name1s: String,
+        name2: String,
+        parseFunction: (JSONObject) -> T,
+        successCallback: (List<T>) -> Unit
+    ) {
+        val url = "$SERVER_URL/get${name1s}For$name2/$id2"
+
+        requestJsonArray(Request.Method.GET, url,
+            Response.Listener { response ->
+                successCallback(JsonParse.array(response, parseFunction))
+            }
+        )
     }
 
-    fun getRide(rideId: Id): Ride? {
-        // MOCK
-        return MockData.rides[rideId] ?: run {
-            Log.e(tag, "No such ride with ID = $rideId")
-            null
-        }
-    }
+    fun getEventsForUser(userId: Id, successCallback: (List<Event>) -> Unit) =
+        generifiedGet1sFor2(userId, "Events", "User", JsonParse::event, successCallback)
 
-    fun getPickup(pickupId: Id): Pickup? {
-        // MOCK
-        return MockData.pickups[pickupId] ?: run {
-            Log.e(tag, "No such pickup with ID = $pickupId")
-            null
-        }
-    }
+    fun getPickupsForRide(rideId: Id, successCallback: (List<Pickup>) -> Unit) =
+        generifiedGet1sFor2(rideId, "Pickups", "Ride", JsonParse::pickup, successCallback)
 
-    fun getDriver(driverId: Id): Driver? {
-        // MOCK
-        return getUser(driverId)
-    }
+    fun getRidesForEvent(eventID: Id, successCallback: (List<Ride>) -> Unit) =
+        generifiedGet1sFor2(eventID, "Rides", "Event", JsonParse::ride, successCallback)
 
-    /**
-     * Will return an empty list if there are no events for user, or
-     * if there is no such user.
-     */
-    fun getEventsForUser(userId: Id): List<Event> {
-        // MOCK
-        val idsList = MockData.eventsOfUser[userId] ?: mutableListOf()
-        return idsList.map { getEvent(it)!! }
-    }
+    fun addUser(name: String, facebookProfileId: String, credits: Int) {
+        val postParams = jsonObjOf(
+            "name" to name,
+            "facebookProfileId" to facebookProfileId,
+            "credits" to credits
+        )
+        val url = "$SERVER_URL/addUser/"
 
-    /**
-     * Will return an empty list if there are no pickups for the ride, or
-     * if there is no such ride.
-     */
-    fun getPickupsForRide(rideId: Id): List<Pickup> {
-        // MOCK
-        val idsList = MockData.pickupsOfRide[rideId] ?: mutableListOf()
-        return idsList.map { getPickup(it)!! }
-    }
-
-    /**
-     * Will return an empty list if there are no rides for the event, or
-     * if there is no such event.
-     */
-    fun getRidesForEvent(eventId: Id): List<Ride> {
-        // MOCK
-        val idsList = MockData.ridesOfEvent[eventId] ?: mutableListOf()
-        return idsList.map { getRide(it)!! }
-    }
-
-    fun addUser(context: Context,name: String,facebookProfileId: String,credits: Int){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("name",name)
-        postparams.put("facebookProfileId",facebookProfileId)
-        postparams.put("credits",credits)
-        val url = "https://ridetogather.herokuapp.com/addUser/"
-
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
             }
         )
-        queue.add(jsonobj)
     }
 
-    fun addEvent(context: Context,name: String,location: Location,datetime: Datetime,facebookEventId: String){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("name",name)
-        postparams.put("locationLat", location.latitude)
-        postparams.put("locationLong", location.longitude)
-        postparams.put("datetime", datetime.toString())
-        postparams.put("facebookEventId",facebookEventId)
-        val url = "https://ridetogather.herokuapp.com/addEvent/"
+    fun addEvent(name: String, location: Location, datetime: Datetime, facebookEventId: String) {
+        val postParams = jsonObjOf(
+            "name" to name,
+            "locationLat" to location.latitude,
+            "locationLong" to location.longitude,
+            "datetime" to datetime.toString(),
+            "facebookEventId" to facebookEventId
+        )
+        val url = "$SERVER_URL/addEvent/"
 
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
             }
         )
-        queue.add(jsonobj)
     }
 
 
-    fun addRide(context: Context,driverId: Id,eventId: Id,origin: Location,departureTime: TimeOfDay,
-                carModel: String,carColor: String,passengerCount: Int,extraDetails: String){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("driver",driverId)
-        postparams.put("event",eventId)
-        postparams.put("originLat",origin.latitude)
-        postparams.put("originLong",origin.longitude)
-        postparams.put("departureHour",departureTime.hours)
-        postparams.put("departureMinute",departureTime.minutes)
-        postparams.put("carModel",carModel)
-        postparams.put("carColor",carColor)
-        postparams.put("passengerCount",passengerCount)
-        postparams.put("extraDetails",extraDetails)
-        val url = "https://ridetogather.herokuapp.com/addRide/"
+    fun addRide(
+        driverId: Id, eventId: Id, origin: Location, departureTime: TimeOfDay,
+        carModel: String, carColor: String, passengerCount: Int, extraDetails: String,
+        successCallback: (Ride) -> Unit
+    ) {
+        val postParams = jsonObjOf(
+            "driver" to driverId,
+            "event" to eventId,
+            "originLat" to origin.latitude.roundToLessDigits(),
+            "originLong" to origin.longitude.roundToLessDigits(),
+            "departureHour" to departureTime.hours,
+            "departureMinute" to departureTime.minutes,
+            "carModel" to carModel,
+            "carColor" to carColor,
+            "passengerCount" to passengerCount,
+            "extraDetails" to extraDetails
+        )
+        val url = "$SERVER_URL/addRide/"
 
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
+        requestJsonObject(Request.Method.POST, url, postParams,
+            Response.Listener { response ->
+                successCallback(JsonParse.ride(response))
+            }
+        )
+    }
+
+
+    fun addEventToUser(userId: Id, eventId: Id) {
+        val postParams = jsonObjOf(
+            "user" to userId,
+            "event" to eventId
+        )
+        val url = "$SERVER_URL/addAttending/"
+
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
             }
         )
-        queue.add(jsonobj)
     }
 
-    fun addEventToUser(context: Context,userId: Id,eventId: Id){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("user",userId)
-        postparams.put("event",eventId)
-        val url = "https://ridetogather.herokuapp.com/addAttending/"
+    fun addPickup(rideId: Id, userId: Id, pickupSpot: Location, pickupTime: TimeOfDay) {
+        val postParams = jsonObjOf(
+            "ride" to rideId,
+            "user" to userId,
+            "pickupLat" to pickupSpot.latitude,
+            "pickupLong" to pickupSpot.longitude,
+            //TODO: update pickup time by driver
+//            "pickupHour" to pickupTime.hours,
+//            "pickupMinute" to pickupTime.minutes
+        )
+        val url = "$SERVER_URL/addPickup/"
 
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
+        requestJsonObject(Request.Method.POST, url, postParams,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
             }
         )
-        queue.add(jsonobj)
     }
 
-    fun addPickup(context: Context,rideId: Id,userId: Id,pickupSpot: Location?){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("ride",rideId)
-        postparams.put("user",userId)
-        postparams.put("pickupLat",pickupSpot!!.latitude)
-        postparams.put("pickupLong",pickupSpot.longitude)
-        //TODO: update pickup time by driver
-        //postparams.put("pickupHour",pickupTime.hours)
-        //postparams.put("pickupMinute",pickupTime.minutes)
-        val url = "https://ridetogather.herokuapp.com/addPickup/"
+    fun deleteUser(userId: Id) {
+        val url = "$SERVER_URL/deleteUser/$userId"
 
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
+        requestJsonObject(Request.Method.DELETE, url, null,
             Response.Listener { response ->
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
             }
         )
-        queue.add(jsonobj)
-    }
-
-    fun delUser(context: Context,userId: Id){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deleteUser/"
-        val url = baseUrl + userId
-
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                // TODO: Handle error
-            }
-        )
-        queue.add(jsonObjectRequest)
-    }
-
-    fun delRide(context: Context,rideId: Id){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deleteRide/"
-        val url = baseUrl + rideId
-
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                // TODO: Handle error
-            }
-        )
-        queue.add(jsonObjectRequest)
-    }
-
-    fun delEvent(context: Context,eventId: Id){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deleteEvent/"
-        val url = baseUrl + eventId
-
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                // TODO: Handle error
-            }
-        )
-        queue.add(jsonObjectRequest)
-    }
-
-    fun delPickup(context: Context,pickupId: Id){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/deletePickup/"
-        val url = baseUrl + pickupId
-
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                // TODO: Handle error
-            }
-        )
-        queue.add(jsonObjectRequest)
-    }
-
-    fun removeUserFromEvent(context: Context,pickupId: Id,eventId: Id){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val baseUrl = "https://ridetogather.herokuapp.com/removeUserFromEvent/"
-        val url = baseUrl + pickupId + "/" + eventId
-
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.DELETE, url, null,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                // TODO: Handle error
-            }
-        )
-        queue.add(jsonObjectRequest)
-    }
-
-    fun updateUser(context: Context, user: User){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("name",user.name)
-        postparams.put("facebookProfileId",user.facebookProfileId)
-        postparams.put("credits",user.credits)
-        val baseUrl = "https://ridetogather.herokuapp.com/updateUser/"
-        val url = baseUrl + user.id.toString()
-
-        val jsonobj = JsonObjectRequest(Request.Method.PUT, url, postparams,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
-            }
-        )
-        queue.add(jsonobj)
-    }
-
-    fun updateEvent(context: Context,event: Event){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("name",event.name)
-        postparams.put("locationLat", event.location.latitude)
-        postparams.put("locationLong", event.location.longitude)
-        postparams.put("datetime", event.datetime.toString())
-        postparams.put("facebookEventId",event.facebookEventId)
-        val baseurl = "https://ridetogather.herokuapp.com/addEvent/"
-        val url = baseurl + event.id.toString()
-
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
-            }
-        )
-        queue.add(jsonobj)
-    }
-
-    fun updateRide(context: Context,ride: Ride){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("driver",ride.driverId)
-        postparams.put("event",ride.eventId)
-        postparams.put("originLat",ride.origin.latitude)
-        postparams.put("originLong",ride.origin.longitude)
-        postparams.put("departureHour",ride.departureTime.hours)
-        postparams.put("departureMinute",ride.departureTime.minutes)
-        postparams.put("carModel",ride.carModel)
-        postparams.put("carColor",ride.carColor)
-        postparams.put("passengerCount",ride.passengerCount)
-        postparams.put("extraDetails",ride.extraDetails)
-        val baseurl = "https://ridetogather.herokuapp.com/updateRide/"
-        val url = baseurl + ride.id.toString()
-
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
-            }
-        )
-        queue.add(jsonobj)
-    }
-
-    fun updatePickup(context: Context,pickup: Pickup){
-        val queue = RequestsQueue.getInstance(context.applicationContext).requestQueue
-        val postparams = JSONObject()
-        postparams.put("ride",pickup.rideId)
-        postparams.put("user",pickup.userId)
-        postparams.put("pickupLat",pickup.pickupSpot.latitude)
-        postparams.put("pickupLong",pickup.pickupSpot.longitude)
-        postparams.put("pickupHour",pickup.pickupTime.hours)
-        postparams.put("pickupMinute",pickup.pickupTime.minutes)
-        val baseurl = "https://ridetogather.herokuapp.com/addPickup/"
-        val url = baseurl + pickup.id.toString()
-
-        val jsonobj = JsonObjectRequest(Request.Method.POST, url, postparams,
-            Response.Listener { response ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifySuccess(response)
-                }*/
-            },
-            Response.ErrorListener { error ->
-                /*if (mResultCallback != null) {
-                    mResultCallback.notifyError(error)
-                }*/
-            }
-        )
-        queue.add(jsonobj)
-    }
-
-    fun createNewRide(
-        driverId: Id,
-        eventId: Id,
-        origin: Location,
-        destination: Location,
-        departureTime: TimeOfDay,
-        carModel: String,
-        carColor: String,
-        passengerCount: Int,
-        extraDetails: String = ""
-    ): Ride {
-        //MOCK
-        val newRideId = MockData.rides.size + 1
-        val newRide = Ride(
-            id_ = newRideId,
-            driverId = driverId,
-            eventId = eventId,
-            origin = origin,
-            departureTime = departureTime,
-            carModel = carModel,
-            carColor = carColor,
-            passengerCount = passengerCount,
-            extraDetails = extraDetails
-        )
-        MockData.rides[newRideId] = newRide
-        return newRide
-    }
-
-    fun addUserPickup(
-        userId: Id,
-        rideId: Id,
-        pickupSpot: Location,
-        pickupTime: TimeOfDay
-    ): Pickup {
-        val newPickupId = MockData.pickups.size + 1
-        val newPickup = Pickup(
-            newPickupId,
-            userId,
-            rideId,
-            pickupSpot,
-            pickupTime,
-            true
-        )
-        //MOCK
-        MockData.pickups[newPickupId] = newPickup
-        MockData.pickupsOfRide.getOrPut(rideId) { mutableListOf() }.add(newPickupId)
-        return newPickup
     }
 
     fun deleteRide(rideId: Id) {
-        // MOCK
-        // Remove ride from main table
-        MockData.rides.remove(rideId)
-        // Remove ride from related tables
-        for (rides in MockData.ridesOfEvent.values) {
-            rides.removeAll { it == rideId }
-        }
-        // Remove pickups of this ride
-        MockData.pickupsOfRide.remove(rideId)
+        val url = "$SERVER_URL/deleteRide/$rideId"
 
-        Log.i(tag, "Deleted ride $rideId")
+        requestJsonObject(Request.Method.DELETE, url, null,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
+    }
+
+    fun deleteEvent(eventId: Id) {
+        val url = "$SERVER_URL/deleteEvent/$eventId"
+
+        requestJsonObject(Request.Method.DELETE, url, null,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
+    }
+
+    fun deletePickup(pickupId: Id) {
+        val url = "$SERVER_URL/deletePickup/$pickupId"
+
+        requestJsonObject(Request.Method.DELETE, url, null,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
+    }
+
+    fun removeUserFromEvent(userId: Id, eventId: Id) {
+        val url = "$SERVER_URL/removeUserFromEvent/$userId/$eventId"
+
+        requestJsonObject(Request.Method.DELETE, url, null,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
+    }
+
+    fun updateUser(user: User) {
+        val postParams = jsonObjOf(
+            "name" to user.name,
+            "facebookProfileId" to user.facebookProfileId,
+            "credits" to user.credits
+        )
+        val url = "$SERVER_URL/updateUser/${user.id}"
+
+        requestJsonObject(Request.Method.PUT, url, postParams,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
+    }
+
+    fun updateEvent(event: Event) {
+        val postParams = jsonObjOf(
+            "name" to event.name,
+            "locationLat" to event.location.latitude,
+            "locationLong" to event.location.longitude,
+            "datetime" to event.datetime.toString(),
+            "facebookEventId" to event.facebookEventId
+        )
+        val url = "$SERVER_URL/addEvent/${event.id}"
+
+        requestJsonObject(Request.Method.POST, url, postParams,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
+    }
+
+    fun updateRide(ride: Ride) {
+        val postParams = jsonObjOf(
+            "driver" to ride.driverId,
+            "event" to ride.eventId,
+            "originLat" to ride.origin.latitude,
+            "originLong" to ride.origin.longitude,
+            "departureHour" to ride.departureTime.hours,
+            "departureMinute" to ride.departureTime.minutes,
+            "carModel" to ride.carModel,
+            "carColor" to ride.carColor,
+            "passengerCount" to ride.passengerCount,
+            "extraDetails" to ride.extraDetails
+        )
+        val url = "$SERVER_URL/updateRide/${ride.id}"
+
+        requestJsonObject(Request.Method.POST, url, postParams,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
+    }
+
+    fun updatePickup(pickup: Pickup) {
+        val postParams = jsonObjOf(
+            "ride" to pickup.rideId,
+            "user" to pickup.userId,
+            "pickupLat" to pickup.pickupSpot.latitude,
+            "pickupLong" to pickup.pickupSpot.longitude,
+            "pickupHour" to pickup.pickupTime.hours,
+            "pickupMinute" to pickup.pickupTime.minutes
+        )
+        val url = "$SERVER_URL/addPickup/${pickup.id}"
+
+        requestJsonObject(Request.Method.POST, url, postParams,
+            Response.Listener { response ->
+                /*if (mResultCallback != null) {
+                    mResultCallback.notifySuccess(response)
+                }*/
+            }
+        )
     }
 
     fun getThisUserId(): Id {
         return idOfCurrentUser
-    }
-
-    fun getThisUser(): User {
-        return getUser(getThisUserId())!!
     }
 }

@@ -3,24 +3,18 @@ package org.team2.ridetogather
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Bundle
 import android.os.Handler
+import android.os.SystemClock
+import android.support.annotation.DrawableRes
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import com.google.android.gms.maps.*
-import android.os.SystemClock
-import android.view.animation.LinearInterpolator
-import com.google.android.gms.maps.model.*
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import android.support.v4.content.ContextCompat
-import android.support.annotation.DrawableRes
 import android.view.View
-import com.google.android.gms.maps.model.BitmapDescriptor
-import kotlinx.android.synthetic.main.activity_maps.*
-import kotlin.math.max
-import android.content.pm.PackageManager
+import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import android.widget.Toast
 import com.google.android.gms.common.api.Status
@@ -28,9 +22,14 @@ import com.google.android.gms.location.places.Place
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment
 import com.google.android.gms.location.places.ui.PlaceSelectionListener
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
-import org.json.JSONObject
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.*
 import com.google.maps.android.PolyUtil
+import kotlinx.android.synthetic.main.activity_maps.*
+import org.json.JSONObject
+import kotlin.math.max
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val tag = MapsActivity::class.java.simpleName
@@ -65,20 +64,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map = googleMap
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         Log.d(tag, "Map is ready for Event ID $eventId")
-
-        setupMarkers()
-        setupMapStartingPosition()
-        setupMapOptions()
-        setupButtons()
-        setupPlaceAutocomplete()
-        if (savedInstanceState != null)
-            setupWithSavedInstanceBundle()
+        Database.getEvent(eventId) { event: Event ->
+            setupMarkers(event)
+            setupMapStartingPosition()
+            setupMapOptions()
+            setupButtons()
+            setupPlaceAutocomplete()
+            if (savedInstanceState != null)
+                setupWithSavedInstanceBundle()
+        }
     }
 
-    private fun setupMarkers() {
-        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
+    private fun setupMarkers(event: Event) {
         val preexistingLocation = intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
-        val event = Database.getEvent(eventId)!!
         val eventLocation = event.location.toLatLng()
         val eventMarkerOptions = MarkerOptions()
             .title(event.name)
