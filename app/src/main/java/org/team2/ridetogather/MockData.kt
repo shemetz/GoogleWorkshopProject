@@ -18,9 +18,9 @@ object MockData {
         .apply { latitude = 32.055436; longitude = 34.753070 } // Museum
     val event1 = Event(
         1,
-        "Summer Party",
+        "The Room screening",
         location3,
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse("2019-02-18T15:00:00"),
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse("2020-02-05T13:00:00"),
         "fake facebook event id 1"
     )
     val ride1 = Ride(

@@ -20,17 +20,6 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
-import android.support.design.widget.Snackbar
-import android.widget.Adapter
-import android.widget.AdapterView
-import android.widget.Button
-import com.android.volley.VolleyError
-import org.json.JSONException
-import org.json.JSONObject
-import org.json.JSONArray
-import com.android.volley.toolbox.JsonArrayRequest
-
-
 
 
 class RidePageActivity : AppCompatActivity() {
@@ -46,7 +35,7 @@ class RidePageActivity : AppCompatActivity() {
     private val getPickupsForRideUrl: String = "https://ridetogather.herokuapp.com/getPickupsForRide/"
 
 
-    fun showRideDetails(ride: Ride){
+    fun showRideDetails(ride: Ride) {
         carModel.text = ride.carModel
         carColor.text = ride.carColor
         originLocation.text = readableLocation(this, ride.origin)
@@ -60,31 +49,14 @@ class RidePageActivity : AppCompatActivity() {
 //        setSupportActionBar(toolbar)
         rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Ride ID $rideId")
-        //ride = Database.getRide(rideId)!!
-        //val driver = Database.getDriver(this.applicationContext,ride.driverId)!!
-        //val pickups = Database.getPickupsForRide(rideId).toTypedArray()
 
-        val queue = RequestsQueue.getInstance(this.applicationContext).requestQueue
-        //driverNamePage.text = driver.name
-        val rideUrl = getRideUrl + rideId.toString()
-        val rideJsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET, rideUrl, null,
-            Response.Listener { response ->
-                val ride = Database.jsonToRide(response)
-                showRideDetails(ride)
-                driverNamePage.text = response.getString("driverName")
-                driversPerspective = ride.driverId == Database.getThisUser().getIdAsDriver()
-                updatePassengers(ride.id)
-            },
-            Response.ErrorListener { error ->
-                val toast = Toast.makeText(applicationContext, "error getting ride", Toast.LENGTH_LONG)
-                toast.show()
-            }
-        )
-        queue.add((rideJsonObjectRequest))
+        ride = Database.getRide(rideId)!!
+        val driver = Database.getDriver(ride.driverId)!!
+        driverNamePage.text = driver.name
+        val pickups = Database.getPickupsForRide(rideId).toTypedArray()
 
         viewManager = LinearLayoutManager(this)
-        viewAdapter = MyAdapter(this, arrayListOf())
+        viewAdapter = MyAdapter(this, pickups)
         recyclerView = findViewById<RecyclerView>(R.id.ride_page_recyclerview).apply {
             // changes in content do not change the layout size of the RecyclerView
             setHasFixedSize(true)
@@ -94,42 +66,22 @@ class RidePageActivity : AppCompatActivity() {
 
         //TODO: check on db if there is a request pending/declined
         joinRideButton.isEnabled = intent.getBooleanExtra(Keys.CHANGE_BTN.name, true)
-        joinRideButton.setOnClickListener{
-            val intent = Intent(applicationContext,JoinRideActivity::class.java)
+        joinRideButton.setOnClickListener {
+            val intent = Intent(applicationContext, JoinRideActivity::class.java)
             intent.putExtra(Keys.RIDE_ID.name, rideId)
-            startActivity(intent)}
+            startActivity(intent)
+        }
     }
 
-    fun updatePassengers(rideId: Id){
-        val pickupsUrl = getPickupsForRideUrl + rideId.toString()
-        val queue = RequestsQueue.getInstance(this.applicationContext).requestQueue
-
-        val jsonArrayRequest = JsonArrayRequest(
-            Request.Method.GET,
-            pickupsUrl,
-            null,
-            Response.Listener { response ->
-                try {
-                    val pickups = Database.jsonArrayToPickups(response)
-                    viewAdapter = MyAdapter(this, pickups)
-                    recyclerView = findViewById<RecyclerView>(R.id.ride_page_recyclerview).apply {
-                        // changes in content do not change the layout size of the RecyclerView
-                        setHasFixedSize(true)
-                        layoutManager = viewManager
-                        adapter = viewAdapter
-                    }
-
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
-            },
-            Response.ErrorListener {
-                val toast = Toast.makeText(applicationContext, "error getting pickups", Toast.LENGTH_LONG)
-                toast.show()
-            }
-        )
-        queue.add((jsonArrayRequest))
-
+    fun updatePassengers(rideId: Id) {
+        val pickups = Database.getPickupsForRide(rideId).toTypedArray()
+        viewAdapter = MyAdapter(this, pickups)
+        recyclerView = findViewById<RecyclerView>(R.id.ride_page_recyclerview).apply {
+            // changes in content do not change the layout size of the RecyclerView
+            setHasFixedSize(true)
+            layoutManager = viewManager
+            adapter = viewAdapter
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -189,7 +141,7 @@ class RidePageActivity : AppCompatActivity() {
         }
     }
 
-    class MyAdapter(private val context: Context, private val pickups: ArrayList<Pickup>) :
+    class MyAdapter(private val context: Context, private val pickups: Array<Pickup>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
 

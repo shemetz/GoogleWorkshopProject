@@ -55,6 +55,10 @@ fun readableLocation(context: Context, location: Location): String {
 //            val country = address.countryName
 //            val postalCode = address.postalCode // may be null
 //            val knownName = address.featureName // may be null, may be irrelevant
+            if (addressString.startsWith("Unnamed")) {
+                Log.w("Shortened Location", "Address starts with 'Unnamed'; this is sad.")
+                Log.i("Shortened Location", addresses.joinToString("\n"))
+            }
             addressString
         } else {
             // No address found for the location coordinates. Returning plain coordinates.
@@ -69,7 +73,9 @@ fun readableLocation(context: Context, location: Location): String {
     } catch (illegalArgumentException: IllegalArgumentException) {
         // Catch invalid latitude or longitude values.
         Log.e(
-            "Shortened Location", "IO error encountered while reverse-geocoding. Latitude = $location", illegalArgumentException
+            "Shortened Location",
+            "IO error encountered while reverse-geocoding. Latitude = $location",
+            illegalArgumentException
         )
         return coordinatesString()
     }
