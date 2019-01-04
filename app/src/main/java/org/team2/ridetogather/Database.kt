@@ -97,6 +97,9 @@ object Database {
     }
 
     private fun logResponseError(error: VolleyError, url: String) {
+        if (error.networkResponse == null) {
+            Log.e(tag, "Response error: ${error.message} (for $url)")
+        }
         val errorData = String(error.networkResponse.data, Charset.forName("utf-8"))
         try {
             val errors = JSONObject(errorData).getJSONArray("errors")
