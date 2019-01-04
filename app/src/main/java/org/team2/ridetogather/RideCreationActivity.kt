@@ -135,7 +135,7 @@ class RideCreationActivity : AppCompatActivity() {
                     val originLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
                     originLocation = originLocationStr!!.decodeToLatLng().toLocation()
                     val routeJsonStr = data.getStringExtra(Keys.ROUTE_JSON.name)
-                    btn_origin.text = "(Updating…)"
+                    btn_origin.text = getString(R.string.updating)
                     CoroutineScope(Dispatchers.Default).launch {
                         val locationStr = readableLocation(this@RideCreationActivity, originLocation!!)
                         CoroutineScope(Dispatchers.Main).launch {
