@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
+import org.team2.ridetogather.PickupStatus.*
 
 
 class RidePageActivity : AppCompatActivity() {
@@ -25,6 +26,8 @@ class RidePageActivity : AppCompatActivity() {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
     private var rideId: Id = -1 // updates in onCreate
+    private var userId: Id = -1
+    private var pickupStatus: PickupStatus = NOT_EXIST
     private lateinit var ride: Ride
     private var driversPerspective: Boolean = false // updates in onCreate
 
@@ -43,13 +46,13 @@ class RidePageActivity : AppCompatActivity() {
 //        setSupportActionBar(toolbar)
         rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Ride ID $rideId")
-
+        userId =  Database.getThisUserId()
         Database.getRide(rideId) { ride: Ride ->
             showRideDetails(ride)
             Database.getDriver(ride.driverId) { driver: Driver ->
                 driverNamePage.text = driver.name
             }
-            driversPerspective = ride.driverId == Database.getThisUserId()
+            driversPerspective = ride.driverId ==  userId
             updatePassengers(ride.id)
         }
 
@@ -62,13 +65,25 @@ class RidePageActivity : AppCompatActivity() {
             adapter = viewAdapter
         }
 
-        //TODO: check on db if there is a request pending/declined
-        joinRideButton.isEnabled = intent.getBooleanExtra(Keys.CHANGE_BTN.name, true)
+        Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
+            pickups.forEach{pickup ->
+                if(pickup.userId == userId){
+                    pickupStatus =  if (pickup.inRide) APPROVED else PENDING
+                }
+            }
+        }
+
+        // Enable join ride button if no pickup request exist.
+        joinRideButton.isEnabled = pickupStatus == NOT_EXIST
         joinRideButton.setOnClickListener {
             val intent = Intent(applicationContext, JoinRideActivity::class.java)
             intent.putExtra(Keys.RIDE_ID.name, rideId)
             startActivity(intent)
         }
+    }
+
+    private fun forEach(pickup: Any) {
+
     }
 
     fun updatePassengers(rideId: Id) {

@@ -36,14 +36,15 @@ class JoinRideActivity : AppCompatActivity() {
 
                 submitPickupRequest.setOnClickListener {
                     Database.addPickup(rideId, Database.getThisUserId(), pickedLocation!!)
-                    val intent = Intent(applicationContext, RidePageActivity::class.java)
+                    /*val intent = Intent(applicationContext, RidePageActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     intent.putExtra(Keys.RIDE_ID.name, rideId)
                     //TODO: Change it to onActivityResult with resultCode.
                     intent.putExtra(Keys.CHANGE_BTN.name, false)
                     // joinRideButton!!.text="Edit Request"
                     //joinRideButton!!.isEnabled=false
-                    startActivity(intent)
+                    startActivity(intent)*/
+                    finish()
                 }
             }
         }

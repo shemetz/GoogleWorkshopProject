@@ -25,6 +25,13 @@ enum class Preferences {
     LAST_ORIGIN_LOCATION__READABLE,
 }
 
+enum class PickupStatus {
+    PENDING,
+    APPROVED,
+    DECLINED,
+    NOT_EXIST,
+}
+
 /**
  * Converts a location into a human-readable string.
  * For example, the location {latitude = 32.055436; longitude = 34.753070} will
