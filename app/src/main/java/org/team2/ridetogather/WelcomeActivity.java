@@ -13,6 +13,7 @@ import android.view.*;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.facebook.AccessToken;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -27,12 +28,12 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Database.INSTANCE.initialize(this);
 
         // Checking for first time launch - before calling setContentView()
         prefManager = new PrefManager(this);
         if (!prefManager.isFirstTimeLaunch()) {
             launchHomeScreen();
-            finish();
             return;
         }
 
@@ -43,10 +44,10 @@ public class WelcomeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_slider);
 
-        viewPager = (ViewPager) findViewById(R.id.view_pager);
-        dotsLayout = (LinearLayout) findViewById(R.id.layoutDots);
-        btnSkip = (Button) findViewById(R.id.btn_skip);
-        btnNext = (Button) findViewById(R.id.btn_next);
+        viewPager = findViewById(R.id.view_pager);
+        dotsLayout = findViewById(R.id.layoutDots);
+        btnSkip = findViewById(R.id.btn_skip);
+        btnNext = findViewById(R.id.btn_next);
 
 
         // layouts of all welcome sliders
@@ -78,7 +79,7 @@ public class WelcomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // checking for last page
                 // if last page home screen will be launched
-                int current = getItem(+1);
+                int current = viewPager.getCurrentItem() + 1;
                 if (current < layouts.length) {
                     // move to next screen
                     viewPager.setCurrentItem(current);
@@ -108,13 +109,14 @@ public class WelcomeActivity extends AppCompatActivity {
             dots[currentPage].setTextColor(colorsActive[currentPage]);
     }
 
-    private int getItem(int i) {
-        return viewPager.getCurrentItem() + i;
-    }
-
     private void launchHomeScreen() {
         prefManager.setFirstTimeLaunch(false);
-        startActivity(new Intent(WelcomeActivity.this, FacebookLoginActivity.class));
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        if (accessToken != null && !accessToken.isExpired() && prefManager.getThisUserId() != -1) {
+            startActivity(new Intent(WelcomeActivity.this, MainActivity.class));
+        } else {
+            startActivity(new Intent(WelcomeActivity.this, FacebookLoginActivity.class));
+        }
         finish();
     }
 

@@ -60,6 +60,7 @@
     <string name="passenger_name">Name</string>
     <string name="passenger_pickup_spot">Spot</string>
     <string name="passenger_pickup_time_default_value">00:00</string>
+    <string name="choose_a_pick_up_location">Choose a pickup location!</string>
 
     <!-- Slider -->
     <string name="next">NEXT</string>
@@ -75,10 +76,8 @@
         ;)
     </string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="choose_a_pick_up_location">Choose a pickup location!</string>
-
     <!-- Miscellaneous strings-->
+    <string name="logging_in">Logging in…</string>
+    <string name="updating">(Updating…)</string>
 
 </resources>

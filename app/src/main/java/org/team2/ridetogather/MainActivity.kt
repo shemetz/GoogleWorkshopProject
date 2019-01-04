@@ -130,8 +130,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun disconnectFromFacebook() {
-
+    private fun disconnectFromFacebook() {
+        val prefManager = PrefManager(this)
+        prefManager.thisUserId = -1
+        Database.idOfCurrentUser = -1
         if (AccessToken.getCurrentAccessToken() == null) {
             return  // already logged out
         }
@@ -143,7 +145,7 @@ class MainActivity : AppCompatActivity() {
             }).executeAsync()
     }
 
-    fun goToFacebookLoginActivity() {
+    private fun goToFacebookLoginActivity() {
         // Go to MainActivity and start it
         val intent = Intent(applicationContext, FacebookLoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or
@@ -151,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    fun buildDialog() {
+    private fun buildDialog() {
         val builder = AlertDialog.Builder(this, R.style.AlertDialogStyle)
         //builder.setTitle("Hey there")
         builder.setMessage("Are you sure you want to log out?")
