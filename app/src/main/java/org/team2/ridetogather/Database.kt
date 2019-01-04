@@ -7,11 +7,13 @@ import android.util.Log
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
@@ -84,12 +86,25 @@ object Database {
     private lateinit var requestQueue: RequestQueue
     private val tag = Database::class.java.simpleName
     private const val SERVER_URL = "https://ridetogather.herokuapp.com"
-    var idOfCurrentUser: Id = MockData.user1.id // MOCK
+    var idOfCurrentUser: Id = -1
 
-    fun initializeRequestQueue(context: Context) {
+    fun initialize(activityContext: Context) {
         // applicationContext is key, it keeps you from leaking the
         // Activity or BroadcastReceiver if someone passes one in.
-        requestQueue = Volley.newRequestQueue(context.applicationContext)
+        requestQueue = Volley.newRequestQueue(activityContext.applicationContext)
+        val prefManager = PrefManager(activityContext)
+        idOfCurrentUser = prefManager.thisUserId
+    }
+
+    private fun logResponseError(error: VolleyError, url: String) {
+        val errorData = String(error.networkResponse.data, Charset.forName("utf-8"))
+        try {
+            val errors = JSONObject(errorData).getJSONArray("errors")
+            val errorMessage = errors.getJSONObject(0).getString("message")
+            Log.e(tag, "Response error: $errorMessage (for $url)")
+        } catch (e: JSONException) {
+            Log.e(tag, "Response error: $errorData (for $url)")
+        }
     }
 
     private fun requestJsonObject(
@@ -105,7 +120,7 @@ object Database {
                 Log.v(tag, response.toString(4))
             },
             errorListener ?: Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
+                logResponseError(error, url)
             })
         Log.v("Database_JSON_request", request.url)
         if (request.body != null)
@@ -127,7 +142,7 @@ object Database {
                 Log.v(tag, response.toString(4))
             },
             errorListener ?: Response.ErrorListener { error ->
-                Log.e(tag, "Response error for $url", error)
+                logResponseError(error, url)
             })
         requestQueue.add(request)
     }
@@ -202,6 +217,22 @@ object Database {
                 /*if (mResultCallback != null) {
                     mResultCallback.notifySuccess(response)
                 }*/
+            }
+        )
+    }
+
+    fun getOrAddUserByFacebook(name: String, facebookProfileId: String, successCallback: (User) -> Unit) {
+        val credits = 0  // users start with 0 credits
+        val postParams = jsonObjOf(
+            "name" to name,
+            "facebookProfileId" to facebookProfileId,
+            "credits" to credits
+        )
+        val url = "$SERVER_URL/getOrAddUserByFacebook/$facebookProfileId"
+
+        requestJsonObject(Request.Method.POST, url, postParams,
+            Response.Listener { response ->
+                successCallback(JsonParse.user(response))
             }
         )
     }

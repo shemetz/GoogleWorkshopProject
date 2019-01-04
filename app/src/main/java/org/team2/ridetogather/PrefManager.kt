@@ -10,8 +10,12 @@ class PrefManager(_context: Context) {
     private var pref: SharedPreferences
 
     var isFirstTimeLaunch: Boolean
-        get() = pref.getBoolean(IS_FIRST_TIME_LAUNCH, true)
-        set(value) = pref.edit().putBoolean(IS_FIRST_TIME_LAUNCH, value).apply()
+        get() = pref.getBoolean("IsFirstTimeLaunch", true)
+        set(value) = pref.edit().putBoolean("IsFirstTimeLaunch", value).apply()
+
+    var thisUserId: Id
+        get() = pref.getInt("thisUserId", -1)
+        set(value) = pref.edit().putInt("thisUserId", value).apply()
 
     init {
         pref = _context.getSharedPreferences(PREFERENCES_FILE_NAME, 0) // 0 = PRIVATE MODE
@@ -20,8 +24,6 @@ class PrefManager(_context: Context) {
     companion object {
         // Shared preferences file name
         private const val PREFERENCES_FILE_NAME = "local_preferences"
-
-        private const val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
     }
 
 }
