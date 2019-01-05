@@ -48,6 +48,7 @@ class RidePageActivity : AppCompatActivity() {
         Log.d(tag, "Created $tag with Ride ID $rideId")
         userId =  Database.getThisUserId()
         Database.getRide(rideId) { ride: Ride ->
+            this.ride = ride
             showRideDetails(ride)
             Database.getDriver(ride.driverId) { driver: Driver ->
                 driverNamePage.text = driver.name
@@ -65,25 +66,33 @@ class RidePageActivity : AppCompatActivity() {
             adapter = viewAdapter
         }
 
-        Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
-            pickups.forEach{pickup ->
-                if(pickup.userId == userId){
-                    pickupStatus =  if (pickup.inRide) APPROVED else PENDING
-                }
-            }
-        }
-
-        // Enable join ride button if no pickup request exist.
-        joinRideButton.isEnabled = pickupStatus == NOT_EXIST
         joinRideButton.setOnClickListener {
             val intent = Intent(applicationContext, JoinRideActivity::class.java)
             intent.putExtra(Keys.RIDE_ID.name, rideId)
-            startActivity(intent)
+            // request code doesn't matter - the activity doesn't check it
+            startActivityForResult(intent,1)
         }
+
+        // Enable join ride button if no pickup request exist.
+        updateJoinRideButton()
+
     }
 
-    private fun forEach(pickup: Any) {
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        updatePassengers(ride.id)
+        updateJoinRideButton()
+    }
+
+    private fun updateJoinRideButton()  {
+        Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
+           for( pickup in pickups){
+                if(pickup.userId == userId){
+                    pickupStatus =  if (pickup.inRide) APPROVED else PENDING
+                    joinRideButton.isEnabled = false
+                }
+            }
+        }
     }
 
     fun updatePassengers(rideId: Id) {
