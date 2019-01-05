@@ -46,14 +46,14 @@ class RidePageActivity : AppCompatActivity() {
 //        setSupportActionBar(toolbar)
         rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Ride ID $rideId")
-        userId =  Database.getThisUserId()
+        userId =  Database.idOfCurrentUser
         Database.getRide(rideId) { ride: Ride ->
             this.ride = ride
             showRideDetails(ride)
             Database.getDriver(ride.driverId) { driver: Driver ->
                 driverNamePage.text = driver.name
             }
-            driversPerspective = ride.driverId ==  userId
+            driversPerspective = ride.driverId == Database.idOfCurrentUser
             updatePassengers(ride.id)
         }
 

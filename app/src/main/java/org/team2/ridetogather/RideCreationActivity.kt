@@ -33,7 +33,7 @@ class RideCreationActivity : AppCompatActivity() {
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         Log.d(tag, "Created $tag with Event ID $eventId")
 
-        val driverId: Id = Database.getThisUserId()
+        val driverId: Id = Database.idOfCurrentUser
         var timeOfDay: TimeOfDay? = null
 
         pick_time_button.setOnClickListener {

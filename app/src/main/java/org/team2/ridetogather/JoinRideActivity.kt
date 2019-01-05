@@ -35,7 +35,7 @@ class JoinRideActivity : AppCompatActivity() {
                 }
 
                 submitPickupRequest.setOnClickListener {
-                    Database.addPickup(rideId, Database.getThisUserId(), pickedLocation!!)
+                    Database.addPickup(rideId, Database.idOfCurrentUser, pickedLocation!!)
                     /*val intent = Intent(applicationContext, RidePageActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     intent.putExtra(Keys.RIDE_ID.name, rideId)

@@ -99,12 +99,9 @@ class EventRidesActivity : AppCompatActivity() {
                 addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
             }
         }
+        refreshRecyclerView()
 
-        fab_create_ride.setOnClickListener {
-            val intent = Intent(this, RideCreationActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name, eventId)
-            startActivity(intent)
-        }
+
     }
 
     private fun refreshRecyclerView() {
@@ -112,6 +109,25 @@ class EventRidesActivity : AppCompatActivity() {
             viewAdapter = MyAdapter(this, rides.toTypedArray())
             viewAdapter.notifyDataSetChanged()
             recyclerView.adapter = viewAdapter
+
+            val rideCreatedByThisUser = rides.singleOrNull { it.driverId == Database.idOfCurrentUser }
+            if (rideCreatedByThisUser == null) {
+                fab_create_ride.setImageDrawable(getDrawable(R.drawable.ic_create_ride))
+                fab_create_ride.setOnClickListener {
+                    // create a new ride
+                    val intent = Intent(this, RideCreationActivity::class.java)
+                    intent.putExtra(Keys.EVENT_ID.name, eventId)
+                    startActivity(intent)
+                }
+            } else {
+                fab_create_ride.setImageDrawable(getDrawable(R.drawable.ic_open_existing_ride))
+                fab_create_ride.setOnClickListener {
+                    // go to pre-existing ride, instead of creating a new one
+                    val intent = Intent(this, RidePageActivity::class.java)
+                    intent.putExtra(Keys.RIDE_ID.name, rideCreatedByThisUser.id)
+                    startActivity(intent)
+                }
+            }
         }
     }
 

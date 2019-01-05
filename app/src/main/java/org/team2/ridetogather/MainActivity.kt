@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         // MOCK
         temp_button_switch_user.setOnClickListener {
-            Database.idOfCurrentUser = if (Database.getThisUserId() == MockData.user1.id)
+            Database.idOfCurrentUser = if (Database.idOfCurrentUser == MockData.user1.id)
                 MockData.user2.id
             else
                 MockData.user1.id
