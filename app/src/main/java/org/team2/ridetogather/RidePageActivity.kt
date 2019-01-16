@@ -15,6 +15,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Toast
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
 import org.team2.ridetogather.PickupStatus.*
@@ -38,6 +39,8 @@ class RidePageActivity : AppCompatActivity() {
         originLocation.text = readableLocation(this, ride.origin)
         departureTimePage.text = ride.departureTime.shortenedTime()
         details.text = ride.extraDetails
+
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,10 +55,25 @@ class RidePageActivity : AppCompatActivity() {
             showRideDetails(ride)
             Database.getDriver(ride.driverId) { driver: Driver ->
                 driverNamePage.text = driver.name
+                // load profile picture of driver
+                Database.getUser(ride.driverId) { user: User ->
+                    val facebookId = user.facebookProfileId
+                    getProfilePicUrl(facebookId) { pic_url ->
+                        Picasso.get()
+                            .load(pic_url)
+                            .placeholder(R.drawable.placeholder_profile)
+                            .error(R.drawable.placeholder_profile)
+                            .resize(256, 256)
+                            .transform(CircleTransform())
+                            .into(DriverProfilePic)
+                    }
+                }
             }
             driversPerspective = ride.driverId == Database.idOfCurrentUser
             updatePassengers(ride.id)
+
         }
+
 
         viewManager = LinearLayoutManager(this)
         viewAdapter = MyAdapter(this, emptyArray())
@@ -65,6 +83,8 @@ class RidePageActivity : AppCompatActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
+
+
 
         joinRideButton.setOnClickListener {
             val intent = Intent(applicationContext, JoinRideActivity::class.java)
@@ -198,7 +218,19 @@ class RidePageActivity : AppCompatActivity() {
             }
 
             view.pickupSpot.text = readableLocation(context, pickup.pickupSpot)
-//            view.driverPicture.drawable = ???
+            // load profile picture of passenger
+            Database.getUser(pickup.userId) { user: User ->
+                val facebookId = user.facebookProfileId
+                getProfilePicUrl(facebookId) { pic_url ->
+                    Picasso.get()
+                        .load(pic_url)
+                        .placeholder(R.drawable.placeholder_profile)
+                        .error(R.drawable.placeholder_profile)
+                        .resize(256, 256)
+                        .transform(CircleTransform())
+                        .into(view.PassengerProfilePic)
+                }
+            }
             view.pickupTime.text = pickup.pickupTime.shortenedTime()
 
         }
