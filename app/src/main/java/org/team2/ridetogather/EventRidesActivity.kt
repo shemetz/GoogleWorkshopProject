@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView
 import android.text.Html
 import android.util.Log
 import android.view.*
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
 import kotlinx.coroutines.CoroutineScope
@@ -168,11 +169,24 @@ class EventRidesActivity : AppCompatActivity() {
             // - replace the contents of the view with that element
             val view = holder.cardView
             val ride = rides[position]
+
             Database.getDriver(ride.driverId) { driver: Driver ->
                 view.driverName.text = driver.name
+
+                val facebookId = driver.facebookProfileId
+                getProfilePicUrl(facebookId) { pic_url ->
+                    Picasso.get()
+                        .load(pic_url)
+                        .placeholder(R.drawable.placeholder_profile)
+                        .error(R.drawable.placeholder_profile)
+                        .resize(256, 256)
+                        .transform(CircleTransform())
+                        .into(view.driverPicture)
+                }
             }
             view.originLocationName.text = readableLocation(context, ride.origin)
 //            view.driverPicture.drawable = ???
+
             view.departureTime.text = ride.departureTime.shortenedTime()
             holder.cardView.setOnClickListener {
                 val intent = Intent(view.context, RidePageActivity::class.java)

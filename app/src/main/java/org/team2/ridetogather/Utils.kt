@@ -118,14 +118,18 @@ fun String.decodeToLatLng(): LatLng {
 }
 
 fun getProfilePicUrl(facebookId: String, callback: (String) -> Unit) {
-    val request = GraphRequest.newGraphPathRequest(
-        AccessToken.getCurrentAccessToken(),
-        "/$facebookId"
-    ) { response ->
-        val picture = response.jsonObject.getJSONObject("picture")
-        val picUrl = picture.getJSONObject("data").getString("url")
-        callback(picUrl)
+    if (facebookId.equals("fakeprofile")) {
+        callback("http://pluspng.com/img-png/png-hd-of-puppies-puppy-other-400.png")
+    } else {
+        val request = GraphRequest.newGraphPathRequest(
+            AccessToken.getCurrentAccessToken(),
+            "/$facebookId"
+        ) { response ->
+            val picture = response.jsonObject.getJSONObject("picture")
+            val picUrl = picture.getJSONObject("data").getString("url")
+            callback(picUrl)
+        }
+        request.parameters.putString("fields", "picture.type(large)")
+        request.executeAsync()
     }
-    request.parameters.putString("fields", "picture.type(large)")
-    request.executeAsync()
 }

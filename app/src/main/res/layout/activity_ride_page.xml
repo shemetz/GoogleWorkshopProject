@@ -71,7 +71,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="80"
                 android:adjustViewBounds="true"
-                app:srcCompat="@drawable/example_profile_photo"
                 tools:ignore="ContentDescription"/>
 
 
