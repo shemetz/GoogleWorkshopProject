@@ -17,6 +17,7 @@ enum class Keys {
     LOCATION,
     ROUTE_JSON,
     CHANGE_BTN,
+    REQUEST_CODE,
 }
 
 enum class Preferences {

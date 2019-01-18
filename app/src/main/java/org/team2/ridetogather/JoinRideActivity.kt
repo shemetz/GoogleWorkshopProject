@@ -29,7 +29,9 @@ class JoinRideActivity : AppCompatActivity() {
                 pickLocation.setOnClickListener {
                     val intent = Intent(applicationContext, MapsActivity::class.java)
                     intent.putExtra(Keys.EVENT_ID.name, eventId)
+                    intent.putExtra(Keys.RIDE_ID.name, rideId)
                     intent.putExtra(Keys.LOCATION.name, pickedLocation?.toLatLng()?.encodeToString())
+                    intent.putExtra(Keys.REQUEST_CODE.name, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
                     startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
                     // Result will return to OnActivityResult()
                 }

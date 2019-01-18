@@ -40,6 +40,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var savedInstanceState: Bundle? = null // in case phone rotates
     private var drawnRoute: MutableList<Polyline> = mutableListOf()
     private var routeJson: JSONObject? = null
+    private val pickupMarkers: MutableList<PickupMarker> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +77,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupMarkers(event: Event) {
+        val requestCode = intent.getIntExtra(Keys.REQUEST_CODE.name, 0)
+        Log.i(tag, "Request code: $requestCode (${MapsActivity.Companion.RequestCode.values()[requestCode].name})")
         val preexistingLocation = intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
         val eventLocation = event.location.toLatLng()
         val eventMarkerOptions = MarkerOptions()
@@ -95,6 +98,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .zIndex(5f)
         originMarker = map.addMarker(originMarkerOptions)
         originMarker.tag = TheOriginMarker
+
+        if (requestCode == MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal) {
+            val rideId: Id = intent.getIntExtra(Keys.RIDE_ID.name, -1)
+            Database.getPickupsForRide(rideId) { pickups ->
+                pickups.forEach { pickup ->
+                    Database.getUser(pickup.userId) { passenger ->
+                        val position = pickup.pickupSpot.toLatLng()
+                        val markerOptions = MarkerOptions()
+                            .position(position)
+                            .title(passenger.name + "\n" + pickup.pickupTime.shortenedTime())
+                            .icon(createCombinedMarker(R.drawable.ic_person_white_sub_icon, 36)) // TODO TEMPORARY
+                            .zIndex(4f)
+                        val marker = map.addMarker(markerOptions)
+                        val pickupMarker = PickupMarker(pickup, position, pickup.inRide, marker)
+                        marker.tag = pickupMarker
+                        pickupMarkers.add(pickupMarker)
+                    }
+                }
+            }
+        }
     }
 
     private fun setupMapStartingPosition() {
@@ -291,10 +314,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 "destination" to "${destination.latitude},${destination.longitude}"
             ),
             onResponse = {
+                val responseJson = this.jsonObject
                 Log.i(tag, "Got a response! \\o/")
 //                Log.i(tag, this.text)
-                routeJson = this.jsonObject
-                drawRoute(routeJson!!)
+                if (responseJson.optJSONArray("routes")?.length() != 0) {
+                    routeJson = responseJson
+                    drawRoute(routeJson!!)
+                } else {
+                    routeJson = null
+                    runOnUiThread {
+                        Log.e(tag, "Failed to find any route..!")
+                        Log.e(tag, responseJson.toString(4))
+                        Toast.makeText(this@MapsActivity, "No route was found 🙁", Toast.LENGTH_SHORT).show()
+                        // remove existing route if it exists
+                        drawnRoute.forEach { it.remove() }
+                    }
+                }
             }
         )
     }
@@ -342,6 +377,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             drawnRoute.add(polyLine)
         }
     }
+
+    class PickupMarker(
+        val pickup: Pickup,
+        var position: LatLng,
+        var inRide: Boolean,
+        val marker: Marker
+    )
 
     private val markerHandlers: MutableMap<Marker, Handler> = mutableMapOf()
     /**
@@ -429,6 +471,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     companion object {
         enum class RequestCode {
+            NONE,  // should never happen
             PICK_DRIVER_ORIGIN,
             PICK_PASSENGER_LOCATION
         }

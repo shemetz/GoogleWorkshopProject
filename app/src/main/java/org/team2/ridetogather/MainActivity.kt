@@ -62,13 +62,10 @@ class MainActivity : AppCompatActivity() {
             AccessToken.getCurrentAccessToken()
         ) { Json, response ->
             try {
-                Log.i(tag, "working")
-                Log.i(tag, Json.toString(4))
                 val eventsArray = Json.getJSONObject("events").getJSONArray("data")
                 val eventsNameList = arrayOfNulls<String>(eventsArray.length())
                 for (i in 0..(eventsArray.length() - 1)) {
                     val eventName = eventsArray.optJSONObject(i).getString("name")
-                    Log.i(tag, "Event name = $eventName")
                     eventsNameList[i] = eventName
                 }
                 val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, eventsNameList)
