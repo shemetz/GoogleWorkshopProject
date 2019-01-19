@@ -22,31 +22,22 @@ class JoinRideActivity : AppCompatActivity() {
         setContentView(R.layout.activity_join_ride)
         pickedLocationTextBox.text = getString(R.string.choose_a_pick_up_location)
         val rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
+        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         submitPickupRequest.isEnabled = false
-        Database.getRide(rideId) { ride ->
-            val eventId = ride.eventId
-            Database.getEvent(eventId) {
-                pickLocation.setOnClickListener {
-                    val intent = Intent(applicationContext, MapsActivity::class.java)
-                    intent.putExtra(Keys.EVENT_ID.name, eventId)
-                    intent.putExtra(Keys.RIDE_ID.name, rideId)
-                    intent.putExtra(Keys.LOCATION.name, pickedLocation?.toLatLng()?.encodeToString())
-                    intent.putExtra(Keys.REQUEST_CODE.name, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
-                    startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
-                    // Result will return to OnActivityResult()
-                }
+        pickLocation.setOnClickListener {
+            val intent = Intent(applicationContext, MapsActivity::class.java)
+            intent.putExtra(Keys.EVENT_ID.name, eventId)
+            intent.putExtra(Keys.RIDE_ID.name, rideId)
+            intent.putExtra(Keys.LOCATION.name, pickedLocation?.toLatLng()?.encodeToString())
+            intent.putExtra(Keys.REQUEST_CODE.name, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
+            startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal)
+            // Result will return to OnActivityResult()
+        }
 
-                submitPickupRequest.setOnClickListener {
-                    Database.addPickup(rideId, Database.idOfCurrentUser, pickedLocation!!)
-                    /*val intent = Intent(applicationContext, RidePageActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    intent.putExtra(Keys.RIDE_ID.name, rideId)
-                    // Change it to onActivityResult with resultCode.
-                    intent.putExtra(Keys.CHANGE_BTN.name, false)
-                    startActivity(intent)*/
-                    setResult(Activity.RESULT_OK)
-                    finish()
-                }
+        submitPickupRequest.setOnClickListener {
+            Database.addPickup(rideId, Database.idOfCurrentUser, pickedLocation!!) {
+                setResult(Activity.RESULT_OK)
+                finish()
             }
         }
     }

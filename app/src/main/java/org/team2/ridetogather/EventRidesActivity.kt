@@ -101,12 +101,14 @@ class EventRidesActivity : AppCompatActivity() {
             }
         }
         refreshRecyclerView()
-
-
     }
 
     private fun refreshRecyclerView() {
+        fab_create_ride.visibility = View.GONE
+        fab_create_ride.hide()
         Database.getRidesForEvent(eventId) { rides: List<Ride> ->
+            fab_create_ride.visibility = View.VISIBLE
+            fab_create_ride.show()
             viewAdapter = MyAdapter(this, rides.toTypedArray())
             viewAdapter.notifyDataSetChanged()
             recyclerView.adapter = viewAdapter
@@ -126,6 +128,7 @@ class EventRidesActivity : AppCompatActivity() {
                     // go to pre-existing ride, instead of creating a new one
                     val intent = Intent(this, RidePageActivity::class.java)
                     intent.putExtra(Keys.RIDE_ID.name, rideCreatedByThisUser.id)
+                    intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, true)
                     startActivity(intent)
                 }
             }
@@ -192,6 +195,7 @@ class EventRidesActivity : AppCompatActivity() {
                 val intent = Intent(view.context, RidePageActivity::class.java)
                 val rideID = ride.id
                 intent.putExtra(Keys.RIDE_ID.name, rideID)
+                intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, ride.driverId == Database.idOfCurrentUser)
                 view.context.startActivity(intent)
             }
             /*holder.cardView.joinRidePlusButton.setOnClickListener{

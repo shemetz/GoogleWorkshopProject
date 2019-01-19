@@ -72,18 +72,6 @@
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="115dp"
-        android:layout_marginHorizontal="16dp"
-        android:tint="@android:color/white"
-        app:backgroundTint="@color/carButton"
-        app:layout_anchor="@id/app_bar"
-        app:layout_anchorGravity="top|end"
-        app:srcCompat="@drawable/ic_open_existing_ride" />
     <android.support.v4.view.ViewPager
             android:id="@+id/viewpager_main"
             android:layout_width="match_parent"

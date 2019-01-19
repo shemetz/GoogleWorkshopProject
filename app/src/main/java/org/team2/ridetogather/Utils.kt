@@ -18,6 +18,7 @@ enum class Keys {
     ROUTE_JSON,
     CHANGE_BTN,
     REQUEST_CODE,
+    DRIVER_PERSPECTIVE,
 }
 
 enum class Preferences {
