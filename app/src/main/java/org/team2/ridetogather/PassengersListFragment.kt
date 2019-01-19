@@ -33,7 +33,6 @@ class PassengersListFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_passengers_list, container, false)
-
     }
 
     override fun onStart() {
@@ -44,7 +43,8 @@ class PassengersListFragment : Fragment() {
             setHasFixedSize(true)
             layoutManager = viewManager
             adapter = viewAdapter
-            addItemDecoration(EventRidesActivity.MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
+            if (itemDecorationCount == 0) // this fixes a dumb bug
+                addItemDecoration(EventRidesActivity.MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
         }
 
     }

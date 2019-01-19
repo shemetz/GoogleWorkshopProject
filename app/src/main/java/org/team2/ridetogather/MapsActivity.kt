@@ -295,6 +295,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         map.animateCamera(CameraUpdateFactory.newLatLng(mainMarker!!.position), 500, null)
                     }
                 }
+                if (mainMarker!!.alpha == 0.5f)
+                    fab_confirm_location.hide()
             }
             RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
                 fab_confirm_location.visibility = View.VISIBLE

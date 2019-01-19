@@ -34,7 +34,8 @@ class RidesListFragment : Fragment() {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = EventRidesActivity.MyAdapter(context, emptyArray())
-            addItemDecoration(EventRidesActivity.MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
+            if (itemDecorationCount == 0) // this fixes a dumb bug
+                addItemDecoration(EventRidesActivity.MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
         }
     }
 
