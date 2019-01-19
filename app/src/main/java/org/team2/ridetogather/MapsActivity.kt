@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.SystemClock
 import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
@@ -28,6 +29,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.PolyUtil
 import kotlinx.android.synthetic.main.activity_maps.*
+import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.max
 
@@ -121,6 +123,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         .title(passenger.name + "\n" + pickup.pickupTime.shortenedTime())
                         .icon(createCombinedMarker(R.drawable.ic_person_white_sub_icon, 36)) // TODO use profile picture
                         .zIndex(4f)
+                        .alpha(if (pickup.inRide) 1f else 0.5f)
                     val marker = map.addMarker(markerOptions)
                     val pickupMarker = PickupMarker(pickup, pickup.inRide, marker)
                     marker.tag = pickupMarker
@@ -222,30 +225,61 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     finish()
                 }
                 RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                    // This isn't very nice, but we're blocking the app from leaving this activity until the pickups
-                    // are actually updated in the server. This way when we return to the ride page it won't be wrong
-                    fab_confirm_location.hide()
-                    fab_pin_or_unpin.hide()
+                    fun onDialogClick(denyOthers: Boolean) {
+                        fab_confirm_location.hide()
+                        fab_pin_or_unpin.hide()
 
-                    fun whenDoneUpdating() {
-                        resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
-                        setResult(Activity.RESULT_OK, resultIntent)
-                        finish()
+                        /*
+                        What we want to do here:
+                        First we ask the user if they want to delete the non-accepted pickups.
+                        Then we update the server with the updated and deleted pickups.
+                        Finally once all pickups have been handled we finish the activity; if we
+                        did it sooner it would have gotten us to an incorrectly-updated ride page.
+                         */
+
+                        var counter = pickupMarkers.size
+                        fun countDown() {
+                            counter--
+                            if (counter == 0) {
+                                resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
+                                setResult(Activity.RESULT_OK, resultIntent)
+                                finish()
+                            }
+                        }
+
+                        // do this once, in case it was empty so the for-loop won't do anything
+                        counter++
+                        countDown()
+
+                        for (pickupMarker in pickupMarkers) {
+                            if (pickupMarker.inRide) {
+                                if (!pickupMarker.pickup.inRide) {
+                                    pickupMarker.pickup.inRide = pickupMarker.inRide
+                                    Database.updatePickup(pickupMarker.pickup) {
+                                        pickupMarker.marker.setIcon(createCombinedMarker(R.drawable.ic_person_green_sub_icon, 36))
+                                        countDown()
+                                    }
+                                } else countDown()
+                            } else {
+                                if (denyOthers) {
+                                    Database.deletePickup(pickupMarker.pickup.id) {
+                                        pickupMarker.marker.remove()
+                                        countDown()
+                                    }
+                                } else countDown()
+                            }
+                        }
                     }
 
-                    var counter = pickupMarkers.size
-                    if (counter == 0)
-                        whenDoneUpdating()
-                    else for (pickupMarker in pickupMarkers) {
-                        if (pickupMarker.pickup.inRide != pickupMarker.inRide) {
-                            pickupMarker.pickup.inRide = pickupMarker.inRide
-                            Database.updatePickup(pickupMarker.pickup) {
-                                counter--
-                                if (counter == 0) {
-                                    whenDoneUpdating()
-                                }
-                            }
-                        } else counter--
+                    if (pickupMarkers.all { pickup -> pickup.inRide }) {
+                        onDialogClick(false)
+                    } else {
+                        AlertDialog.Builder(this, R.style.AlertDialogStyle)
+                            .setTitle(R.string.discard_leftover_requests_title)
+                            .setMessage(getString(R.string.discard_leftover_requests_description))
+                            .setPositiveButton(R.string.yes) { _, _ -> onDialogClick(true) }
+                            .setNegativeButton(R.string.no) { _, _ -> onDialogClick(false) }
+                            .show()
                     }
                 }
             }
@@ -385,14 +419,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Getting URL to the Google Directions API
         val origin = originMarker.position
         val destination = eventMarker.position
+        val waypoints = pickupMarkers
+            .filter { it.inRide }
+            .map { it.marker.position }
+            .map {
+                jsonObjOf(
+                    "location" to "${origin.latitude},${origin.longitude}",
+                    "stopover" to false
+                )
+            }
+            .take(23) // that's the maximum
+        val params = mapOf(
+            "key" to getString(R.string.SECRET_GOOGLE_API_KEY),
+            "origin" to "${origin.latitude},${origin.longitude}",
+            "destination" to "${destination.latitude},${destination.longitude}",
+            "travelMode" to "DRIVING"
+        ) + if (waypoints.isNotEmpty()) mapOf(
+            "waypoints" to JSONArray(waypoints).toString(),
+            "optimizeWaypoints" to "false"
+        ) else emptyMap()
         Log.i(tag, "Requesting route from Google Maps API…")
+        Log.v(tag, params.toString())
         khttp.async.get(
             url = "https://maps.googleapis.com/maps/api/directions/json",
-            params = mapOf(
-                "key" to getString(R.string.SECRET_GOOGLE_API_KEY),
-                "origin" to "${origin.latitude},${origin.longitude}",
-                "destination" to "${destination.latitude},${destination.longitude}"
-            ),
+            params = params,
             onResponse = {
                 val responseJson = this.jsonObject
                 Log.i(tag, "Got a response! \\o/")
@@ -473,12 +523,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (pickupMarker.inRide) {
                     pickupMarker.inRide = false
                     pickupMarker.marker.alpha = 0.5f
-                    true
                 } else {
                     pickupMarker.inRide = true
                     pickupMarker.marker.alpha = 1f
-                    true
                 }
+                calculateRoute()
+                true
             }
             RequestCode.PICK_DRIVER_ORIGIN -> {
                 Log.e(tag, "This thing should never happen")

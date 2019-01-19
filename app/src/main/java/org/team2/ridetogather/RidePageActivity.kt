@@ -155,20 +155,18 @@ class RidePageActivity : AppCompatActivity() {
                         mainButton.setTextColor(ContextCompat.getColor(this, R.color.title_light))
                         mainButton.setOnClickListener {
                             AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                                .setTitle(R.string.delete_ride_title)
+                                .setTitle(R.string.leave_ride)
                                 .setMessage(getString(R.string.leave_ride_are_you_sure))
                                 .setPositiveButton(
                                     android.R.string.yes
-                                ) { _, whichButton ->
-                                    if (whichButton == DialogInterface.BUTTON_POSITIVE) {
-                                        val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
-                                        Database.deletePickup(pickup.id) {
-                                            Toast.makeText(this, "Left ride.", Toast.LENGTH_SHORT).show()
-                                            recreate() // to be updated
-                                        }
-                                        mainButton.isEnabled = false
-                                        mainButton.text = getString(R.string.updating)
+                                ) { _, _ ->
+                                    val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
+                                    Database.deletePickup(pickup.id) {
+                                        Toast.makeText(this, "Left ride.", Toast.LENGTH_SHORT).show()
+                                        recreate() // to be updated
                                     }
+                                    mainButton.isEnabled = false
+                                    mainButton.text = getString(R.string.updating)
                                 }
                                 .setNegativeButton(android.R.string.no, null).show()
                         }
@@ -185,20 +183,16 @@ class RidePageActivity : AppCompatActivity() {
                                 mainButton.setTextColor(ContextCompat.getColor(this, R.color.title_light))
                             } else {
                                 AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                                    .setTitle(R.string.delete_ride_title)
+                                    .setTitle(R.string.cancel_request)
                                     .setMessage(getString(R.string.cancel_request_are_you_sure))
-                                    .setPositiveButton(
-                                        android.R.string.yes
-                                    ) { _, whichButton ->
-                                        if (whichButton == DialogInterface.BUTTON_POSITIVE) {
-                                            val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
-                                            Database.deletePickup(pickup.id) {
-                                                Toast.makeText(this, "Canceled request.", Toast.LENGTH_SHORT).show()
-                                                recreate() // to be updated
-                                            }
-                                            mainButton.isEnabled = false
-                                            mainButton.text = getString(R.string.updating)
+                                    .setPositiveButton(android.R.string.yes) { _, _ ->
+                                        val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
+                                        Database.deletePickup(pickup.id) {
+                                            Toast.makeText(this, "Canceled request.", Toast.LENGTH_SHORT).show()
+                                            recreate() // to be updated
                                         }
+                                        mainButton.isEnabled = false
+                                        mainButton.text = getString(R.string.updating)
                                     }
                                     .setNegativeButton(android.R.string.no, null).show()
                             }
