@@ -11,7 +11,6 @@ import android.os.Handler
 import android.os.SystemClock
 import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
@@ -225,61 +224,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     finish()
                 }
                 RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                    fun onDialogClick(denyOthers: Boolean) {
-                        fab_confirm_location.hide()
-                        fab_pin_or_unpin.hide()
+                    fab_confirm_location.hide()
+                    fab_pin_or_unpin.hide()
 
-                        /*
-                        What we want to do here:
-                        First we ask the user if they want to delete the non-accepted pickups.
-                        Then we update the server with the updated and deleted pickups.
-                        Finally once all pickups have been handled we finish the activity; if we
-                        did it sooner it would have gotten us to an incorrectly-updated ride page.
-                         */
+                    /*
+                    What we want to do here:
+                    First we ask the user if they want to delete the non-accepted pickups.
+                    Then we update the server with the updated and deleted pickups.
+                    Finally once all pickups have been handled we finish the activity; if we
+                    did it sooner it would have gotten us to an incorrectly-updated ride page.
+                     */
 
-                        var counter = pickupMarkers.size
-                        fun countDown() {
-                            counter--
-                            if (counter == 0) {
-                                resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
-                                setResult(Activity.RESULT_OK, resultIntent)
-                                finish()
-                            }
-                        }
-
-                        // do this once, in case it was empty so the for-loop won't do anything
-                        counter++
-                        countDown()
-
-                        for (pickupMarker in pickupMarkers) {
-                            if (pickupMarker.inRide) {
-                                if (!pickupMarker.pickup.inRide) {
-                                    pickupMarker.pickup.inRide = pickupMarker.inRide
-                                    Database.updatePickup(pickupMarker.pickup) {
-                                        pickupMarker.marker.setIcon(createCombinedMarker(R.drawable.ic_person_green_sub_icon, 36))
-                                        countDown()
-                                    }
-                                } else countDown()
-                            } else {
-                                if (denyOthers) {
-                                    Database.deletePickup(pickupMarker.pickup.id) {
-                                        pickupMarker.marker.remove()
-                                        countDown()
-                                    }
-                                } else countDown()
-                            }
+                    var counter = pickupMarkers.size
+                    fun countDown() {
+                        counter--
+                        if (counter == 0) {
+                            resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
+                            setResult(Activity.RESULT_OK, resultIntent)
+                            finish()
                         }
                     }
 
-                    if (pickupMarkers.all { pickup -> pickup.inRide }) {
-                        onDialogClick(false)
-                    } else {
-                        AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                            .setTitle(R.string.discard_leftover_requests_title)
-                            .setMessage(getString(R.string.discard_leftover_requests_description))
-                            .setPositiveButton(R.string.yes) { _, _ -> onDialogClick(true) }
-                            .setNegativeButton(R.string.no) { _, _ -> onDialogClick(false) }
-                            .show()
+                    // do this once, in case it was empty so the for-loop won't do anything
+                    counter++
+                    countDown()
+
+                    for (pickupMarker in pickupMarkers) {
+                        if (pickupMarker.inRide) {
+                            if (!pickupMarker.pickup.inRide) {
+                                pickupMarker.pickup.inRide = pickupMarker.inRide
+                                Database.updatePickup(pickupMarker.pickup) {
+                                    pickupMarker.marker.setIcon(
+                                        createCombinedMarker(
+                                            R.drawable.ic_person_green_sub_icon,
+                                            36
+                                        )
+                                    )
+                                    countDown()
+                                }
+                            } else countDown()
+                        } else {
+                            Database.deletePickup(pickupMarker.pickup.id) {
+                                pickupMarker.marker.remove()
+                                countDown()
+                            }
+                        }
                     }
                 }
             }
