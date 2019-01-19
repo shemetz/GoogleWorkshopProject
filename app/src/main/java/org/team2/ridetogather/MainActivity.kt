@@ -86,8 +86,6 @@ class MainActivity : AppCompatActivity() {
         parameters.putString("fields", "events")
         event_request.parameters = parameters
         event_request.executeAsync()
-
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
