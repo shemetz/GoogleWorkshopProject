@@ -227,8 +227,9 @@ class RidePageActivity : AppCompatActivity() {
     }
 
     private fun updatePassengers(rideId: Id) {
-        Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
-            viewAdapter = MyAdapter(this, pickups.toTypedArray())
+        Database.getPickupsForRide(rideId) { allPickups: List<Pickup> ->
+            val confirmedPickups = allPickups.filter { it.inRide }
+            viewAdapter = MyAdapter(this, confirmedPickups.toTypedArray())
             recyclerView = findViewById<RecyclerView>(R.id.ride_page_recyclerview).apply {
                 // changes in content do not change the layout size of the RecyclerView
                 setHasFixedSize(true)
