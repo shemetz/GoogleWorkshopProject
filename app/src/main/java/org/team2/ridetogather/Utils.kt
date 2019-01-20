@@ -137,8 +137,9 @@ fun getProfilePicUrl(facebookId: String, callback: (String) -> Unit) {
 }
 
 fun getEventUrl(eventId: String, callback: (String) -> Unit) {
-    if (eventId.equals("fake_event_-id")) {
-        callback("http://pluspngcom/img-png/png-hd-of-puppies-puppy-other-400.png")
+    val tag = "utils"::class.java.simpleName
+    if (eventId.equals("fakefacebookevent")) {
+        callback("https://www.cesarsway.com/sites/newcesarsway/files/d6/images/features/2012/sept/How-to-Care-for-Newborn-Puppies.jpg")
     } else {
         val request = GraphRequest.newGraphPathRequest(
             AccessToken.getCurrentAccessToken(),
@@ -148,7 +149,7 @@ fun getEventUrl(eventId: String, callback: (String) -> Unit) {
             val picUrl = picture.getString("source")
             callback(picUrl)
         }
-        request.parameters.putString("fields", "cover)")
+        request.parameters.putString("fields", "cover")
         request.executeAsync()
     }
 }

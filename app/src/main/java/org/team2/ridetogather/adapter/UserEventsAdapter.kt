@@ -5,9 +5,11 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.user_event.view.*
 import org.team2.ridetogather.Event
 import org.team2.ridetogather.R
+import org.team2.ridetogather.getEventUrl
 import org.team2.ridetogather.readableLocation
 import java.util.*
 import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
@@ -22,6 +24,17 @@ class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var 
             holder?.eventTitle?.text = items.get(position).name
             holder?.eventLocation?.text =readableLocation(context, items.get(position).location)
             holder?.eventDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(items.get(position).datetime)
+
+            val facebookId = items.get(position).facebookEventId
+            getEventUrl(facebookId) { pic_url ->
+                Picasso.get()
+                    .load(pic_url)
+                    .placeholder(R.drawable.placeholder_profile)
+                    .error(R.drawable.placeholder_profile)
+                    .resize(256, 256)
+                    .into(holder?.eventPicture)
+            }
+
             holder?.card_view.setOnClickListener(View.OnClickListener {
 
                 itemClickListener?.onItemClicked(items.get(position),position)

@@ -5,11 +5,14 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.facebook_event.view.*
 import org.team2.ridetogather.Event
 import org.team2.ridetogather.R
+import org.team2.ridetogather.getEventUrl
 import org.team2.ridetogather.readableLocation
 import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
+import java.util.*
 
 class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Context?) : RecyclerView.Adapter<ViewHolderFacebookEvent>() {
 
@@ -21,6 +24,16 @@ class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Co
         holder?.eventTitle?.text = items.get(position).name
         holder?.eventLocation?.text =items.get(position).location
         holder?.eventDateTime?.text = items.get(position).datetime.toString()
+
+        val facebookId = items.get(position).id
+        getEventUrl(facebookId) { pic_url ->
+            Picasso.get()
+                .load(pic_url)
+                .placeholder(R.drawable.placeholder_profile)
+                .error(R.drawable.placeholder_profile)
+                .resize(256, 256)
+                .into(holder?.eventPicture)
+        }
 
     }
 
@@ -34,18 +47,20 @@ class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Co
 
 class FaceBookEvent
 {
-    var name:String="";
-    var location:String="";
-    var datetime="";
+    var id:String=""
+    var name:String=""
+    var location:String=""
+    var datetime=""
 
-    constructor(name: String, location: String, datetime: String) {
+    constructor(id:String, name: String, location: String, datetime: String) {
+        this.id = id
         this.name = name
         this.location = location
         this.datetime = datetime
     }
 }
 
-public class ViewHolderFacebookEvent (view: View) : RecyclerView.ViewHolder(view) {
+class ViewHolderFacebookEvent (view: View) : RecyclerView.ViewHolder(view) {
     // Holds the TextView that will add each animal to
     val eventTitle = view.eventTitle
     val eventLocation = view.eventLocation

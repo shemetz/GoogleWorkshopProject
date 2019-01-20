@@ -70,14 +70,17 @@ class AllEvents : Fragment() {
                 val eventsArray = Json.getJSONObject("events").getJSONArray("data")
                 val eventsList:ArrayList<FaceBookEvent> =  ArrayList();
                 for (i in 0..(eventsArray.length() - 1)) {
+                    val eventId = eventsArray.optJSONObject(i).getString("id")
                     val eventName = eventsArray.optJSONObject(i).getString("name")
                     val datetime = eventsArray.optJSONObject(i).getString("start_time")
-                    val placeObject = eventsArray.optJSONObject(i).getJSONObject("place")
-                    val locationObject = placeObject.getJSONObject("location")
-                    val location = placeObject.getString("name")+", "+locationObject.getString("city")+", "+locationObject.getString("country")
+                    val placeObject = eventsArray.optJSONObject(i).optJSONObject("place")
+                    if (placeObject != null){
+                        val locationObject = placeObject.getJSONObject("location")
+                        val location = placeObject.getString("name")+", "+locationObject.getString("city")+", "+locationObject.getString("country")
 
-                    Log.i(tag, "Event name = $eventName")
-                    eventsList.add(FaceBookEvent(eventName,location,datetime))
+                        Log.i(tag, "Event name = $eventName")
+                        eventsList.add(FaceBookEvent(eventId,eventName,location,datetime))
+                    }
                 }
                 if(eventsList.size!=0) {
 
@@ -101,7 +104,7 @@ class AllEvents : Fragment() {
         parameters.putString("fields", "events")
         event_request.parameters = parameters
         event_request.executeAsync()
-        return view;
+        return view
     }
 
     internal var context: Context? = null

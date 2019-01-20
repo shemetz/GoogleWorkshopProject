@@ -23,6 +23,7 @@
         <ImageView
                 android:id="@+id/eventPicture"
                 android:src="@drawable/star_slider"
+                android:layout_marginRight="8dp"
                 android:layout_width="100dp" android:layout_height="100dp"/>
         <TextView
                 android:padding="2dp"
