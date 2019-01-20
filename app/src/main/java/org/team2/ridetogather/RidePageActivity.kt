@@ -168,7 +168,7 @@ class RidePageActivity : AppCompatActivity() {
                                 .setTitle(R.string.leave_ride)
                                 .setMessage(getString(R.string.leave_ride_are_you_sure))
                                 .setPositiveButton(
-                                    android.R.string.yes
+                                    R.string.yes
                                 ) { _, _ ->
                                     val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
                                     Database.deletePickup(pickup.id) {
@@ -178,34 +178,26 @@ class RidePageActivity : AppCompatActivity() {
                                     mainButton.isEnabled = false
                                     mainButton.text = getString(R.string.updating)
                                 }
-                                .setNegativeButton(android.R.string.no, null).show()
+                                .setNegativeButton(R.string.no, null).show()
                         }
                     }
                     PENDING -> {
                         mainButton.isEnabled = true
                         mainButton.text = getString(R.string.request_is_pending)
-                        var clickToRemove = false
                         mainButton.setOnClickListener {
-                            if (!clickToRemove) {
-                                clickToRemove = true
-                                mainButton.text = getString(R.string.cancel_request)
-                                mainButton.setBackgroundColor(ContextCompat.getColor(this, R.color.errorRed))
-                                mainButton.setTextColor(ContextCompat.getColor(this, R.color.title_light))
-                            } else {
-                                AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                                    .setTitle(R.string.cancel_request)
-                                    .setMessage(getString(R.string.cancel_request_are_you_sure))
-                                    .setPositiveButton(android.R.string.yes) { _, _ ->
-                                        val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
-                                        Database.deletePickup(pickup.id) {
-                                            Toast.makeText(this, "Canceled request.", Toast.LENGTH_SHORT).show()
-                                            recreate() // to be updated
-                                        }
-                                        mainButton.isEnabled = false
-                                        mainButton.text = getString(R.string.updating)
+                            AlertDialog.Builder(this, R.style.AlertDialogStyle)
+                                .setTitle(R.string.cancel_request)
+                                .setMessage(getString(R.string.cancel_request_are_you_sure))
+                                .setPositiveButton(R.string.yes) { _, _ ->
+                                    val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
+                                    Database.deletePickup(pickup.id) {
+                                        Toast.makeText(this, "Canceled request.", Toast.LENGTH_SHORT).show()
+                                        recreate() // to be updated
                                     }
-                                    .setNegativeButton(android.R.string.no, null).show()
-                            }
+                                    mainButton.isEnabled = false
+                                    mainButton.text = getString(R.string.updating)
+                                }
+                                .setNegativeButton(R.string.no, null).show()
                         }
                     }
                     NOT_EXIST -> {
@@ -279,7 +271,7 @@ class RidePageActivity : AppCompatActivity() {
                     .setTitle(R.string.delete_ride_title)
                     .setMessage(getString(R.string.delete_ride_are_you_sure))
                     .setPositiveButton(
-                        android.R.string.yes
+                        R.string.yes
                     ) { _, whichButton ->
                         if (whichButton == DialogInterface.BUTTON_POSITIVE) {
                             Database.deleteRide(rideId)
@@ -294,7 +286,7 @@ class RidePageActivity : AppCompatActivity() {
                             startActivity(intent)
                         }
                     }
-                    .setNegativeButton(android.R.string.no, null).show()
+                    .setNegativeButton(R.string.no, null).show()
                 true
             }
             else -> super.onOptionsItemSelected(item)

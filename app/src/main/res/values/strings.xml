@@ -59,11 +59,10 @@
     <string name="join_ride">Join ride</string>
     <string name="request_is_pending">Request is pending</string>
     <string name="request_declined">Request declined</string>
-    <string name="cancel_request">Cancel request</string>
     <string name="leave_ride">Leave ride</string>
     <string name="ride_map">Ride map</string>
     <string name="ride_map_with_pending_request">Ride map (+Requests)</string>
-    <string name="cancel_request_are_you_sure">Are you sure you want to cancel your request?</string>
+    <string name="cancel_request_are_you_sure">Your request is pending until the driver approves it. Would you like to cancel the request?</string>
     <string name="leave_ride_are_you_sure">Are you sure you want to leave this ride?</string>
 
     <!-- Pickup -->
