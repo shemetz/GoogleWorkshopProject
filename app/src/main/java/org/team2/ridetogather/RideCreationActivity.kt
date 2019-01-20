@@ -1,6 +1,5 @@
 package org.team2.ridetogather
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.TimePickerDialog
 import android.content.Context
@@ -26,7 +25,6 @@ class RideCreationActivity : AppCompatActivity() {
     private val tag = RideCreationActivity::class.java.simpleName
     var originLocation: Location? = null
 
-    @SuppressLint("SimpleDateFormat")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ridecreation)
@@ -41,7 +39,7 @@ class RideCreationActivity : AppCompatActivity() {
             val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
-                pick_time_button.text = SimpleDateFormat("HH:mm").format(cal.time)
+                pick_time_button.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
             }
             TimePickerDialog(
                 this,

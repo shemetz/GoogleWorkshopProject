@@ -14,8 +14,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 object JsonParse {
@@ -65,9 +63,7 @@ object JsonParse {
             eventJson.getDouble("locationLat"),
             eventJson.getDouble("locationLong")
         ).toLocation()
-        val eventDatetime =
-            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY)
-                .parse(eventJson.getString("datetime"))
+        val eventDatetime = parseStandardDatetime(eventJson.getString("datetime"))
         val facebookEventId = eventJson.getString("facebookEventId")
         return Event(eventId, eventName, eventLocation, eventDatetime, facebookEventId)
     }

@@ -21,7 +21,6 @@ import kotlinx.android.synthetic.main.card_ride.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
 
 class EventRidesActivity : AppCompatActivity() {
     private val tag = EventRidesActivity::class.java.simpleName
@@ -74,8 +73,7 @@ class EventRidesActivity : AppCompatActivity() {
 
         })
         Database.getEvent(eventId) { event: Event ->
-            val eventTime =
-                java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
+            val eventTime = formatDatetime(event.datetime)
             facebookEventId = event.facebookEventId
             toolbar_layout.title = event.name
             toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))

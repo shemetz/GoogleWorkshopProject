@@ -1,6 +1,5 @@
 package org.team2.ridetogather
 
-import java.text.SimpleDateFormat
 import java.util.*
 
 object MockData {
@@ -20,7 +19,7 @@ object MockData {
         1,
         "The Room screening",
         location3,
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMANY).parse("2020-02-05T13:00:00"),
+        parseStandardDatetime("2020-02-05T13:00:00"),
         "fake facebook event id 1"
     )
     val ride1 = Ride(
