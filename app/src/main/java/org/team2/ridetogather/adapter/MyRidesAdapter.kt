@@ -5,12 +5,10 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.user_ride.view.*
 import com.squareup.picasso.Picasso
-
+import kotlinx.android.synthetic.main.user_ride.view.*
 import org.team2.ridetogather.*
 import java.util.*
-import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
 
 class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderRide>() {
 
@@ -21,7 +19,7 @@ class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var item
     override fun onBindViewHolder(holder: ViewHolderRide, position: Int) {
        Database.getEvent(items.get(position).eventId){event:Event->
            holder?.eventName?.text = event.name
-           holder?.eventDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
+           holder?.eventDateTime?.text = formatDatetime(event.datetime)
            holder?.eventLocation?.text = readableLocation(context,event.location)
        }
         Database.getDriver(items.get(position).driverId){driver:Driver->

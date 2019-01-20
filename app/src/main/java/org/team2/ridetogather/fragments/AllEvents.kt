@@ -2,8 +2,6 @@ package org.team2.ridetogather.fragments
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -12,18 +10,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
+import org.team2.ridetogather.R
 import org.json.JSONObject
 import org.team2.ridetogather.*
 
 import org.team2.ridetogather.adapter.FaceBookEvent
 import org.team2.ridetogather.adapter.FaceBookEventAdapter
+import org.team2.ridetogather.formatDatetime
+import org.team2.ridetogather.parseStandardDatetime
 import org.team2.ridetogather.adapter.ItemClickListener
 import org.team2.ridetogather.adapter.UserEventsAdapter
 
@@ -76,7 +76,7 @@ class AllEvents : Fragment() {
                 for (i in 0..(eventsArray.length() - 1)) {
                     val eventId = eventsArray.optJSONObject(i).getString("id")
                     val eventName = eventsArray.optJSONObject(i).getString("name")
-                    val datetime = eventsArray.optJSONObject(i).getString("start_time")
+                    val datetime = formatDatetime(parseStandardDatetime(eventsArray.optJSONObject(i).getString("start_time")))
                     val placeObject = eventsArray.optJSONObject(i).optJSONObject("place")
                     if (placeObject != null){
                         val locationObject = placeObject.getJSONObject("location")
@@ -110,7 +110,6 @@ class AllEvents : Fragment() {
                 e.printStackTrace()
             }
         }
-
 
         val parameters = Bundle()
         parameters.putString("fields", "events")

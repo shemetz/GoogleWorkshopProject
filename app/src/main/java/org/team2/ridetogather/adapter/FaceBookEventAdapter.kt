@@ -7,11 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.facebook_event.view.*
-import org.team2.ridetogather.Event
 import org.team2.ridetogather.R
 import org.team2.ridetogather.getEventUrl
-import org.team2.ridetogather.readableLocation
-import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
 import java.util.*
 
 class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderFacebookEvent>() {
@@ -21,18 +18,17 @@ class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Co
     }
 
     override fun onBindViewHolder(holder: ViewHolderFacebookEvent, position: Int) {
-        holder?.eventTitle?.text = items.get(position).name
-        holder?.eventLocation?.text =items.get(position).location
-        holder?.eventDateTime?.text = items.get(position).datetime.toString()
+        holder.eventTitle?.text = items[position].name
+        holder.eventLocation?.text = items[position].location
+        holder.eventDateTime?.text = items[position].datetime
 
-        val facebookId = items.get(position).id
+        val facebookId = items[position].id
         getEventUrl(facebookId) { pic_url ->
             Picasso.get()
                 .load(pic_url)
                 .placeholder(R.drawable.placeholder_profile)
                 .error(R.drawable.placeholder_profile)
-                .resize(256, 256)
-                .into(holder?.eventPicture)
+                .into(holder.eventPicture)
         }
 
         holder?.card_view.setOnClickListener(View.OnClickListener {
@@ -50,20 +46,7 @@ class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Co
 
 }
 
-class FaceBookEvent
-{
-    var id:String=""
-    var name:String=""
-    var location:String=""
-    var datetime=""
-
-    constructor(id:String, name: String, location: String, datetime: String) {
-        this.id = id
-        this.name = name
-        this.location = location
-        this.datetime = datetime
-    }
-}
+class FaceBookEvent(var id: String, var name: String, var location: String, var datetime: String)
 
 class ViewHolderFacebookEvent (view: View) : RecyclerView.ViewHolder(view) {
     val card_view = view.card_view
@@ -71,7 +54,6 @@ class ViewHolderFacebookEvent (view: View) : RecyclerView.ViewHolder(view) {
     val eventLocation = view.eventLocation
     val eventDateTime = view.eventDateTime
     val eventPicture = view.eventPicture
-
 }
 
 

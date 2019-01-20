@@ -8,6 +8,7 @@ import com.facebook.GraphRequest
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONObject
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.absoluteValue
 
@@ -152,4 +153,12 @@ fun getEventUrl(eventId: String, callback: (String) -> Unit) {
         request.parameters.putString("fields", "cover")
         request.executeAsync()
     }
+}
+
+fun parseStandardDatetime(datetimeString: String): Datetime {
+    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(datetimeString)
+}
+
+fun formatDatetime(datetime: Datetime): String {
+    return SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(datetime)
 }

@@ -7,12 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.user_event.view.*
-import org.team2.ridetogather.Event
-import org.team2.ridetogather.R
-import org.team2.ridetogather.getEventUrl
-import org.team2.ridetogather.readableLocation
+import org.team2.ridetogather.*
 import java.util.*
-import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
 
 class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderEvent>() {
 
@@ -23,7 +19,7 @@ class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var 
         override fun onBindViewHolder(holder: ViewHolderEvent, position: Int) {
             holder?.eventTitle?.text = items.get(position).name
             holder?.eventLocation?.text =readableLocation(context, items.get(position).location)
-            holder?.eventDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(items.get(position).datetime)
+            holder?.eventDateTime?.text = formatDatetime(items.get(position).datetime)
 
             val facebookId = items.get(position).facebookEventId
             getEventUrl(facebookId) { pic_url ->
