@@ -24,7 +24,7 @@ class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var 
             holder?.tvDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(items.get(position).datetime)
             holder?.card_view.setOnClickListener(View.OnClickListener {
 
-                itemClickListener?.onItemClicked(holder,items.get(position),position)
+                itemClickListener?.onItemClicked(items.get(position),position)
             })
 
         }
@@ -43,9 +43,10 @@ class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var 
     val tvTitle = view.tvTitle
     val tvLocation = view.tvLocation
     val tvDateTime = view.tvDateTime
+    val eventPicture = view.img
 }
 
 interface ItemClickListener {
 
-    fun onItemClicked(vh: ViewHolder, item: Any, pos: Int)
+    fun onItemClicked( item: Any, pos: Int)
 }

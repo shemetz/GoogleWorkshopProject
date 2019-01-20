@@ -56,7 +56,7 @@ class MyRides : Fragment() {
                 list.addAll(rides);
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
                 val myRidesAdapter = MyRidesAdapter(list, context, object : ItemClickListener {
-                    override fun onItemClicked(vh: ViewHolder, item: Any, pos: Int) {
+                    override fun onItemClicked( item: Any, pos: Int) {
                         val ride:Ride = item as Ride;
                         RidePageActivity.start(context,ride.id)
                     }

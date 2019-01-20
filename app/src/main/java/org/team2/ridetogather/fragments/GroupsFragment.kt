@@ -58,7 +58,7 @@ class GroupsFragment : Fragment() {
                 list.addAll(events);
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
                 val userEventAdapter = UserEventsAdapter(list, context, object : ItemClickListener {
-                    override fun onItemClicked(vh: ViewHolder, item: Any, pos: Int) {
+                    override fun onItemClicked( item: Any, pos: Int) {
                         val event:Event = item as Event;
                         EventRidesActivity.start(context,event.id)
                     }

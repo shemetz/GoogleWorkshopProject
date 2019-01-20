@@ -5,29 +5,45 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.user_event.view.*
+import kotlinx.android.synthetic.main.user_ride.view.*
+import com.squareup.picasso.Picasso
+
 import org.team2.ridetogather.*
+import java.util.*
 import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
 
-class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolder>() {
+class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderRide>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.user_event, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderRide {
+        return ViewHolderRide(LayoutInflater.from(context).inflate(R.layout.user_ride, parent, false))
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolderRide, position: Int) {
        Database.getEvent(items.get(position).eventId,{event:Event->
-           holder?.tvTitle?.text = event.name
-       });
+           holder?.eventName?.text = event.name
+           holder?.eventDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
+           holder?.eventLocation?.text = readableLocation(context,event.location)
+       })
         Database.getDriver(items.get(position).driverId,{driver:Driver->
-            holder?.tvLocation?.text = driver.name
-        });
+            holder?.driverName?.text = driver.name
+
+            val facebookId = driver.facebookProfileId
+            getProfilePicUrl(facebookId) { pic_url ->
+                Picasso.get()
+                    .load(pic_url)
+                    .placeholder(R.drawable.placeholder_profile)
+                    .error(R.drawable.placeholder_profile)
+                    .resize(256, 256)
+                    .transform(CircleTransform())
+                    .into(holder?.driverPicture)
+            }
+
+        })
 
 
-        holder?.tvDateTime?.text = items.get(position).departureTime.toString()
         holder?.card_view.setOnClickListener(View.OnClickListener {
 
-            itemClickListener?.onItemClicked(holder,items.get(position),position)
+            itemClickListener?.onItemClicked(items.get(position),position)
         })
 
     }
@@ -39,6 +55,18 @@ class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var item
 
 
 }
+public class ViewHolderRide (view: View) : RecyclerView.ViewHolder(view) {
+    // Holds the TextView that will add each animal to
+    val card_view = view.card_view
+    val driverName = view.driverName
+    val eventName = view.eventName
+    val eventLocation = view.eventLocation
+    val eventDateTime = view.eventDateTime
+    val driverPicture = view.img
+
+}
+
+
 
 
 
