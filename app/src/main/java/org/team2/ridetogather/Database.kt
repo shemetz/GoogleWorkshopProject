@@ -13,6 +13,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
+import java.net.HttpURLConnection
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
@@ -118,6 +119,23 @@ object Database {
         }
     }
 
+    fun getEventByFacebook(facebookEventId: String, successCallback: (Event) -> Unit, failedCallback:() ->Unit ){
+        val url = "$SERVER_URL/getEventByFacebook/$facebookEventId"
+        val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                Log.d(tag, "Got response for $url")
+                Log.v(tag, response.toString(4))
+                successCallback(JsonParse.event(response))
+            },
+            Response.ErrorListener { error ->
+                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
+                    failedCallback()
+                }
+            })
+        requestQueue.add(request)
+
+    }
+
     private fun requestJsonObject(
         method: Int,
         url: String,
@@ -211,6 +229,9 @@ object Database {
 
     fun getEvent(eventId: Id, successCallback: (Event) -> Unit) =
         generifiedGet(eventId, "Event", JsonParse::event, successCallback)
+
+//    fun getEventByFacebook(facebookEventId: String, successCallback: (Event) -> Unit) =
+//        generifiedGet(facebookEventId.toInt(), "EventByFacebook", JsonParse::event, successCallback)
 
     fun getRide(rideId: Id, successCallback: (Ride) -> Unit) =
         generifiedGet(rideId, "Ride", JsonParse::ride, successCallback)

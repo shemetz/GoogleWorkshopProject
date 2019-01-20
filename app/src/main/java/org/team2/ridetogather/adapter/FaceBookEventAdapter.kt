@@ -14,7 +14,7 @@ import org.team2.ridetogather.readableLocation
 import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
 import java.util.*
 
-class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Context?) : RecyclerView.Adapter<ViewHolderFacebookEvent>() {
+class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderFacebookEvent>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderFacebookEvent {
         return ViewHolderFacebookEvent(LayoutInflater.from(context).inflate(R.layout.facebook_event, parent, false))
@@ -34,6 +34,11 @@ class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Co
                 .resize(256, 256)
                 .into(holder?.eventPicture)
         }
+
+        holder?.card_view.setOnClickListener(View.OnClickListener {
+
+            itemClickListener?.onItemClicked(items.get(position), position)
+        })
 
     }
 
@@ -61,7 +66,7 @@ class FaceBookEvent
 }
 
 class ViewHolderFacebookEvent (view: View) : RecyclerView.ViewHolder(view) {
-    // Holds the TextView that will add each animal to
+    val card_view = view.card_view
     val eventTitle = view.eventTitle
     val eventLocation = view.eventLocation
     val eventDateTime = view.eventDateTime

@@ -43,7 +43,7 @@ class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var item
 
         holder?.card_view.setOnClickListener(View.OnClickListener {
 
-            itemClickListener?.onItemClicked(items.get(position),position)
+            itemClickListener?.onItemClicked(items.get(position), position)
         })
 
     }
@@ -55,7 +55,7 @@ class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var item
 
 
 }
-public class ViewHolderRide (view: View) : RecyclerView.ViewHolder(view) {
+class ViewHolderRide (view: View) : RecyclerView.ViewHolder(view) {
     // Holds the TextView that will add each animal to
     val card_view = view.card_view
     val driverName = view.driverName

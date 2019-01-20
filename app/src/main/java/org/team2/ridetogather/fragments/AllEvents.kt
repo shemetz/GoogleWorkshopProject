@@ -15,16 +15,16 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
 import org.json.JSONObject
-import org.team2.ridetogather.EventRidesActivity
-import org.team2.ridetogather.Keys
-import org.team2.ridetogather.MockData
+import org.team2.ridetogather.*
 
-import org.team2.ridetogather.R
 import org.team2.ridetogather.adapter.FaceBookEvent
 import org.team2.ridetogather.adapter.FaceBookEventAdapter
+import org.team2.ridetogather.adapter.ItemClickListener
 import org.team2.ridetogather.adapter.UserEventsAdapter
 
 // TODO: Rename parameter arguments, choose names that match
@@ -52,6 +52,10 @@ class AllEvents : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+    }
+
+    fun createEvent(){
+
     }
 
     override fun onCreateView(
@@ -86,7 +90,14 @@ class AllEvents : Fragment() {
 
 
                     val recycle = view.findViewById<RecyclerView>(R.id.recycle)
-                    val userEventAdapter = FaceBookEventAdapter(eventsList, context)
+                    val userEventAdapter = FaceBookEventAdapter(eventsList, context, object : ItemClickListener {
+                        override fun onItemClicked( item: Any, pos: Int) {
+                            val facebookEvent:FaceBookEvent = item as FaceBookEvent
+                            Database.getEventByFacebook(facebookEvent.id,{event: Event ->
+                                Toast.makeText(context, "found", LENGTH_SHORT).show()
+                            },{Toast.makeText(context, "not found", LENGTH_SHORT).show()})
+                        }
+                    })
                     recycle.layoutManager = LinearLayoutManager(context)
                     recycle.adapter = userEventAdapter
                 }
@@ -99,6 +110,7 @@ class AllEvents : Fragment() {
                 e.printStackTrace()
             }
         }
+
 
         val parameters = Bundle()
         parameters.putString("fields", "events")
