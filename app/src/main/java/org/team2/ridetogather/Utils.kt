@@ -41,7 +41,7 @@ enum class PickupStatus {
  * NOTE: This function is slow because it uses a Geocoder.
  * Try to only use it in asynchronous stuff (e.g. when updating text fields).
  */
-fun readableLocation(context: Context, location: Location): String {
+fun readableLocation(context: Context?, location: Location): String {
     fun coordinatesString(): String {
         val absoluteLatitude = Location.convert(location.latitude.absoluteValue, Location.FORMAT_DEGREES)
         val absoluteLongitude = Location.convert(location.longitude.absoluteValue, Location.FORMAT_DEGREES)

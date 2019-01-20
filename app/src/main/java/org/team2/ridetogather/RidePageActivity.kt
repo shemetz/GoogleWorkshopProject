@@ -21,6 +21,16 @@ import org.team2.ridetogather.PickupStatus.*
 
 
 class RidePageActivity : AppCompatActivity() {
+
+    companion object {
+        fun start(context: Context?,evenid:Int?) {
+            val intent = Intent(context,RidePageActivity::class.java)
+            intent.putExtra(Keys.RIDE_ID.name,evenid)
+            context?.startActivity(intent)
+
+        }
+    }
+
     private val tag = RidePageActivity::class.java.simpleName
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>

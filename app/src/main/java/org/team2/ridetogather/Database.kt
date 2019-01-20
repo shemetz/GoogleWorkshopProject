@@ -239,6 +239,12 @@ object Database {
     fun getRidesForEvent(eventID: Id, successCallback: (List<Ride>) -> Unit) =
         generifiedGet1sFor2(eventID, "Rides", "Event", JsonParse::ride, successCallback)
 
+    fun getRidesForUser(userID: Id, successCallback: (List<Ride>) -> Unit) =
+        generifiedGet1sFor2(userID, "Rides", "User", JsonParse::ride, successCallback)
+
+    fun getUsersForEvent(eventID: Id, successCallback: (List<User>) -> Unit) =
+        generifiedGet1sFor2(eventID, "Users", "Event", JsonParse::user, successCallback)
+
     fun addUser(name: String, facebookProfileId: String, credits: Int) {
         val postParams = jsonObjOf(
             "name" to name,

@@ -55,6 +55,7 @@
     <string name="action_delete_ride">Delete ride</string>
     <string name="delete_ride_title">Delete ride</string>
     <string name="delete_ride_are_you_sure">Are you sure you want to permanently delete this ride?</string>
+    <string name="credits">Credits</string>
 
     <!-- Pickup -->
     <string name="passenger_name">Name</string>
@@ -79,5 +80,8 @@
     <!-- Miscellaneous strings-->
     <string name="logging_in">Logging in…</string>
     <string name="updating">(Updating…)</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

@@ -2,13 +2,21 @@ package org.team2.ridetogather
 
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.TabLayout
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentStatePagerAdapter
+import android.support.v4.view.ViewPager
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ImageSpan
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import android.widget.TextView
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
 import com.facebook.GraphResponse
@@ -18,11 +26,86 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import org.team2.ridetogather.fragments.AllEvents
+import org.team2.ridetogather.fragments.GroupsFragment
+import org.team2.ridetogather.fragments.MyRides
+import org.w3c.dom.Text
 
 
 class MainActivity : AppCompatActivity() {
     private val tag = MainActivity::class.java.simpleName
+    internal var mSectionsPagerAdapter: SectionsPagerAdapter?=null
 
+    /**
+     * The [ViewPager] that will host the section contents.
+     */
+    internal var mViewPager: ViewPager?=null
+    inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
+
+        override fun getItem(position: Int): Fragment {
+
+            if(position==0)
+                return GroupsFragment();
+            if(position==1)
+                return AllEvents();
+            if(position==2)
+                return MyRides();
+
+            return PlaceholderFragment.newInstance(position + 1)
+
+        }
+
+        override fun getCount(): Int {
+            // Show 3 total pages.
+            return imageResId.size
+        }
+
+        override fun getPageTitle(position: Int): CharSequence? {
+           return pageTitles.get(position)
+        }
+    }
+
+
+    class PlaceholderFragment : Fragment() {
+
+
+        override fun onCreateView(
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
+            val rootView = inflater.inflate(R.layout.fragment_main, container, false)
+           val  sectionLabel:TextView = rootView.findViewById(R.id.section_label)
+            if (savedInstanceState != null) {
+                val number = savedInstanceState.getInt(ARG_SECTION_NUMBER)
+               sectionLabel.text = "This is Fragment number : "
+            }
+            return rootView
+        }
+
+        companion object {
+            /**
+             * The fragment argument representing the section number for this
+             * fragment.
+             */
+            private val ARG_SECTION_NUMBER = "section_number"
+
+            /**
+             * Returns a new instance of this fragment for the given section
+             * number.
+             */
+            fun newInstance(sectionNumber: Int): PlaceholderFragment {
+                val fragment = PlaceholderFragment()
+                val args = Bundle()
+                args.putInt(ARG_SECTION_NUMBER, sectionNumber)
+                fragment.arguments = args
+                return fragment
+            }
+        }
+    }
+    private val imageResId =
+        intArrayOf(R.drawable.ic_tab_group, R.drawable.ic_tab_events, R.drawable.ic_tab_rides)
+
+    private val pageTitles= arrayOf("Groups","All Events","My Rides");
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Database.initialize(this)
@@ -58,38 +141,38 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        val listView = findViewById<ListView>(R.id.events_list)
-        val event_request = GraphRequest.newMeRequest(
-            AccessToken.getCurrentAccessToken()
-        ) { Json, response ->
-            try {
-                Log.i(tag, "working")
-                Log.i(tag, Json.toString(4))
-                val eventsArray = Json.getJSONObject("events").getJSONArray("data")
-                val eventsNameList = arrayOfNulls<String>(eventsArray.length())
-                for (i in 0..(eventsArray.length() - 1)) {
-                    val eventName = eventsArray.optJSONObject(i).getString("name")
-                    Log.i(tag, "Event name = $eventName")
-                    eventsNameList[i] = eventName
-                }
-                val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, eventsNameList)
-                listView.adapter = adapter
-                listView.setOnItemClickListener { parent, view, position, id ->
-                    val intent = Intent(applicationContext, EventRidesActivity::class.java)
-                    // MOCK
-                    val eventID = MockData.event1.id
-                    intent.putExtra(Keys.EVENT_ID.name, eventID)
-                    startActivity(intent)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        val parameters = Bundle()
-        parameters.putString("fields", "events")
-        event_request.parameters = parameters
-        event_request.executeAsync()
+//        val listView = findViewById<ListView>(R.id.events_list)
+//        val event_request = GraphRequest.newMeRequest(
+//            AccessToken.getCurrentAccessToken()
+//        ) { Json, response ->
+//            try {
+//                Log.i(tag, "working")
+//                Log.i(tag, Json.toString(4))
+//                val eventsArray = Json.getJSONObject("events").getJSONArray("data")
+//                val eventsNameList = arrayOfNulls<String>(eventsArray.length())
+//                for (i in 0..(eventsArray.length() - 1)) {
+//                    val eventName = eventsArray.optJSONObject(i).getString("name")
+//                    Log.i(tag, "Event name = $eventName")
+//                    eventsNameList[i] = eventName
+//                }
+//                val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, eventsNameList)
+//                listView.adapter = adapter
+//                listView.setOnItemClickListener { parent, view, position, id ->
+//                    val intent = Intent(applicationContext, EventRidesActivity::class.java)
+//                    // MOCK
+//                    val eventID = MockData.event1.id
+//                    intent.putExtra(Keys.EVENT_ID.name, eventID)
+//                    startActivity(intent)
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//
+//        val parameters = Bundle()
+//        parameters.putString("fields", "events")
+//        event_request.parameters = parameters
+//        event_request.executeAsync()
 
         val eventID_request = GraphRequest.newGraphPathRequest(
             AccessToken.getCurrentAccessToken(),
@@ -100,6 +183,22 @@ class MainActivity : AppCompatActivity() {
                     e.printStackTrace()
                 }
             })
+
+
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
+
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = findViewById(R.id.pager) as ViewPager
+        mViewPager?.setAdapter(mSectionsPagerAdapter)
+        val tabLayout = findViewById(R.id.tabs) as TabLayout
+        tabLayout.setupWithViewPager(mViewPager)
+        ///
+        for (i in 0 until tabLayout.tabCount) {
+            tabLayout.getTabAt(i)!!.setIcon(imageResId[i])
+        }
+        ///////
 
     }
 

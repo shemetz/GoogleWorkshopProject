@@ -7,8 +7,13 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
+    <android.support.v4.view.ViewPager
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:id="@+id/pager"
 
+    />
     <ListView
+            android:visibility="gone"
             android:id="@+id/events_list"
             android:layout_width="0dp"
             android:layout_height="0dp"

@@ -24,7 +24,9 @@ class RidesListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_rides_list, container, false)
+        val view= inflater.inflate(R.layout.fragment_rides_list, container, false)
+//        recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view)
+        return view;
     }
 
     override fun onStart() {
@@ -40,8 +42,16 @@ class RidesListFragment : Fragment() {
 
     private fun updateRides() {
         Database.getRidesForEvent(eventId) { rides ->
-            rides_list_recycler_view.adapter = EventRidesActivity.MyAdapter(context!!, rides.toTypedArray())
-            rides_list_recycler_view.adapter.notifyDataSetChanged()
+            if(rides.size!=0) {
+                rides_list_recycler_view.adapter = EventRidesActivity.MyAdapter(context!!, rides.toTypedArray())
+                rides_list_recycler_view.adapter.notifyDataSetChanged()
+            }
+            else
+            {
+
+                tvEmpty.visibility=View.VISIBLE
+            }
+
         }
     }
 

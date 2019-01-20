@@ -8,7 +8,9 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import kotlinx.android.synthetic.main.content_eventrides.*
+import org.team2.ridetogather.adapter.PassengerssAdapter
 
 
 /**
@@ -25,14 +27,12 @@ class PassengersListFragment : Fragment() {
         super.onAttach(context)
         eventId = arguments!!.getInt(Keys.EVENT_ID.name)
         //mock - we don't have passenger cards yet!
-        val passengers = emptyList<Ride>().toTypedArray()
-        viewManager = LinearLayoutManager(context)
-        viewAdapter = EventRidesActivity.MyAdapter(context, passengers)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_passengers_list, container, false)
+        val view= inflater.inflate(R.layout.fragment_passengers_list, container, false)
+        return view;
 
     }
 
@@ -42,15 +42,29 @@ class PassengersListFragment : Fragment() {
         recyclerView = rides_list_recycler_view.apply {
             // changes in content do not change the layout size of the RecyclerView
             setHasFixedSize(true)
-            layoutManager = viewManager
-            adapter = viewAdapter
+            layoutManager = LinearLayoutManager(context)
             addItemDecoration(EventRidesActivity.MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
         }
 
     }
+    var list= arrayListOf<User>();
+    private fun updatePassengers() {
+        Database.getUsersForEvent(eventId) { users ->
+            if(users.size!=0) {
+                list.addAll(users);
+                rides_list_recycler_view.adapter = PassengerssAdapter(list, context)
+                rides_list_recycler_view.adapter.notifyDataSetChanged()
+            }
+            else
+            {
 
+                tvEmpty.visibility=View.VISIBLE
+            }
+
+        }
+    }
     override fun onResume() {
         super.onResume()
-        // MOCK - do something here
+        updatePassengers();
     }
 }
