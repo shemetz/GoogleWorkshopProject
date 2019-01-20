@@ -57,6 +57,7 @@ class RideCreationActivity : AppCompatActivity() {
             val intent = Intent(applicationContext, MapsActivity::class.java)
             intent.putExtra(Keys.EVENT_ID.name, eventId)
             intent.putExtra(Keys.LOCATION.name, originLocation?.toLatLng()?.encodeToString())
+            intent.putExtra(Keys.REQUEST_CODE.name, MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN.ordinal)
             startActivityForResult(intent, MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN.ordinal)
             // Result will return to OnActivityResult()
         }
@@ -113,6 +114,7 @@ class RideCreationActivity : AppCompatActivity() {
                 val intent = Intent(applicationContext, RidePageActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 intent.putExtra(Keys.RIDE_ID.name, newRide.id)
+                intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, true)
                 startActivity(intent)
                 finish()
             }

@@ -93,6 +93,8 @@ class FacebookLoginActivity : AppCompatActivity() {
             }
             val profilePicUrl = response.jsonObject.getJSONObject("picture")
                 .getJSONObject("data").getString("url")
+
+            Log.i(tag, profilePicUrl)
         }
         val parameters = Bundle()
         parameters.putString("fields", "name,email,id,picture.type(large)")

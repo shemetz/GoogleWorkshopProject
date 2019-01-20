@@ -4,10 +4,7 @@ package org.team2.ridetogather
 
 import android.content.Context
 import android.util.Log
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.VolleyError
+import com.android.volley.*
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -15,9 +12,11 @@ import com.google.android.gms.maps.model.LatLng
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 object JsonParse {
 
@@ -86,6 +85,7 @@ object Database {
     private lateinit var requestQueue: RequestQueue
     private val tag = Database::class.java.simpleName
     private const val SERVER_URL = "https://ridetogather.herokuapp.com"
+    private const val CACHE_TIME_MS = 1000 * 5  // 5 seconds
     var idOfCurrentUser: Id = -1
 
     data class CacheEntry(
@@ -106,6 +106,7 @@ object Database {
     private fun logResponseError(error: VolleyError, url: String) {
         if (error.networkResponse == null) {
             Log.e(tag, "Response error: ${error.message} (for $url)")
+            return
         }
         val errorData = String(error.networkResponse.data, Charset.forName("utf-8"))
         try {
@@ -125,9 +126,8 @@ object Database {
         errorListener: Response.ErrorListener? = null
     ) {
         val now = System.currentTimeMillis()
-        if (method == Request.Method.GET && cacheOfGETs.containsKey(url))
-        // if cache is less than 1 minute (1000*60 milliseconds) old
-            if (now - cacheOfGETs[url]!!.birthTime.time < 1000 * 60) {
+        if (cacheOfGETs.containsKey(url) && method == Request.Method.GET) {
+            if (now - cacheOfGETs[url]!!.birthTime.time < Database.CACHE_TIME_MS) {
                 Log.d(tag, "Cached response for $url")
                 successCallback(cacheOfGETs[url]!!.response as JSONObject)
                 return
@@ -135,8 +135,16 @@ object Database {
                 Log.v(tag, "Cache is too old for $url")
                 cacheOfGETs.remove(url)
             }
+        }
+        if (method != Request.Method.GET) {
+            // Clear entire cache when we send a PUT/POST/UPDATE/DELETE request
+            // It's a drastic measure but it's safe and it saves on coding time
+            // (A better alternative would be to clear only the specific urls of relevant GETs)
+            cacheOfGETs.entries.clear()
+        }
 
-        val request = JsonObjectRequest(method, url, postParameters,
+        val fullUrl = "$SERVER_URL$url"
+        val request = JsonObjectRequestWithNull(method, fullUrl, postParameters,
             Response.Listener { response ->
                 Log.d(tag, "Got response for $url")
                 Log.v(tag, response.toString(4))
@@ -158,9 +166,8 @@ object Database {
         errorListener: Response.ErrorListener? = null
     ) {
         val now = System.currentTimeMillis()
-        if (method == Request.Method.GET && cacheOfGETs.containsKey(url))
-        // if cache is less than 1 minute (1000*60 milliseconds) old
-            if (now - cacheOfGETs[url]!!.birthTime.time < 1000 * 60) {
+        if (cacheOfGETs.containsKey(url) && method == Request.Method.GET) {
+            if (now - cacheOfGETs[url]!!.birthTime.time < Database.CACHE_TIME_MS) {
                 Log.d(tag, "Cached response for $url")
                 successCallback(cacheOfGETs[url]!!.response as JSONArray)
                 return
@@ -168,8 +175,10 @@ object Database {
                 Log.v(tag, "Cache is too old for $url")
                 cacheOfGETs.remove(url)
             }
+        }
 
-        val request = JsonArrayRequest(method, url, null,
+        val fullUrl = "$SERVER_URL$url"
+        val request = JsonArrayRequest(method, fullUrl, null,
             Response.Listener { response ->
                 Log.d(tag, "Got response for $url")
                 Log.v(tag, response.toString(4))
@@ -188,7 +197,7 @@ object Database {
         parseFunction: (JSONObject) -> T,
         successCallback: (T) -> Unit
     ) {
-        val url = "$SERVER_URL/get$name/$someId"
+        val url = "/get$name/$someId"
 
         requestJsonObject(Request.Method.GET, url, null,
             { response ->
@@ -221,7 +230,7 @@ object Database {
         parseFunction: (JSONObject) -> T,
         successCallback: (List<T>) -> Unit
     ) {
-        val url = "$SERVER_URL/get${name1s}For$name2/$id2"
+        val url = "/get${name1s}For$name2/$id2"
 
         requestJsonArray(Request.Method.GET, url,
             { response ->
@@ -251,7 +260,7 @@ object Database {
             "facebookProfileId" to facebookProfileId,
             "credits" to credits
         )
-        val url = "$SERVER_URL/addUser/"
+        val url = "/addUser/"
 
         requestJsonObject(Request.Method.POST, url, postParams)
     }
@@ -263,7 +272,7 @@ object Database {
             "facebookProfileId" to facebookProfileId,
             "credits" to credits
         )
-        val url = "$SERVER_URL/getOrAddUserByFacebook/$facebookProfileId"
+        val url = "/getOrAddUserByFacebook/$facebookProfileId"
 
         requestJsonObject(Request.Method.POST, url, postParams,
             { response ->
@@ -280,7 +289,7 @@ object Database {
             "datetime" to datetime.toString(),
             "facebookEventId" to facebookEventId
         )
-        val url = "$SERVER_URL/addEvent/"
+        val url = "/addEvent/"
 
         requestJsonObject(Request.Method.POST, url, postParams)
     }
@@ -303,7 +312,7 @@ object Database {
             "passengerCount" to passengerCount,
             "extraDetails" to extraDetails
         )
-        val url = "$SERVER_URL/addRide/"
+        val url = "/addRide/"
 
         requestJsonObject(Request.Method.POST, url, postParams,
             { response ->
@@ -318,12 +327,12 @@ object Database {
             "user" to userId,
             "event" to eventId
         )
-        val url = "$SERVER_URL/addAttending/"
+        val url = "/addAttending/"
 
         requestJsonObject(Request.Method.POST, url, postParams)
     }
 
-    fun addPickup(rideId: Id, userId: Id, pickupSpot: Location) {
+    fun addPickup(rideId: Id, userId: Id, pickupSpot: Location, successCallback: () -> Unit = {}) {
         val postParams = jsonObjOf(
             "ride" to rideId,
             "user" to userId,
@@ -333,37 +342,37 @@ object Database {
 //            "pickupHour" to pickupTime.hours,
 //            "pickupMinute" to pickupTime.minutes
         )
-        val url = "$SERVER_URL/addPickup/"
+        val url = "/addPickup/"
 
-        requestJsonObject(Request.Method.POST, url, postParams)
+        requestJsonObject(Request.Method.POST, url, postParams, { successCallback() })
     }
 
     fun deleteUser(userId: Id) {
-        val url = "$SERVER_URL/deleteUser/$userId"
+        val url = "/deleteUser/$userId"
 
         requestJsonObject(Request.Method.DELETE, url, null)
     }
 
     fun deleteRide(rideId: Id) {
-        val url = "$SERVER_URL/deleteRide/$rideId"
+        val url = "/deleteRide/$rideId"
 
         requestJsonObject(Request.Method.DELETE, url, null)
     }
 
     fun deleteEvent(eventId: Id) {
-        val url = "$SERVER_URL/deleteEvent/$eventId"
+        val url = "/deleteEvent/$eventId"
 
         requestJsonObject(Request.Method.DELETE, url, null)
     }
 
-    fun deletePickup(pickupId: Id) {
-        val url = "$SERVER_URL/deletePickup/$pickupId"
+    fun deletePickup(pickupId: Id, successCallback: () -> Unit = {}) {
+        val url = "/deletePickup/$pickupId"
 
-        requestJsonObject(Request.Method.DELETE, url, null)
+        requestJsonObject(Request.Method.DELETE, url, null, { successCallback() })
     }
 
     fun removeUserFromEvent(userId: Id, eventId: Id) {
-        val url = "$SERVER_URL/removeUserFromEvent/$userId/$eventId"
+        val url = "/removeUserFromEvent/$userId/$eventId"
 
         requestJsonObject(Request.Method.DELETE, url, null)
     }
@@ -374,7 +383,7 @@ object Database {
             "facebookProfileId" to user.facebookProfileId,
             "credits" to user.credits
         )
-        val url = "$SERVER_URL/updateUser/${user.id}"
+        val url = "/updateUser/${user.id}"
 
         requestJsonObject(Request.Method.PUT, url, postParams)
     }
@@ -387,7 +396,7 @@ object Database {
             "datetime" to event.datetime.toString(),
             "facebookEventId" to event.facebookEventId
         )
-        val url = "$SERVER_URL/addEvent/${event.id}"
+        val url = "/addEvent/${event.id}"
 
         requestJsonObject(Request.Method.POST, url, postParams)
     }
@@ -405,12 +414,12 @@ object Database {
             "passengerCount" to ride.passengerCount,
             "extraDetails" to ride.extraDetails
         )
-        val url = "$SERVER_URL/updateRide/${ride.id}"
+        val url = "/updateRide/${ride.id}"
 
         requestJsonObject(Request.Method.POST, url, postParams)
     }
 
-    fun updatePickup(pickup: Pickup) {
+    fun updatePickup(pickup: Pickup, onCallback: () -> Unit) {
         val postParams = jsonObjOf(
             "ride" to pickup.rideId,
             "user" to pickup.userId,
@@ -419,8 +428,52 @@ object Database {
             "pickupHour" to pickup.pickupTime.hours,
             "pickupMinute" to pickup.pickupTime.minutes
         )
-        val url = "$SERVER_URL/addPickup/${pickup.id}"
+        val url = "/addPickup/${pickup.id}"
 
-        requestJsonObject(Request.Method.POST, url, postParams)
+        requestJsonObject(
+            Request.Method.POST,
+            url,
+            postParams,
+            { onCallback() },
+            Response.ErrorListener { error ->
+                logResponseError(error, url)
+                onCallback()
+            })
+    }
+
+    /**
+     * See: https://stackoverflow.com/a/29407122/1703463
+     * Solution from: https://stackoverflow.com/a/24566878/1703463
+     */
+    class JsonObjectRequestWithNull(
+        method: Int, url: String, jsonRequest: JSONObject?,
+        listener: Response.Listener<JSONObject>, errorListener: Response.ErrorListener
+    ) : JsonObjectRequest(
+        method,
+        url,
+        jsonRequest,
+        listener,
+        errorListener
+    ) {
+        override fun parseNetworkResponse(response: NetworkResponse): Response<JSONObject> {
+            val responseMaybeNull =
+                try {
+                    if (response.data.isEmpty()) {
+                        val responseData = "{}".toByteArray(charset("UTF8"))
+                        NetworkResponse(
+                            response.statusCode,
+                            responseData,
+                            response.notModified,
+                            response.networkTimeMs,
+                            response.allHeaders
+                        )
+                    } else response
+                } catch (e: UnsupportedEncodingException) {
+                    e.printStackTrace()
+                    response
+                }
+
+            return super.parseNetworkResponse(responseMaybeNull)
+        }
     }
 }

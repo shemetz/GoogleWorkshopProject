@@ -44,11 +44,10 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/imageView2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="90"
-            app:srcCompat="@drawable/ic_face_black_24dp"
-            tools:ignore="ContentDescription" />
+                android:id="@+id/PassengerProfilePic"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="90"
+                tools:ignore="ContentDescription"/>
     </LinearLayout>
 </android.support.v7.widget.CardView>

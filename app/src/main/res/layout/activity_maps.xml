@@ -33,30 +33,31 @@
         />
     </android.support.v7.widget.CardView>
 
-    <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab_pin_or_unpin"
+    <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/fab_margin"
-            android:layout_marginStart="@dimen/fab_margin"
             android:layout_marginEnd="@dimen/fab_margin"
-            android:tint="@android:color/black"
-            app:backgroundTint="@android:color/white"
+            android:orientation="vertical"
             app:layout_anchorGravity="right|bottom"
-            app:srcCompat="@drawable/ic_pin_drop_black_24dp"
-            app:layout_anchor="@+id/map"/>
+            app:layout_anchor="@+id/map">
 
+        <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab_confirm_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:tint="@android:color/white"
+                android:layout_marginBottom="@dimen/fab_margin"
+                app:backgroundTint="@color/confirmation"
+                app:srcCompat="@drawable/ic_done_black_24dp"/>
 
-    <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab_confirm_location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:tint="@android:color/white"
-            app:backgroundTint="@color/confirmation"
-            app:layout_anchorGravity="top|center"
-            app:srcCompat="@drawable/ic_done_black_24dp"
-            android:layout_gravity="top|center"
-            app:useCompatPadding="true"
-            app:layout_anchor="@+id/fab_pin_or_unpin"/>
+        <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab_pin_or_unpin"
+                android:layout_width="wrap_content"
+                android:layout_height="208dp"
+                android:tint="@android:color/black"
+                android:layout_marginBottom="@dimen/fab_margin"
+                app:backgroundTint="@android:color/white"
+                app:srcCompat="@drawable/ic_pin_drop_black_24dp"/>
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

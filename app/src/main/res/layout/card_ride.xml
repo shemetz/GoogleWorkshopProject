@@ -22,8 +22,6 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_face_black_24dp"
-            app:srcCompat="@drawable/example_profile_photo"
             tools:ignore="ContentDescription" />
 
         <LinearLayout

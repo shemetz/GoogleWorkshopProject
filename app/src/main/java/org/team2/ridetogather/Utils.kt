@@ -3,6 +3,8 @@ package org.team2.ridetogather
 import android.content.Context
 import android.location.Geocoder
 import android.util.Log
+import com.facebook.AccessToken
+import com.facebook.GraphRequest
 import com.google.android.gms.maps.model.LatLng
 import org.json.JSONObject
 import java.io.IOException
@@ -15,6 +17,8 @@ enum class Keys {
     LOCATION,
     ROUTE_JSON,
     CHANGE_BTN,
+    REQUEST_CODE,
+    DRIVER_PERSPECTIVE,
 }
 
 enum class Preferences {
@@ -113,4 +117,21 @@ fun LatLng.encodeToString(): String {
 fun String.decodeToLatLng(): LatLng {
     val (latitude, longitude) = this.split("    ").map { it.toDouble() }
     return LatLng(latitude, longitude)
+}
+
+fun getProfilePicUrl(facebookId: String, callback: (String) -> Unit) {
+    if (facebookId.equals("fakeprofile")) {
+        callback("http://pluspng.com/img-png/png-hd-of-puppies-puppy-other-400.png")
+    } else {
+        val request = GraphRequest.newGraphPathRequest(
+            AccessToken.getCurrentAccessToken(),
+            "/$facebookId"
+        ) { response ->
+            val picture = response.jsonObject.getJSONObject("picture")
+            val picUrl = picture.getJSONObject("data").getString("url")
+            callback(picUrl)
+        }
+        request.parameters.putString("fields", "picture.type(large)")
+        request.executeAsync()
+    }
 }
