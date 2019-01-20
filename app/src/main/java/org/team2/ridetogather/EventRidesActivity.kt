@@ -36,7 +36,7 @@ class EventRidesActivity : AppCompatActivity() {
     }
 
     private var eventId: Id = -1
-    private lateinit var EventfacebookId: String
+    private var facebookEventId: String? = null
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
@@ -76,8 +76,7 @@ class EventRidesActivity : AppCompatActivity() {
         Database.getEvent(eventId) { event: Event ->
             val eventTime =
                 java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
-            EventfacebookId = event.facebookEventId
-            Log.i(tag, EventfacebookId)
+            facebookEventId = event.facebookEventId
             toolbar_layout.title = event.name
             toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
             CoroutineScope(Dispatchers.Default).launch {
@@ -234,9 +233,11 @@ class EventRidesActivity : AppCompatActivity() {
                 true
             }
             R.id.action_open_event_on_facebook -> {
-                //for mock data, delete later
-                EventfacebookId = "528568017656422"
-                val url = "https://www.facebook.com/events/".plus(EventfacebookId)
+                if (facebookEventId == null) {
+                    Log.i(tag, "User pressed \"Open on Facebook\" too fast! ID is still null!")
+                    return true
+                }
+                val url = "https://www.facebook.com/events/$facebookEventId"
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 true
             }
