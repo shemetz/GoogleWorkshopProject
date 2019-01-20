@@ -96,51 +96,57 @@ class EventRidesActivity : AppCompatActivity() {
         }
 
 
-//        viewManager = LinearLayoutManager(this)
-//        recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view)
-//        recyclerView.setHasFixedSize(true)
-//        recyclerView.layoutManager = viewManager
-//
-//        recyclerView. addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
-//        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
-//            viewAdapter = MyAdapter(this, rides.toTypedArray())
-//            recyclerView.adapter = viewAdapter
-//        }
-//        refreshRecyclerView()
+        viewManager = LinearLayoutManager(this)
 
+        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
+            viewAdapter = MyAdapter(this, rides.toTypedArray())
 
+            recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
+                // changes in content do not change the layout size of the RecyclerView
+                setHasFixedSize(true)
+                layoutManager = viewManager
+                adapter = viewAdapter
+                addItemDecoration(MarginItemDecoration(resources.getDimension(R.dimen.ride_card_margin).toInt()))
+            }
+        }
+        refreshRecyclerView()
     }
 
-//    private fun refreshRecyclerView() {
-//        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
-//            viewAdapter = MyAdapter(this, rides.toTypedArray())
-//            viewAdapter.notifyDataSetChanged()
-//            recyclerView.adapter = viewAdapter
-//
-//            val rideCreatedByThisUser = rides.singleOrNull { it.driverId == Database.idOfCurrentUser }
-//            if (rideCreatedByThisUser == null) {
-//                fab_create_ride.setImageDrawable(getDrawable(R.drawable.ic_create_ride))
-//                fab_create_ride.setOnClickListener {
-//                    // create a new ride
-//                    val intent = Intent(this, RideCreationActivity::class.java)
-//                    intent.putExtra(Keys.EVENT_ID.name, eventId)
-//                    startActivity(intent)
-//                }
-//            } else {
-//                fab_create_ride.setImageDrawable(getDrawable(R.drawable.ic_open_existing_ride))
-//                fab_create_ride.setOnClickListener {
-//                    // go to pre-existing ride, instead of creating a new one
-//                    val intent = Intent(this, RidePageActivity::class.java)
-//                    intent.putExtra(Keys.RIDE_ID.name, rideCreatedByThisUser.id)
-//                    startActivity(intent)
-//                }
-//            }
-//        }
-//    }
+    private fun refreshRecyclerView() {
+        fab_create_ride.visibility = View.GONE
+        fab_create_ride.hide()
+        Database.getRidesForEvent(eventId) { rides: List<Ride> ->
+            fab_create_ride.visibility = View.VISIBLE
+            fab_create_ride.show()
+            viewAdapter = MyAdapter(this, rides.toTypedArray())
+            viewAdapter.notifyDataSetChanged()
+            recyclerView.adapter = viewAdapter
+
+            val rideCreatedByThisUser = rides.singleOrNull { it.driverId == Database.idOfCurrentUser }
+            if (rideCreatedByThisUser == null) {
+                fab_create_ride.setImageDrawable(getDrawable(R.drawable.ic_create_ride))
+                fab_create_ride.setOnClickListener {
+                    // create a new ride
+                    val intent = Intent(this, RideCreationActivity::class.java)
+                    intent.putExtra(Keys.EVENT_ID.name, eventId)
+                    startActivity(intent)
+                }
+            } else {
+                fab_create_ride.setImageDrawable(getDrawable(R.drawable.ic_open_existing_ride))
+                fab_create_ride.setOnClickListener {
+                    // go to pre-existing ride, instead of creating a new one
+                    val intent = Intent(this, RidePageActivity::class.java)
+                    intent.putExtra(Keys.RIDE_ID.name, rideCreatedByThisUser.id)
+                    intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, true)
+                    startActivity(intent)
+                }
+            }
+        }
+    }
 
     override fun onResume() {
         super.onResume()
-       // refreshRecyclerView()
+        refreshRecyclerView()
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -244,4 +250,4 @@ class EventRidesActivity : AppCompatActivity() {
             }
         }
     }
-}
+    }
