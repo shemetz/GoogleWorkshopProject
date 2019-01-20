@@ -3,13 +3,13 @@ package org.team2.ridetogather
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
-import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Html
 import android.util.Log
@@ -35,7 +35,7 @@ class EventRidesActivity : AppCompatActivity() {
     }
 
     private var eventId: Id = -1
-
+    private lateinit var EventfacebookId: String
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
@@ -75,7 +75,8 @@ class EventRidesActivity : AppCompatActivity() {
         Database.getEvent(eventId) { event: Event ->
             val eventTime =
                 java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
-
+            EventfacebookId = event.facebookEventId
+            Log.i(tag, EventfacebookId)
             toolbar_layout.title = event.name
             toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
             CoroutineScope(Dispatchers.Default).launch {
@@ -229,6 +230,13 @@ class EventRidesActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_settings -> {
                 startActivity(Intent(applicationContext, SettingsActivity::class.java))
+                true
+            }
+            R.id.action_open_event_on_facebook -> {
+                //for mock data, delete later
+                EventfacebookId = "528568017656422"
+                val url = "https://www.facebook.com/events/".plus(EventfacebookId)
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -135,3 +135,20 @@ fun getProfilePicUrl(facebookId: String, callback: (String) -> Unit) {
         request.executeAsync()
     }
 }
+
+fun getEventUrl(eventId: String, callback: (String) -> Unit) {
+    if (eventId.equals("fake_event_-id")) {
+        callback("http://pluspngcom/img-png/png-hd-of-puppies-puppy-other-400.png")
+    } else {
+        val request = GraphRequest.newGraphPathRequest(
+            AccessToken.getCurrentAccessToken(),
+            "/$eventId"
+        ) { response ->
+            val picture = response.jsonObject.getJSONObject("cover")
+            val picUrl = picture.getString("source")
+            callback(picUrl)
+        }
+        request.parameters.putString("fields", "cover)")
+        request.executeAsync()
+    }
+}
