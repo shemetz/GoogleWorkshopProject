@@ -17,7 +17,7 @@
             android:padding="8dp">
 
         <ImageView
-                android:id="@+id/driverPicture"
+                android:id="@+id/passengerPicture"
                 android:layout_weight="0.25"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -36,7 +36,7 @@
 
             <TextView
                     android:layout_gravity="center_vertical"
-                    android:id="@+id/driverName"
+                    android:id="@+id/passengerName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/profileNameColor"

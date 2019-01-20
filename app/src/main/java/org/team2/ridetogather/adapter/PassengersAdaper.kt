@@ -5,8 +5,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.card_ride.view.*
-import kotlinx.android.synthetic.main.user_event.view.*
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.item_passengers.view.*
 import org.team2.ridetogather.*
 import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
 
@@ -19,7 +19,19 @@ public class PassengerssAdapter(val items : ArrayList<User>, val context: Contex
     override fun onBindViewHolder(holder: ViewHolderPes, position: Int) {
 
 
-        holder?.driverName?.text = items.get(position).name
+        holder?.passengerName?.text = items.get(position).name
+        holder?.credits?.text = items.get(position).credits.toString()
+
+        val facebookId = items.get(position).facebookProfileId
+        getProfilePicUrl(facebookId) { pic_url ->
+            Picasso.get()
+                .load(pic_url)
+                .placeholder(R.drawable.placeholder_profile)
+                .error(R.drawable.placeholder_profile)
+                .resize(256, 256)
+                .transform(CircleTransform())
+                .into(holder?.passengerPicture)
+        }
 
 
     }
@@ -34,7 +46,9 @@ public class PassengerssAdapter(val items : ArrayList<User>, val context: Contex
 
 public class ViewHolderPes (view: View) : RecyclerView.ViewHolder(view) {
     // Holds the TextView that will add each animal to
-    val driverName = view.driverName
+    val passengerName = view.passengerName
+    val passengerPicture = view.passengerPicture
+    val credits = view.passengerCredits
 
 }
 
