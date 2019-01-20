@@ -16,7 +16,6 @@ import android.widget.TextView
 import org.team2.ridetogather.*
 import org.team2.ridetogather.adapter.ItemClickListener
 import org.team2.ridetogather.adapter.UserEventsAdapter
-import org.team2.ridetogather.adapter.ViewHolder
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

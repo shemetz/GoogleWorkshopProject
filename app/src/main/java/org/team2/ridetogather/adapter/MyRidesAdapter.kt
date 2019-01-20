@@ -19,12 +19,12 @@ class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var item
     }
 
     override fun onBindViewHolder(holder: ViewHolderRide, position: Int) {
-       Database.getEvent(items.get(position).eventId,{event:Event->
+       Database.getEvent(items.get(position).eventId){event:Event->
            holder?.eventName?.text = event.name
            holder?.eventDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(event.datetime)
            holder?.eventLocation?.text = readableLocation(context,event.location)
-       })
-        Database.getDriver(items.get(position).driverId,{driver:Driver->
+       }
+        Database.getDriver(items.get(position).driverId){driver:Driver->
             holder?.driverName?.text = driver.name
 
             val facebookId = driver.facebookProfileId
@@ -38,7 +38,7 @@ class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var item
                     .into(holder?.driverPicture)
             }
 
-        })
+        }
 
 
         holder?.card_view.setOnClickListener(View.OnClickListener {

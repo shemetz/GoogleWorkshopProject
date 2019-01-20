@@ -12,16 +12,16 @@ import org.team2.ridetogather.readableLocation
 import java.util.*
 import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
 
-class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolder>() {
+class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderEvent>() {
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            return ViewHolder(LayoutInflater.from(context).inflate(R.layout.user_event, parent, false))
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderEvent {
+            return ViewHolderEvent(LayoutInflater.from(context).inflate(R.layout.user_event, parent, false))
         }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder?.tvTitle?.text = items.get(position).name
-            holder?.tvLocation?.text =readableLocation(context, items.get(position).location)
-            holder?.tvDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(items.get(position).datetime)
+        override fun onBindViewHolder(holder: ViewHolderEvent, position: Int) {
+            holder?.eventTitle?.text = items.get(position).name
+            holder?.eventLocation?.text =readableLocation(context, items.get(position).location)
+            holder?.eventDateTime?.text = java.text.SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(items.get(position).datetime)
             holder?.card_view.setOnClickListener(View.OnClickListener {
 
                 itemClickListener?.onItemClicked(items.get(position),position)
@@ -37,13 +37,12 @@ class UserEventsAdapter(val items : ArrayList<Event>, val context: Context?,var 
 
     }
 
-    class ViewHolder (view: View) : RecyclerView.ViewHolder(view) {
-    // Holds the TextView that will add each animal to
-    val card_view = view.card_view
-    val tvTitle = view.tvTitle
-    val tvLocation = view.tvLocation
-    val tvDateTime = view.tvDateTime
-    val eventPicture = view.img
+    class ViewHolderEvent (view: View) : RecyclerView.ViewHolder(view) {
+        val card_view = view.card_view
+        val eventTitle = view.eventTitle
+        val eventLocation = view.eventLocation
+        val eventDateTime = view.eventDateTime
+        val eventPicture = view.eventPicture
 }
 
 interface ItemClickListener {

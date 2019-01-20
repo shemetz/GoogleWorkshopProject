@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
     private val imageResId =
         intArrayOf(R.drawable.ic_tab_group, R.drawable.ic_tab_events, R.drawable.ic_tab_rides)
 
-    private val pageTitles= arrayOf("Groups","All Events","My Rides");
+    private val pageTitles= arrayOf("Ride Groups","Events","My Rides");
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Database.initialize(this)
