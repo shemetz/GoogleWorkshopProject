@@ -65,6 +65,11 @@
     <string name="ride_map_with_pending_request">Ride map (+Requests)</string>
     <string name="cancel_request_are_you_sure">Your request is pending until the driver approves it. Would you like to cancel the request?</string>
     <string name="leave_ride_are_you_sure">Are you sure you want to leave this ride?</string>
+    <string name="toast_join_ride_success">Request sent!</string>
+    <string name="toast_join_ride_cancel">Canceled join.</string>
+    <string name="toast_cancel_request_success">Request canceled!</string>
+    <string name="toast_leave_ride_success">Left ride!</string>
+    <string name="toast_ride_map_edit_success">Updated ride map!</string>
 
     <!-- Pickup -->
     <string name="passenger_name">Name</string>
@@ -89,6 +94,7 @@
     <string name="error_nonpositive_passenger_count">Sorry, currently only positive numbers of passengers are allowed
         ;)
     </string>
+    <string name="weird_error">Weird error - this should not happen</string>
 
     <!-- Miscellaneous strings-->
     <string name="logging_in">Logging in…</string>
@@ -98,6 +104,7 @@
     <string name="no">No</string>
     <string name="confirm">Confirm</string>
     <string name="deny">Deny</string>
+    <string name="null_string">null_string</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -1,5 +1,6 @@
 package org.team2.ridetogather
 
+import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -112,6 +113,21 @@ class RidePageActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         updatePassengers(ride.id)
         updateMainButton()
+        val success = resultCode == Activity.RESULT_OK
+        val toastTextResourceId = when (MapsActivity.Companion.RequestCode.values()[requestCode]) {
+            MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN -> {
+                R.string.weird_error
+            }
+            MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION -> {
+                if (success) R.string.toast_join_ride_success else R.string.toast_join_ride_cancel
+            }
+            MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
+                if (success) R.string.toast_ride_map_edit_success else R.string.null_string
+            }
+        }
+        if (toastTextResourceId != R.string.null_string) {
+            Toast.makeText(this, getString(toastTextResourceId), Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun updateMainButton() {
@@ -176,7 +192,7 @@ class RidePageActivity : AppCompatActivity() {
                                 ) { _, _ ->
                                     val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
                                     Database.deletePickup(pickup.id) {
-                                        Toast.makeText(this, "Left ride.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(this, getString(R.string.toast_leave_ride_success), Toast.LENGTH_SHORT).show()
                                         recreate() // to be updated
                                     }
                                     mainButton.isEnabled = false
@@ -195,7 +211,7 @@ class RidePageActivity : AppCompatActivity() {
                                 .setPositiveButton(R.string.yes) { _, _ ->
                                     val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
                                     Database.deletePickup(pickup.id) {
-                                        Toast.makeText(this, "Canceled request.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(this, getString(R.string.toast_cancel_request_success), Toast.LENGTH_SHORT).show()
                                         recreate() // to be updated
                                     }
                                     mainButton.isEnabled = false
