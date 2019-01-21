@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import kotlinx.android.synthetic.main.content_eventrides.*
 import org.team2.ridetogather.adapter.PassengerssAdapter
 
@@ -51,7 +50,8 @@ class PassengersListFragment : Fragment() {
     private fun updatePassengers() {
         Database.getUsersForEvent(eventId) { users ->
             if(users.size!=0) {
-                list.addAll(users);
+                list.clear()
+                list.addAll(users)
                 rides_list_recycler_view.adapter = PassengerssAdapter(list, context)
                 rides_list_recycler_view.adapter.notifyDataSetChanged()
             }
