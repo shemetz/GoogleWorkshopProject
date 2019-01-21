@@ -28,8 +28,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.PolyUtil
 import kotlinx.android.synthetic.main.activity_maps.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.concurrent.CountDownLatch
 import kotlin.math.max
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -407,52 +411,72 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun calculateRoute() {
-        // Getting URL to the Google Directions API
+        /*
+        Due to some weird problem with the google routes API, only geocoded locations
+        work as waypoints - latlng doesn't work no matter which format I try :(
+         */
+
         val origin = originMarker.position
         val destination = eventMarker.position
         val waypoints = pickupMarkers
             .filter { it.inRide }
             .map { it.marker.position }
-            .map {
-                jsonObjOf(
-                    "location" to "${origin.latitude},${origin.longitude}",
-                    "stopover" to false
-                )
-            }
-            .take(23) // that's the maximum
-        val params = mapOf(
-            "key" to getString(R.string.SECRET_GOOGLE_API_KEY),
-            "origin" to "${origin.latitude},${origin.longitude}",
-            "destination" to "${destination.latitude},${destination.longitude}",
-            "travelMode" to "DRIVING"
-        ) + if (waypoints.isNotEmpty()) mapOf(
-            "waypoints" to JSONArray(waypoints).toString(),
-            "optimizeWaypoints" to "false"
-        ) else emptyMap()
-        Log.i(tag, "Requesting route from Google Maps API…")
-        Log.v(tag, params.toString())
-        khttp.async.get(
-            url = "https://maps.googleapis.com/maps/api/directions/json",
-            params = params,
-            onResponse = {
-                val responseJson = this.jsonObject
-                Log.i(tag, "Got a response! \\o/")
-//                Log.i(tag, this.text)
-                if (responseJson.optJSONArray("routes")?.length() != 0) {
-                    routeJson = responseJson
-                    drawRoute(routeJson!!)
-                } else {
-                    routeJson = null
-                    runOnUiThread {
-                        Log.e(tag, "Failed to find any route..!")
-                        Log.e(tag, responseJson.toString(4))
-                        Toast.makeText(this@MapsActivity, "No route was found 🙁", Toast.LENGTH_SHORT).show()
-                        // remove existing route if it exists
-                        drawnRoute.forEach { it.remove() }
-                    }
+        CoroutineScope(Dispatchers.Default).launch {
+            Log.v(tag, "Starting countdown(${waypoints.size})…")
+            val countdown = CountDownLatch(waypoints.size)
+            waypoints.forEach { latLng ->
+                geocode(this@MapsActivity, latLng) {
+                    countdown.countDown()
+                    Log.v(tag, "Completed $latLng → $it")
                 }
             }
-        )
+            Log.v(tag, "Awaiting countdown…")
+            countdown.await()
+            Log.v(tag, "Done with countdown!")
+
+            val waypointsAsParameter = waypoints
+                .map {
+                    jsonObjOf(
+                        "location" to geocodingCache[it],
+                        "stopover" to true
+                    )
+                }
+                .take(23) // that's the maximum
+
+            val params = mapOf(
+                "key" to getString(R.string.SECRET_GOOGLE_API_KEY),
+                "origin" to "${origin.latitude},${origin.longitude}",
+                "destination" to "${destination.latitude},${destination.longitude}",
+                "travelMode" to "DRIVING"
+            ) + if (waypoints.isNotEmpty()) mapOf(
+                "waypoints" to JSONArray(waypointsAsParameter).toString(),
+                "optimizeWaypoints" to "true"
+            ) else emptyMap()
+            Log.i(tag, "Requesting route from Google Maps API…")
+            Log.v(tag, params.toString())
+            khttp.async.get(
+                url = "https://maps.googleapis.com/maps/api/directions/json",
+                params = params,
+                onResponse = {
+                    val responseJson = this.jsonObject
+                    Log.i(tag, "Got a response! \\o/")
+//                Log.i(tag, this.text)
+                    if (responseJson.optJSONArray("routes")?.length() != 0) {
+                        routeJson = responseJson
+                        drawRoute(routeJson!!)
+                    } else {
+                        routeJson = null
+                        runOnUiThread {
+                            Log.e(tag, "Failed to find any route..!")
+                            Log.e(tag, responseJson.toString(4))
+                            Toast.makeText(this@MapsActivity, "No route was found :(", Toast.LENGTH_SHORT).show()
+                            // remove existing route if it exists
+                            drawnRoute.forEach { it.remove() }
+                        }
+                    }
+                }
+            )
+        }
     }
 
     /**
@@ -476,14 +500,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.w(tag, onlyRoute.getJSONArray("warnings").join("\n"))
         }
         val legs = onlyRoute.getJSONArray("legs")
-        if (legs.length() > 1)
-            Log.w(tag, "There's more than one leg of the journey!?")
-        val onlyLeg = legs.getJSONObject(0)
-        val steps = onlyLeg.getJSONArray("steps")
+        val allLegs: List<JSONObject> = (0 until legs.length()).map { i -> legs.getJSONObject(i) }
         val path = mutableListOf<List<LatLng>>()
-        for (i in 0 until steps.length()) {
-            val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
-            path.add(PolyUtil.decode(points))
+        allLegs.forEach { leg ->
+            val steps = leg.getJSONArray("steps")
+            for (i in 0 until steps.length()) {
+                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
+                path.add(PolyUtil.decode(points))
+            }
         }
         val combinedPath = path.flatten()
         runOnUiThread {

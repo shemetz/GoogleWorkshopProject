@@ -22,11 +22,13 @@ import org.team2.ridetogather.PickupStatus.*
 class RidePageActivity : AppCompatActivity() {
 
     companion object {
-        fun start(context: Context?,evenid:Int?) {
-            val intent = Intent(context,RidePageActivity::class.java)
-            intent.putExtra(Keys.RIDE_ID.name,evenid)
+        fun start(context: Context?, rideId: Int?, driverPerspective: Boolean, clearPrevActivity: Boolean = false) {
+            val intent = Intent(context, RidePageActivity::class.java)
+            intent.putExtra(Keys.RIDE_ID.name, rideId)
+            intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, driverPerspective)
+            if (clearPrevActivity)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             context?.startActivity(intent)
-
         }
     }
 
@@ -47,7 +49,9 @@ class RidePageActivity : AppCompatActivity() {
 
         carModel.text = ride.carModel
         carColor.text = ride.carColor
-        originLocation.text = readableLocation(this, ride.origin)
+        geocode(this, ride.origin.toLatLng()) {
+            originLocation.text = it
+        }
         departureTime.text = ride.departureTime.shortenedTime()
         details.text = ride.extraDetails
 
@@ -326,7 +330,9 @@ class RidePageActivity : AppCompatActivity() {
                 view.passengerName.text = user.name
             }
 
-            view.pickupSpot.text = readableLocation(context, pickup.pickupSpot)
+            geocode(context, pickup.pickupSpot.toLatLng()) {
+                view.pickupSpot.text = it
+            }
             // load profile picture of passenger
             Database.getUser(pickup.userId) { user: User ->
                 val facebookId = user.facebookProfileId

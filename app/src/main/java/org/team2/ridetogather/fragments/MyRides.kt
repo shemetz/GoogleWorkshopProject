@@ -2,7 +2,6 @@ package org.team2.ridetogather.fragments
 
 import android.app.Activity
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -11,8 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import org.team2.ridetogather.*
-
+import org.team2.ridetogather.Database
+import org.team2.ridetogather.R
+import org.team2.ridetogather.Ride
+import org.team2.ridetogather.RidePageActivity
 import org.team2.ridetogather.adapter.ItemClickListener
 import org.team2.ridetogather.adapter.MyRidesAdapter
 
@@ -43,7 +44,8 @@ class MyRides : Fragment() {
             param2 = it.getString(ARG_PARAM2)
         }
     }
-    var list= arrayListOf<Ride>();
+
+    var list = arrayListOf<Ride>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -51,26 +53,24 @@ class MyRides : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_my_rides, container, false)
         Database.getRidesForUser(Database.idOfCurrentUser) { rides: List<Ride> ->
-            if(rides.size!=0) {
-                list.addAll(rides);
+            if (rides.isNotEmpty()) {
+                list.addAll(rides)
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
-                val myRidesAdapter = MyRidesAdapter(list, context, object : ItemClickListener {
-                    override fun onItemClicked( item: Any, pos: Int) {
-                        val ride:Ride = item as Ride;
-                        RidePageActivity.start(context,ride.id)
+                val myRidesAdapter = MyRidesAdapter(list, context!!, object : ItemClickListener {
+                    override fun onItemClicked(item: Any, pos: Int) {
+                        val ride: Ride = item as Ride
+                        RidePageActivity.start(context, ride.id, ride.driverId == Database.idOfCurrentUser)
                     }
                 })
                 recycle.layoutManager = LinearLayoutManager(context)
                 recycle.adapter = myRidesAdapter
-            }
-            else
-            {
+            } else {
                 val recycle = view.findViewById<TextView>(R.id.tvEmpty)
-                recycle.visibility=View.VISIBLE
+                recycle.visibility = View.VISIBLE
             }
 
         }
-        return view;
+        return view
     }
 
     internal var context: Context? = null

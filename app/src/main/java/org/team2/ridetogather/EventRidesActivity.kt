@@ -18,17 +18,14 @@ import android.view.*
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class EventRidesActivity : AppCompatActivity() {
     private val tag = EventRidesActivity::class.java.simpleName
 
     companion object {
-        fun start(context: Context?,evenid:Int?) {
-            val intent = Intent(context,EventRidesActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name,evenid)
+        fun start(context: Context?, evenid: Int?) {
+            val intent = Intent(context, EventRidesActivity::class.java)
+            intent.putExtra(Keys.EVENT_ID.name, evenid)
             context?.startActivity(intent)
 
         }
@@ -77,11 +74,8 @@ class EventRidesActivity : AppCompatActivity() {
             facebookEventId = event.facebookEventId
             toolbar_layout.title = event.name
             toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
-            CoroutineScope(Dispatchers.Default).launch {
-                val eventShortLocation = readableLocation(this@EventRidesActivity, event.location)
-                CoroutineScope(Dispatchers.Main).launch {
-                    tv_description.text = eventShortLocation
-                }
+            geocode(this@EventRidesActivity, event.location.toLatLng()) {
+                tv_description.text = it
             }
             tv_title.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 Html.fromHtml(eventTime, Html.FROM_HTML_MODE_LEGACY)
@@ -134,10 +128,7 @@ class EventRidesActivity : AppCompatActivity() {
                 fab_create_ride.setImageDrawable(getDrawable(R.drawable.ic_open_existing_ride))
                 fab_create_ride.setOnClickListener {
                     // go to pre-existing ride, instead of creating a new one
-                    val intent = Intent(this, RidePageActivity::class.java)
-                    intent.putExtra(Keys.RIDE_ID.name, rideCreatedByThisUser.id)
-                    intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, true)
-                    startActivity(intent)
+                    RidePageActivity.start(this, rideCreatedByThisUser.id, true)
                 }
             }
         }
@@ -195,16 +186,14 @@ class EventRidesActivity : AppCompatActivity() {
                         .into(view.driverPicture)
                 }
             }
-            view.originLocationName.text = readableLocation(context, ride.origin)
+            geocode(context, ride.origin.toLatLng()) {
+                view.originLocationName.text = it
+            }
 //            view.driverPicture.drawable = ???
 
             view.departureTime.text = ride.departureTime.shortenedTime()
             holder.cardView.setOnClickListener {
-                val intent = Intent(view.context, RidePageActivity::class.java)
-                val rideID = ride.id
-                intent.putExtra(Keys.RIDE_ID.name, rideID)
-                intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, ride.driverId == Database.idOfCurrentUser)
-                view.context.startActivity(intent)
+                RidePageActivity.start(view.context, ride.id, ride.driverId == Database.idOfCurrentUser)
             }
             /*holder.cardView.joinRidePlusButton.setOnClickListener{
                 val intent = Intent(context,JoinRideActivity::class.java)
@@ -258,4 +247,4 @@ class EventRidesActivity : AppCompatActivity() {
             }
         }
     }
-    }
+}

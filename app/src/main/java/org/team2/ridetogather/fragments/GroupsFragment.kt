@@ -2,10 +2,7 @@ package org.team2.ridetogather.fragments
 
 import android.app.Activity
 import android.content.Context
-import android.net.Uri
-import android.opengl.Visibility
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -13,7 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import org.team2.ridetogather.*
+import org.team2.ridetogather.Database
+import org.team2.ridetogather.Event
+import org.team2.ridetogather.EventRidesActivity
+import org.team2.ridetogather.R
 import org.team2.ridetogather.adapter.ItemClickListener
 import org.team2.ridetogather.adapter.UserEventsAdapter
 
@@ -44,7 +44,8 @@ class GroupsFragment : Fragment() {
             param2 = it.getString(ARG_PARAM2)
         }
     }
-    var list= arrayListOf<Event>();
+
+    var list = arrayListOf<Event>();
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -53,22 +54,20 @@ class GroupsFragment : Fragment() {
         val view: View = inflater.inflate(R.layout.fragment_groups, container, false)
 
         Database.getEventsForUser(Database.idOfCurrentUser) { events: List<Event> ->
-            if(events.size!=0) {
+            if (events.size != 0) {
                 list.addAll(events);
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
-                val userEventAdapter = UserEventsAdapter(list, context, object : ItemClickListener {
-                    override fun onItemClicked( item: Any, pos: Int) {
-                        val event:Event = item as Event;
-                        EventRidesActivity.start(context,event.id)
+                val userEventAdapter = UserEventsAdapter(list, context!!, object : ItemClickListener {
+                    override fun onItemClicked(item: Any, pos: Int) {
+                        val event: Event = item as Event;
+                        EventRidesActivity.start(context, event.id)
                     }
                 })
                 recycle.layoutManager = LinearLayoutManager(context)
                 recycle.adapter = userEventAdapter
-            }
-            else
-            {
+            } else {
                 val recycle = view.findViewById<TextView>(R.id.tvEmpty)
-                recycle.visibility=View.VISIBLE
+                recycle.visibility = View.VISIBLE
             }
 
         }
@@ -76,8 +75,6 @@ class GroupsFragment : Fragment() {
 
         return view
     }
-
-
 
 
     internal var context: Context? = null

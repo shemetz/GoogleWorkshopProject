@@ -10,19 +10,22 @@ import kotlinx.android.synthetic.main.user_ride.view.*
 import org.team2.ridetogather.*
 import java.util.*
 
-class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderRide>() {
+class MyRidesAdapter(val items: ArrayList<Ride>, val context: Context, var itemClickListener: ItemClickListener?) :
+    RecyclerView.Adapter<ViewHolderRide>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderRide {
         return ViewHolderRide(LayoutInflater.from(context).inflate(R.layout.user_ride, parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolderRide, position: Int) {
-       Database.getEvent(items.get(position).eventId){event:Event->
-           holder?.eventName?.text = event.name
-           holder?.eventDateTime?.text = formatDatetime(event.datetime)
-           holder?.eventLocation?.text = readableLocation(context,event.location)
-       }
-        Database.getDriver(items.get(position).driverId){driver:Driver->
+        Database.getEvent(items.get(position).eventId) { event: Event ->
+            holder?.eventName?.text = event.name
+            holder?.eventDateTime?.text = formatDatetime(event.datetime)
+            geocode(context, event.location.toLatLng()) {
+                holder?.eventLocation?.text = it
+            }
+        }
+        Database.getDriver(items.get(position).driverId) { driver: Driver ->
             holder?.driverName?.text = driver.name
 
             val facebookId = driver.facebookProfileId
@@ -53,7 +56,8 @@ class MyRidesAdapter(val items : ArrayList<Ride>, val context: Context?,var item
 
 
 }
-class ViewHolderRide (view: View) : RecyclerView.ViewHolder(view) {
+
+class ViewHolderRide(view: View) : RecyclerView.ViewHolder(view) {
     // Holds the TextView that will add each animal to
     val card_view = view.card_view
     val driverName = view.driverName
