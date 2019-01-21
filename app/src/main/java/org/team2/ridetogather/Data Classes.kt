@@ -53,7 +53,8 @@ class Pickup(
     val rideId: Id,
     var pickupSpot: Location,
     var pickupTime: TimeOfDay,
-    var inRide: Boolean
+    var inRide: Boolean,
+    var denied: Boolean
 ) : DatabaseObject(id_)
 
 data class TimeOfDay(

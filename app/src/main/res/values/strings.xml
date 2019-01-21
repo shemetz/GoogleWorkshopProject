@@ -103,7 +103,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="confirm">Confirm</string>
-    <string name="deny">Deny</string>
+    <string name="deny">Decline</string>
     <string name="null_string">null_string</string>
 
     <!-- TODO: Remove or change this placeholder text -->

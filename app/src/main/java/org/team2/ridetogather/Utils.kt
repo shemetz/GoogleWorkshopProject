@@ -34,13 +34,6 @@ enum class Preferences {
     LAST_ORIGIN_LOCATION__READABLE,
 }
 
-enum class PickupStatus {
-    PENDING,
-    APPROVED,
-    DECLINED,
-    NOT_EXIST,
-}
-
 val geocodingCache = mutableMapOf<LatLng, String>()
 
 /**

@@ -46,7 +46,8 @@ object JsonParse {
         ).toLocation()
         val pickupTime = TimeOfDay(pickupJson.optInt("pickupHour"), pickupJson.optInt("pickupMinute"))
         val inRide = pickupJson.getBoolean("inRide")
-        return Pickup(pickupId, userId, rideId, pickupSpot, pickupTime, inRide)
+        val denied = pickupJson.getBoolean("denied")
+        return Pickup(pickupId, userId, rideId, pickupSpot, pickupTime, inRide, denied)
     }
 
     fun user(userJson: JSONObject): User {

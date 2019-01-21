@@ -123,7 +123,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val rideId: Id = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Database.getPickupsForRide(rideId) { pickups ->
-            pickups.forEach { pickup ->
+            pickups.filter { !it.denied } .forEach { pickup ->
                 Database.getUser(pickup.userId) { passenger ->
                     val position = pickup.pickupSpot.toLatLng()
                     val markerOptions = MarkerOptions()
@@ -257,24 +257,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     countDown()
 
                     for (pickupMarker in pickupMarkers) {
-                        if (pickupMarker.pickup.inRide) {
-                            Database.updatePickup(pickupMarker.pickup) {
-                                pickupMarker.marker.setIcon(
-                                    createCombinedMarker(
-                                        R.drawable.ic_person_green_sub_icon,
-                                        36
-                                    )
-                                )
-                                countDown()
-                            }
-                        } else {
-                            if (pickupMarker.removed) {
-                                somethingChanged = true
-                                Database.deletePickup(pickupMarker.pickup.id) {
-                                    pickupMarker.marker.remove()
-                                    countDown()
-                                }
-                            } else countDown()
+                        Database.updatePickup(pickupMarker.pickup) {
+                            countDown()
                         }
                     }
                 }
@@ -542,8 +526,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     class PickupMarker(
         val pickup: Pickup,
-        val marker: Marker,
-        var removed: Boolean = false
+        val marker: Marker
     )
 
     private fun onPickupMarkerClick(pickupMarker: PickupMarker): Boolean {
@@ -575,7 +558,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     somethingChanged = true
                                 }
                                 pickupMarker.pickup.inRide = true
-                                pickupMarker.removed = false
+                                pickupMarker.pickup.denied = false
                                 pickupMarker.marker.alpha = 1f
                                 calculateRoute()
                             }
@@ -589,7 +572,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                         .setNegativeButton(R.string.deny) { _, _ ->
                             pickupMarker.pickup.inRide = false
-                            pickupMarker.removed = true
+                            pickupMarker.pickup.denied = true
                             pickupMarker.marker.alpha = 0.1f
                             calculateRoute()
                         }

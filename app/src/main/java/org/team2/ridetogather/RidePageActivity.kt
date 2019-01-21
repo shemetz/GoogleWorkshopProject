@@ -17,8 +17,6 @@ import android.widget.Toast
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
-import org.team2.ridetogather.PickupStatus.*
-
 
 class RidePageActivity : AppCompatActivity() {
 
@@ -142,7 +140,7 @@ class RidePageActivity : AppCompatActivity() {
             Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
                 var somePickupsAreNotInRide = false
                 for (pickup in pickups) {
-                    if (!pickup.inRide) {
+                    if (!pickup.inRide && !pickup.denied) {
                         somePickupsAreNotInRide = true
                     }
                 }
@@ -174,15 +172,29 @@ class RidePageActivity : AppCompatActivity() {
         } else {
             // Enable join ride button if not already asking for a pickup.
             Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
-                var pickupStatus: PickupStatus = NOT_EXIST
-                for (pickup in pickups) {
-                    if (pickup.userId == Database.idOfCurrentUser) {
-                        pickupStatus = if (pickup.inRide) APPROVED else PENDING
-                        break
+                val pickupOfCurrentUser = pickups.singleOrNull { it.userId == Database.idOfCurrentUser }
+                when {
+                    pickupOfCurrentUser == null -> {
+                        // Pickup does not exist yet - create it
+                        Database.getRide(rideId) { ride ->
+                            mainButton.isEnabled = true
+                            mainButton.text = getString(R.string.join_ride)
+                            mainButton.setOnClickListener {
+                                val intent = Intent(applicationContext, JoinRideActivity::class.java)
+                                intent.putExtra(Keys.RIDE_ID.name, rideId)
+                                intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
+                                // request code doesn't matter - the activity doesn't check it
+                                startActivityForResult(intent, 1)
+                            }
+                        }
                     }
-                }
-                when (pickupStatus) {
-                    APPROVED -> {
+                    pickupOfCurrentUser.denied -> {
+                        // Pickup request was declined
+                        mainButton.isEnabled = false
+                        mainButton.text = getString(R.string.request_declined)
+                    }
+                    pickupOfCurrentUser.inRide -> {
+                        // Pickup request was approved
                         mainButton.isEnabled = true
                         mainButton.text = getString(R.string.leave_ride)
                         mainButton.setBackgroundColor(ContextCompat.getColor(this, R.color.errorRed))
@@ -209,7 +221,8 @@ class RidePageActivity : AppCompatActivity() {
                                 .setNegativeButton(R.string.no, null).show()
                         }
                     }
-                    PENDING -> {
+                    else -> {
+                        // Pickup request is still pending
                         mainButton.isEnabled = true
                         mainButton.text = getString(R.string.request_is_pending)
                         mainButton.setOnClickListener {
@@ -231,23 +244,6 @@ class RidePageActivity : AppCompatActivity() {
                                 }
                                 .setNegativeButton(R.string.no, null).show()
                         }
-                    }
-                    NOT_EXIST -> {
-                        Database.getRide(rideId) { ride ->
-                            mainButton.isEnabled = true
-                            mainButton.text = getString(R.string.join_ride)
-                            mainButton.setOnClickListener {
-                                val intent = Intent(applicationContext, JoinRideActivity::class.java)
-                                intent.putExtra(Keys.RIDE_ID.name, rideId)
-                                intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
-                                // request code doesn't matter - the activity doesn't check it
-                                startActivityForResult(intent, 1)
-                            }
-                        }
-                    }
-                    DECLINED -> {
-                        mainButton.isEnabled = false
-                        mainButton.text = getString(R.string.request_declined)
                     }
                 }
             }
