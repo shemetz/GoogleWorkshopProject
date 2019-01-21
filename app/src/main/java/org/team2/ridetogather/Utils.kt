@@ -23,6 +23,7 @@ enum class Keys {
     CHANGE_BTN,
     REQUEST_CODE,
     DRIVER_PERSPECTIVE,
+    SOMETHING_CHANGED,
 }
 
 enum class Preferences {
@@ -63,7 +64,8 @@ fun geocode(context: Context, latLng: LatLng, successCallback: (String) -> Unit)
         ),
         onResponse = {
             Log.v("Google Geocode", jsonObject.toString(4))
-            CoroutineScope(Dispatchers.Main).launch { // dirty hack, sorry
+            CoroutineScope(Dispatchers.Main).launch {
+                // dirty hack, sorry
                 val result = if (jsonObject.getString("status") == "ZERO_RESULTS")
                     alternativeGeocode(context, latLng)
                 else
@@ -176,8 +178,7 @@ fun getProfilePicUrl(facebookId: String, callback: (String) -> Unit) {
 }
 
 fun getEventUrl(eventId: String, callback: (String) -> Unit) {
-    val tag = "utils"::class.java.simpleName
-    if (eventId.equals("fakefacebookevent")) {
+    if (eventId == "fakefacebookevent") {
         callback("https://www.cesarsway.com/sites/newcesarsway/files/d6/images/features/2012/sept/How-to-Care-for-Newborn-Puppies.jpg")
     } else {
         val request = GraphRequest.newGraphPathRequest(

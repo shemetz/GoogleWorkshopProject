@@ -79,7 +79,7 @@
 
     <!-- Map -->
     <string name="pickup_click_title"/>
-    <string name="pickup_click_description">When do you want to add %s to the ride?</string>
+    <string name="pickup_click_description">Do you want to add %s to the ride?</string>
 
     <!-- Slider -->
     <string name="next">NEXT</string>

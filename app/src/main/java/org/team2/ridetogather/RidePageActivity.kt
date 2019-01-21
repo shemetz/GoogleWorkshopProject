@@ -122,7 +122,11 @@ class RidePageActivity : AppCompatActivity() {
                 if (success) R.string.toast_join_ride_success else R.string.toast_join_ride_cancel
             }
             MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                if (success) R.string.toast_ride_map_edit_success else R.string.null_string
+                if (success && data?.getBooleanExtra(
+                        Keys.SOMETHING_CHANGED.name,
+                        false
+                    ) == true
+                ) R.string.toast_ride_map_edit_success else R.string.null_string
             }
         }
         if (toastTextResourceId != R.string.null_string) {
@@ -192,7 +196,11 @@ class RidePageActivity : AppCompatActivity() {
                                 ) { _, _ ->
                                     val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
                                     Database.deletePickup(pickup.id) {
-                                        Toast.makeText(this, getString(R.string.toast_leave_ride_success), Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            this,
+                                            getString(R.string.toast_leave_ride_success),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         recreate() // to be updated
                                     }
                                     mainButton.isEnabled = false
@@ -211,7 +219,11 @@ class RidePageActivity : AppCompatActivity() {
                                 .setPositiveButton(R.string.yes) { _, _ ->
                                     val pickup = pickups.single { p -> p.userId == Database.idOfCurrentUser }
                                     Database.deletePickup(pickup.id) {
-                                        Toast.makeText(this, getString(R.string.toast_cancel_request_success), Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            this,
+                                            getString(R.string.toast_cancel_request_success),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         recreate() // to be updated
                                     }
                                     mainButton.isEnabled = false

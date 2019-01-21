@@ -55,6 +55,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var mainMarker: Marker? = null
     private var mainMarkerIsFollowingCamera =
         false  // when not pinned it will be half-transparent and will follow the camera
+    private var somethingChanged = false  // true if something was edited
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,7 +128,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     val position = pickup.pickupSpot.toLatLng()
                     val markerOptions = MarkerOptions()
                         .position(position)
-                        .title(passenger.name + "\n" + pickup.pickupTime.shortenedTime())
+                        .title(passenger.name)
+                        .snippet(pickup.pickupTime.shortenedTime())
                         .icon(createCombinedMarker(R.drawable.ic_person_white_sub_icon, 36)) // TODO use profile picture
                         .zIndex(4f)
                         .alpha(if (pickup.inRide) 1f else 0.5f)
@@ -222,14 +224,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun setupButtons() {
         fab_confirm_location.setOnClickListener {
-            val resultIntent = Intent()
             when (requestCode) {
-                RequestCode.PICK_DRIVER_ORIGIN, RequestCode.PICK_PASSENGER_LOCATION -> {
-                    val locationStr = mainMarker!!.position.encodeToString()
-                    resultIntent.putExtra(Keys.LOCATION.name, locationStr)
-                    resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
-                    setResult(Activity.RESULT_OK, resultIntent)
-                    finish()
+                RequestCode.PICK_PASSENGER_LOCATION -> {
+                    somethingChanged = true
+                    finishAndReturn()
+                }
+                RequestCode.PICK_DRIVER_ORIGIN -> {
+                    finishAndReturn()
                 }
                 RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
                     fab_confirm_location.hide()
@@ -247,9 +248,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     fun countDown() {
                         counter--
                         if (counter == 0) {
-                            resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
-                            setResult(Activity.RESULT_OK, resultIntent)
-                            finish()
+                            finishAndReturn()
                         }
                     }
 
@@ -270,6 +269,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             }
                         } else {
                             if (pickupMarker.removed) {
+                                somethingChanged = true
                                 Database.deletePickup(pickupMarker.pickup.id) {
                                     pickupMarker.marker.remove()
                                     countDown()
@@ -369,6 +369,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             routeJson = JSONObject(routeJsonStr)
             drawRoute(routeJson!!)
         }
+    }
+
+    private fun finishAndReturn() {
+        val resultIntent = Intent()
+        if (mainMarker != null) {
+            val locationStr = mainMarker!!.position.encodeToString()
+            if (intent.getStringExtra(Keys.LOCATION.name) != locationStr)
+                somethingChanged = true
+            resultIntent.putExtra(Keys.LOCATION.name, locationStr)
+        }
+        resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
+        resultIntent.putExtra(Keys.SOMETHING_CHANGED.name, somethingChanged)
+        setResult(Activity.RESULT_OK, resultIntent)
+        finish()
     }
 
     private fun setPinned(pinned: Boolean) {
@@ -550,9 +564,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
                                 cal.set(Calendar.HOUR_OF_DAY, hour)
                                 cal.set(Calendar.MINUTE, minute)
-                                pickupMarker.pickup.pickupTime = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
-                                pickupMarker.marker.snippet =
-                                        SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                                val newTime = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+                                if (newTime != pickupMarker.pickup.pickupTime) {
+                                    somethingChanged = true
+                                    pickupMarker.pickup.pickupTime = newTime
+                                    pickupMarker.marker.snippet =
+                                            SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                                }
+                                if (!pickupMarker.pickup.inRide) {
+                                    somethingChanged = true
+                                }
                                 pickupMarker.pickup.inRide = true
                                 pickupMarker.removed = false
                                 pickupMarker.marker.alpha = 1f
@@ -679,6 +700,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             ORIGIN_LOCATION,
             MAIN_MARKER_LOCATION,
             ROUTE_JSON,
+            EDITED_SOMETHING,
         }
     }
 }
