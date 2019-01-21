@@ -12,9 +12,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_ridecreation.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -109,11 +106,7 @@ class RideCreationActivity : AppCompatActivity() {
                 car_model.text.toString(), car_color.text.toString(),
                 num_seats.text.toString().toInt(), extra_details.text.toString()
             ) { newRide: Ride ->
-                val intent = Intent(applicationContext, RidePageActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                intent.putExtra(Keys.RIDE_ID.name, newRide.id)
-                intent.putExtra(Keys.DRIVER_PERSPECTIVE.name, true)
-                startActivity(intent)
+                RidePageActivity.start(this, newRide.id, true, clearPrevActivity = true)
                 finish()
             }
         }
@@ -136,37 +129,31 @@ class RideCreationActivity : AppCompatActivity() {
                     originLocation = originLocationStr!!.decodeToLatLng().toLocation()
                     val routeJsonStr = data.getStringExtra(Keys.ROUTE_JSON.name)
                     btn_origin.text = getString(R.string.updating)
-                    CoroutineScope(Dispatchers.Default).launch {
-                        val locationStr = readableLocation(this@RideCreationActivity, originLocation!!)
-                        CoroutineScope(Dispatchers.Main).launch {
-                            btn_origin.text = locationStr
-                        }
-                        Log.d(tag, "Back in $tag with location $locationStr")
-                        if (routeJsonStr.isNotBlank()) {
-                            val routeJson = JSONObject(routeJsonStr)
-                            val onlyRoute = routeJson.getJSONArray("routes").getJSONObject(0)
-                            val legs = onlyRoute.getJSONArray("legs")
-                            val onlyLeg = legs.getJSONObject(0)
-                            try {
-//                                val distanceInMeters = onlyLeg.getJSONObject("distance").getInt("value")
-                                val distanceInText = onlyLeg.getJSONObject("distance").getString("text")
-//                                val durationInSeconds = onlyLeg.getJSONObject("duration").getInt("value")
-                                val durationInText = onlyLeg.getJSONObject("duration").getString("text")
-                                Log.i(
-                                    tag,
-                                    "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
-                                )
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    ride_time_and_distance.text =
-                                            "The ride should take about $durationInText ($distanceInText)."
-                                    ride_time_and_distance.visibility = View.VISIBLE
-                                }
-                            } catch (e: JSONException) {
-                                Log.e(tag, "Error in route json parsing, probably undefined distance", e)
-                                ride_time_and_distance.visibility = View.INVISIBLE
-                            }
-                        } else Log.i(tag, "Did not get a route JSON in return.")
+                    geocode(this@RideCreationActivity, originLocation!!.toLatLng()) {
+                        btn_origin.text = it
                     }
+                    if (routeJsonStr.isNotBlank()) {
+                        val routeJson = JSONObject(routeJsonStr)
+                        val onlyRoute = routeJson.getJSONArray("routes").getJSONObject(0)
+                        val legs = onlyRoute.getJSONArray("legs")
+                        val onlyLeg = legs.getJSONObject(0)
+                        try {
+//                                val distanceInMeters = onlyLeg.getJSONObject("distance").getInt("value")
+                            val distanceInText = onlyLeg.getJSONObject("distance").getString("text")
+//                                val durationInSeconds = onlyLeg.getJSONObject("duration").getInt("value")
+                            val durationInText = onlyLeg.getJSONObject("duration").getString("text")
+                            Log.i(
+                                tag,
+                                "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
+                            )
+                            ride_time_and_distance.text =
+                                    "The ride should take about $durationInText ($distanceInText)."
+                            ride_time_and_distance.visibility = View.VISIBLE
+                        } catch (e: JSONException) {
+                            Log.e(tag, "Error in route json parsing, probably undefined distance", e)
+                            ride_time_and_distance.visibility = View.INVISIBLE
+                        }
+                    } else Log.i(tag, "Did not get a route JSON in return.")
                 } // else Activity.RESULT_CANCELED, so we will just do nothing
             }
             else -> {

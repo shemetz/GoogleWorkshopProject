@@ -6,9 +6,6 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_join_ride.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -49,33 +46,29 @@ class JoinRideActivity : AppCompatActivity() {
                     val pickedLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
                     pickedLocation = pickedLocationStr!!.decodeToLatLng().toLocation()
                     val routeJsonStr = data.getStringExtra(Keys.ROUTE_JSON.name)
-                    pickedLocationTextBox.text = "(Updating…)"
-                    CoroutineScope(Dispatchers.Default).launch {
-                        val locationStr = readableLocation(this@JoinRideActivity, pickedLocation!!)
-                        CoroutineScope(Dispatchers.Main).launch {
-                            pickedLocationTextBox.text = locationStr
-                            submitPickupRequest.isEnabled = true
-                        }
-                        Log.d(tag, "Back in $tag with location $locationStr")
-                        if (routeJsonStr.isNotBlank()) {
-                            val routeJson = JSONObject(routeJsonStr)
-                            val onlyRoute = routeJson.getJSONArray("routes").getJSONObject(0)
-                            val legs = onlyRoute.getJSONArray("legs")
-                            val onlyLeg = legs.getJSONObject(0)
-                            try {
-//                                val distanceInMeters = onlyLeg.getJSONObject("distance").getInt("value")
-                                val distanceInText = onlyLeg.getJSONObject("distance").getString("text")
-//                                val durationInSeconds = onlyLeg.getJSONObject("duration").getInt("value")
-                                val durationInText = onlyLeg.getJSONObject("duration").getString("text")
-                                Log.i(
-                                    tag,
-                                    "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
-                                )
-                            } catch (e: JSONException) {
-                                Log.e(tag, "Error in route json parsing, probably undefined distance", e)
-                            }
-                        } else Log.i(tag, "Did not get a route JSON in return.")
+                    pickedLocationTextBox.text = getString(R.string.updating)
+                    geocode(this@JoinRideActivity, pickedLocation!!.toLatLng()) {
+                        pickedLocationTextBox.text = it
+                        submitPickupRequest.isEnabled = true
                     }
+                    if (routeJsonStr.isNotBlank()) {
+                        val routeJson = JSONObject(routeJsonStr)
+                        val onlyRoute = routeJson.getJSONArray("routes").getJSONObject(0)
+                        val legs = onlyRoute.getJSONArray("legs")
+                        val onlyLeg = legs.getJSONObject(0)
+                        try {
+//                                val distanceInMeters = onlyLeg.getJSONObject("distance").getInt("value")
+                            val distanceInText = onlyLeg.getJSONObject("distance").getString("text")
+//                                val durationInSeconds = onlyLeg.getJSONObject("duration").getInt("value")
+                            val durationInText = onlyLeg.getJSONObject("duration").getString("text")
+                            Log.i(
+                                tag,
+                                "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
+                            )
+                        } catch (e: JSONException) {
+                            Log.e(tag, "Error in route json parsing, probably undefined distance", e)
+                        }
+                    } else Log.i(tag, "Did not get a route JSON in return.")
                 } // else Activity.RESULT_CANCELED, so we will just do nothing
             }
             else -> {

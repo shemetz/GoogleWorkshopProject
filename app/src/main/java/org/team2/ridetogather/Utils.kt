@@ -6,6 +6,9 @@ import android.util.Log
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -37,27 +40,62 @@ enum class PickupStatus {
     NOT_EXIST,
 }
 
+val geocodingCache = mutableMapOf<LatLng, String>()
+
 /**
  * Converts a location into a human-readable string.
  * For example, the location {latitude = 32.055436; longitude = 34.753070} will
  * cause the following readable location string to be returned:
  * "Mifrats Shlomo Promenade 5, Tel Aviv-Yafo, Israel"
  *
- * NOTE: This function is slow because it uses a Geocoder.
- * Try to only use it in asynchronous stuff (e.g. when updating text fields).
+ * Works with Google Reverse-Geocoding API.
  */
-fun readableLocation(context: Context?, location: Location): String {
+fun geocode(context: Context, latLng: LatLng, successCallback: (String) -> Unit) {
+    if (geocodingCache.containsKey(latLng)) {
+        successCallback(geocodingCache[latLng]!!)
+        return
+    }
+    khttp.async.get(
+        url = "https://maps.googleapis.com/maps/api/geocode/json",
+        params = mapOf(
+            "key" to context.getString(R.string.SECRET_GOOGLE_API_KEY),
+            "latlng" to "${latLng.latitude},${latLng.longitude}"
+        ),
+        onResponse = {
+            Log.v("Google Geocode", jsonObject.toString(4))
+            CoroutineScope(Dispatchers.Main).launch { // dirty hack, sorry
+                val result = if (jsonObject.getString("status") == "ZERO_RESULTS")
+                    alternativeGeocode(context, latLng)
+                else
+                    jsonObject.getJSONArray("results").getJSONObject(0).getString("formatted_address")
+                Log.v("Google Geocode", "Caching result: $latLng → $result")
+                geocodingCache[latLng] = result
+                successCallback(result)
+            }
+        }
+    )
+}
+
+/**
+ * Converts a location into a human-readable string.
+ * For example, the location {latitude = 32.055436; longitude = 34.753070} will
+ * cause the following readable location string to be returned:
+ * "Mifrats Shlomo Promenade 5, Tel Aviv-Yafo, Israel"
+ *
+ * Works with the default android geocoder, so it's slower and worse. And free.
+ */
+fun alternativeGeocode(context: Context?, latLng: LatLng): String {
     fun coordinatesString(): String {
-        val absoluteLatitude = Location.convert(location.latitude.absoluteValue, Location.FORMAT_DEGREES)
-        val absoluteLongitude = Location.convert(location.longitude.absoluteValue, Location.FORMAT_DEGREES)
-        val latitudeDirection = if (location.latitude >= 0) "N" else "S"
-        val longitudeDirection = if (location.longitude >= 0) "N" else "S"
+        val absoluteLatitude = Location.convert(latLng.latitude.absoluteValue, Location.FORMAT_DEGREES)
+        val absoluteLongitude = Location.convert(latLng.longitude.absoluteValue, Location.FORMAT_DEGREES)
+        val latitudeDirection = if (latLng.latitude >= 0) "N" else "S"
+        val longitudeDirection = if (latLng.longitude >= 0) "N" else "S"
         return "$absoluteLatitude $latitudeDirection, $absoluteLongitude $longitudeDirection"
     }
 
     val geocoder = Geocoder(context, Locale.getDefault())
     try {
-        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+        val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
         return if (addresses.isNotEmpty()) {
             val address = addresses[0]
             // combine address lines into one comma-separated line, it is usually the best address format!
@@ -80,14 +118,14 @@ fun readableLocation(context: Context?, location: Location): String {
     } catch (ioException: IOException) {
         // Catch network or other I/O problems.
         Log.e(
-            "Shortened Location", "IO error encountered while reverse-geocoding. Location = $location", ioException
+            "Alternative Geocode", "IO error encountered while reverse-geocoding. latLng = $latLng", ioException
         )
         return coordinatesString()
     } catch (illegalArgumentException: IllegalArgumentException) {
         // Catch invalid latitude or longitude values.
         Log.e(
-            "Shortened Location",
-            "IO error encountered while reverse-geocoding. Latitude = $location",
+            "Alternative Geocode",
+            "IO error encountered while reverse-geocoding $latLng",
             illegalArgumentException
         )
         return coordinatesString()

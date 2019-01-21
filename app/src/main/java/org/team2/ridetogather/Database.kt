@@ -445,7 +445,7 @@ object Database {
             "pickupHour" to pickup.pickupTime.hours,
             "pickupMinute" to pickup.pickupTime.minutes
         )
-        val url = "/addPickup/${pickup.id}"
+        val url = "/updatePickup/${pickup.id}"
 
         requestJsonObject(
             Request.Method.POST,
