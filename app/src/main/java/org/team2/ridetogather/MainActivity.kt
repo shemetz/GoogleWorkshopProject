@@ -19,7 +19,6 @@ import com.facebook.login.LoginManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
 import org.team2.ridetogather.fragments.AllEvents
 import org.team2.ridetogather.fragments.GroupsFragment
 import org.team2.ridetogather.fragments.MyRides
@@ -121,17 +120,6 @@ class MainActivity : AppCompatActivity() {
                 Log.e(tag, "Exiting app now (google maps won't work)!")
                 finish()
             }
-        }
-
-        // MOCK
-        temp_button_switch_user.setOnClickListener {
-            Database.idOfCurrentUser = if (Database.idOfCurrentUser == MockData.user1.id)
-                MockData.user2.id
-            else
-                MockData.user1.id
-            val intent = Intent(applicationContext, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
         }
 
 //        val listView = findViewById<ListView>(R.id.events_list)
