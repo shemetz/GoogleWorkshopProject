@@ -46,14 +46,18 @@
             <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="wrap_content">
                 <ImageView
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" app:srcCompat="@android:drawable/star_on"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@android:drawable/star_on"
+                        android:layout_gravity="center"
                         android:id="@+id/imageView3"/>
                 <TextView
                         android:text="@string/credits"
                         android:layout_width="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
                         android:layout_height="match_parent" android:id="@+id/passengerCredits"
                 />
             </LinearLayout>
