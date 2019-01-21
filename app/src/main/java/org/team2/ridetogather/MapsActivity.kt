@@ -2,6 +2,8 @@ package org.team2.ridetogather
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -33,6 +35,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import kotlin.math.max
 
@@ -128,7 +132,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         .zIndex(4f)
                         .alpha(if (pickup.inRide) 1f else 0.5f)
                     val marker = map.addMarker(markerOptions)
-                    val pickupMarker = PickupMarker(pickup, pickup.inRide, marker)
+                    val pickupMarker = PickupMarker(pickup, marker)
                     marker.tag = pickupMarker
                     pickupMarkers.add(pickupMarker)
                 }
@@ -254,24 +258,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     countDown()
 
                     for (pickupMarker in pickupMarkers) {
-                        if (pickupMarker.inRide) {
-                            if (!pickupMarker.pickup.inRide) {
-                                pickupMarker.pickup.inRide = pickupMarker.inRide
-                                Database.updatePickup(pickupMarker.pickup) {
-                                    pickupMarker.marker.setIcon(
-                                        createCombinedMarker(
-                                            R.drawable.ic_person_green_sub_icon,
-                                            36
-                                        )
+                        if (pickupMarker.pickup.inRide) {
+                            Database.updatePickup(pickupMarker.pickup) {
+                                pickupMarker.marker.setIcon(
+                                    createCombinedMarker(
+                                        R.drawable.ic_person_green_sub_icon,
+                                        36
                                     )
+                                )
+                                countDown()
+                            }
+                        } else {
+                            if (pickupMarker.removed) {
+                                Database.deletePickup(pickupMarker.pickup.id) {
+                                    pickupMarker.marker.remove()
                                     countDown()
                                 }
                             } else countDown()
-                        } else {
-                            Database.deletePickup(pickupMarker.pickup.id) {
-                                pickupMarker.marker.remove()
-                                countDown()
-                            }
                         }
                     }
                 }
@@ -419,7 +422,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val origin = originMarker.position
         val destination = eventMarker.position
         val waypoints = pickupMarkers
-            .filter { it.inRide }
+            .filter { it.pickup.inRide }
             .map { it.marker.position }
         CoroutineScope(Dispatchers.Default).launch {
             Log.v(tag, "Starting countdown(${waypoints.size})…")
@@ -525,8 +528,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     class PickupMarker(
         val pickup: Pickup,
-        var inRide: Boolean,
-        val marker: Marker
+        val marker: Marker,
+        var removed: Boolean = false
     )
 
     private fun onPickupMarkerClick(pickupMarker: PickupMarker): Boolean {
@@ -535,14 +538,42 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 false  // display stuff
             }
             RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                if (pickupMarker.inRide) {
-                    pickupMarker.inRide = false
-                    pickupMarker.marker.alpha = 0.5f
-                } else {
-                    pickupMarker.inRide = true
-                    pickupMarker.marker.alpha = 1f
+                Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
+                    AlertDialog.Builder(this, R.style.AlertDialogStyle)
+                        .setTitle(R.string.pickup_click_title)
+                        .setMessage(getString(R.string.pickup_click_description).format(pickupUser.name))
+                        .setPositiveButton(R.string.confirm) { _, _ ->
+                            // user confirmed - now asking for an hour
+                            val cal = Calendar.getInstance()
+                            cal.set(Calendar.HOUR_OF_DAY, pickupMarker.pickup.pickupTime.hours)
+                            cal.set(Calendar.MINUTE, pickupMarker.pickup.pickupTime.minutes)
+                            val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+                                cal.set(Calendar.HOUR_OF_DAY, hour)
+                                cal.set(Calendar.MINUTE, minute)
+                                pickupMarker.pickup.pickupTime = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+                                pickupMarker.marker.snippet =
+                                        SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                                pickupMarker.pickup.inRide = true
+                                pickupMarker.removed = false
+                                pickupMarker.marker.alpha = 1f
+                                calculateRoute()
+                            }
+                            TimePickerDialog(
+                                this,
+                                timeSetListener,
+                                cal.get(Calendar.HOUR_OF_DAY),
+                                cal.get(Calendar.MINUTE),
+                                true
+                            ).show()
+                        }
+                        .setNegativeButton(R.string.deny) { _, _ ->
+                            pickupMarker.pickup.inRide = false
+                            pickupMarker.removed = true
+                            pickupMarker.marker.alpha = 0.1f
+                            calculateRoute()
+                        }
+                        .show()
                 }
-                calculateRoute()
                 true
             }
             RequestCode.PICK_DRIVER_ORIGIN -> {

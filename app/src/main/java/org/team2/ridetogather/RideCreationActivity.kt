@@ -37,6 +37,7 @@ class RideCreationActivity : AppCompatActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, hour)
                 cal.set(Calendar.MINUTE, minute)
                 pick_time_button.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                timeOfDay = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
             }
             TimePickerDialog(
                 this,
@@ -45,7 +46,6 @@ class RideCreationActivity : AppCompatActivity() {
                 cal.get(Calendar.MINUTE),
                 true
             ).show()
-            timeOfDay = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
         }
 
         btn_origin.setOnClickListener {

@@ -457,7 +457,7 @@ object Database {
         )
         val url = "/addEvent/${event.id}"
 
-        requestJsonObject(Request.Method.POST, url, postParams)
+        requestJsonObject(Request.Method.PUT, url, postParams)
     }
 
     fun updateRide(ride: Ride) {
@@ -475,7 +475,7 @@ object Database {
         )
         val url = "/updateRide/${ride.id}"
 
-        requestJsonObject(Request.Method.POST, url, postParams)
+        requestJsonObject(Request.Method.PUT, url, postParams)
     }
 
     fun updatePickup(pickup: Pickup, onCallback: () -> Unit) {
@@ -490,7 +490,7 @@ object Database {
         val url = "/updatePickup/${pickup.id}"
 
         requestJsonObject(
-            Request.Method.POST,
+            Request.Method.PUT,
             url,
             postParams,
             { onCallback() },

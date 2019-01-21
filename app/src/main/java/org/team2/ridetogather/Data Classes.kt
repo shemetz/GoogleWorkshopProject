@@ -30,9 +30,7 @@ class User(
     var name: String,
     var facebookProfileId: FacebookId,
     var credits: Int
-) : DatabaseObject(id_) {
-    fun getIdAsDriver() = id  // Currently, driver ≡ user
-}
+) : DatabaseObject(id_)
 
 class Event(
     id_: Id,
