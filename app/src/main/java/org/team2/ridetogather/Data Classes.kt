@@ -42,6 +42,13 @@ class Event(
     var facebookEventId: FacebookId
 ) : DatabaseObject(id_)
 
+class Attending(
+    id_: Id,
+    var userId: Id,
+    var eventId: Id,
+    var isDriver: Boolean
+) : DatabaseObject(id_)
+
 class Pickup(
     id_: Id,
     val userId: Id,

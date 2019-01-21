@@ -69,6 +69,14 @@ object JsonParse {
         return Event(eventId, eventName, eventLocation, eventDatetime, facebookEventId)
     }
 
+    fun attending(eventJson: JSONObject): Attending {
+        val attendingId = eventJson.getInt("id")
+        val userId = eventJson.getInt("user")
+        val eventId = eventJson.getInt("event")
+        val isDriver = eventJson.getBoolean("isDriver")
+        return Attending(attendingId,userId,eventId,isDriver)
+    }
+
     fun <T> array(jsonArray: JSONArray, specificFunction: (JSONObject) -> T): List<T> {
         val things = mutableListOf<T>()
         for (i in 0 until jsonArray.length()) {
@@ -122,6 +130,23 @@ object Database {
                 Log.d(tag, "Got response for $url")
                 Log.v(tag, response.toString(4))
                 successCallback(JsonParse.event(response))
+            },
+            Response.ErrorListener { error ->
+                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
+                    failedCallback()
+                }
+            })
+        requestQueue.add(request)
+
+    }
+
+    fun getAttendingByIds(userId: Id,eventId: Id, successCallback: (Attending) -> Unit, failedCallback:() ->Unit ){
+        val url = "$SERVER_URL/getAttendingByIds/$userId/$eventId"
+        val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                Log.d(tag, "Got response for $url")
+                Log.v(tag, response.toString(4))
+                successCallback(JsonParse.attending(response))
             },
             Response.ErrorListener { error ->
                 if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
@@ -303,12 +328,29 @@ object Database {
             "name" to name,
             "locationLat" to location.latitude,
             "locationLong" to location.longitude,
-            "datetime" to datetime.toString(),
+            "datetime" to datetime,
             "facebookEventId" to facebookEventId
         )
         val url = "/addEvent/"
 
         requestJsonObject(Request.Method.POST, url, postParams)
+    }
+
+    fun addEventWithCallback(name: String, location: Location, datetime: String, facebookEventId: String,successCallback: (Event) -> Unit) {
+        val postParams = jsonObjOf(
+            "name" to name,
+            "locationLat" to location.latitude,
+            "locationLong" to location.longitude,
+            "datetime" to datetime,
+            "facebookEventId" to facebookEventId
+        )
+        val url = "/addEvent/"
+
+        requestJsonObject(Request.Method.POST, url, postParams,
+            { response ->
+                successCallback(JsonParse.event(response))
+            }
+        )
     }
 
 

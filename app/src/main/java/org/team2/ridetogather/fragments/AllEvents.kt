@@ -2,8 +2,11 @@ package org.team2.ridetogather.fragments
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -16,12 +19,13 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
+import com.google.android.gms.maps.model.LatLng
 import org.team2.ridetogather.R
 import org.json.JSONObject
 import org.team2.ridetogather.*
 
-import org.team2.ridetogather.adapter.FaceBookEvent
-import org.team2.ridetogather.adapter.FaceBookEventAdapter
+import org.team2.ridetogather.adapter.FacebookEvent
+import org.team2.ridetogather.adapter.FacebookEventAdapter
 import org.team2.ridetogather.formatDatetime
 import org.team2.ridetogather.parseStandardDatetime
 import org.team2.ridetogather.adapter.ItemClickListener
@@ -54,7 +58,40 @@ class AllEvents : Fragment() {
         }
     }
 
-    fun createEvent(){
+    fun createEvent(context: Context?,facebookEvent: FacebookEvent){
+        val builder = AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
+        builder.setMessage("There is no group for this event, do you want to create one?")
+
+        builder.setPositiveButton(R.string.yes) { dialog, which ->
+            Database.addEventWithCallback(facebookEvent.name,facebookEvent.loc,facebookEvent.dt,facebookEvent.id)
+                {event: Event ->
+                    Database.addEventToUser(Database.idOfCurrentUser,event.id)
+                    EventRidesActivity.start(context,event.id)
+            }
+        }
+        builder.setNegativeButton(R.string.no) { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.show()
+    }
+
+    fun joinEvent(context: Context?,event:Event){
+
+        Database.getAttendingByIds(Database.idOfCurrentUser,event.id,{attending: Attending ->
+            EventRidesActivity.start(context,event.id)
+        },{
+            val builder = AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
+            builder.setMessage("There is already group for this event, do you want to join?")
+
+            builder.setPositiveButton(R.string.yes) { dialog, which ->
+                Database.addEventToUser(Database.idOfCurrentUser,event.id)
+                EventRidesActivity.start(context,event.id)
+            }
+            builder.setNegativeButton(R.string.no) { dialog, which ->
+                dialog.dismiss()
+            }
+            builder.show()
+        })
 
     }
 
@@ -72,30 +109,36 @@ class AllEvents : Fragment() {
                 Log.i(tag, "working")
                 Log.i(tag, Json.toString(4))
                 val eventsArray = Json.getJSONObject("events").getJSONArray("data")
-                val eventsList:ArrayList<FaceBookEvent> =  ArrayList();
+                val eventsList:ArrayList<FacebookEvent> =  ArrayList()
                 for (i in 0..(eventsArray.length() - 1)) {
                     val eventId = eventsArray.optJSONObject(i).getString("id")
                     val eventName = eventsArray.optJSONObject(i).getString("name")
+                    val dt = eventsArray.optJSONObject(i).getString("start_time")
                     val datetime = formatDatetime(parseStandardDatetime(eventsArray.optJSONObject(i).getString("start_time")))
                     val placeObject = eventsArray.optJSONObject(i).optJSONObject("place")
                     if (placeObject != null){
+
+
                         val locationObject = placeObject.getJSONObject("location")
                         val location = placeObject.getString("name")+", "+locationObject.getString("city")+", "+locationObject.getString("country")
-
+                        val loc = LatLng(
+                            locationObject.getDouble("latitude"),
+                            locationObject.getDouble("longitude")
+                        ).toLocation()
                         Log.i(tag, "Event name = $eventName")
-                        eventsList.add(FaceBookEvent(eventId,eventName,location,datetime))
+                        eventsList.add(FacebookEvent(eventId,eventName,location,datetime,loc,dt))
                     }
                 }
                 if(eventsList.size!=0) {
 
 
                     val recycle = view.findViewById<RecyclerView>(R.id.recycle)
-                    val userEventAdapter = FaceBookEventAdapter(eventsList, context, object : ItemClickListener {
+                    val userEventAdapter = FacebookEventAdapter(eventsList, context, object : ItemClickListener {
                         override fun onItemClicked( item: Any, pos: Int) {
-                            val facebookEvent:FaceBookEvent = item as FaceBookEvent
+                            val facebookEvent:FacebookEvent = item as FacebookEvent
                             Database.getEventByFacebook(facebookEvent.id,{event: Event ->
-                                Toast.makeText(context, "found", LENGTH_SHORT).show()
-                            },{Toast.makeText(context, "not found", LENGTH_SHORT).show()})
+                                joinEvent(context,event)
+                            }, {createEvent(context,facebookEvent)})
                         }
                     })
                     recycle.layoutManager = LinearLayoutManager(context)

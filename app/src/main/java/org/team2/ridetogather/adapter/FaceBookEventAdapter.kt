@@ -1,17 +1,19 @@
 package org.team2.ridetogather.adapter
 
 import android.content.Context
+import android.location.Location
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.facebook_event.view.*
+import org.team2.ridetogather.Datetime
 import org.team2.ridetogather.R
 import org.team2.ridetogather.getEventUrl
 import java.util.*
 
-class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderFacebookEvent>() {
+class FacebookEventAdapter(val items : ArrayList<FacebookEvent>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderFacebookEvent>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderFacebookEvent {
         return ViewHolderFacebookEvent(LayoutInflater.from(context).inflate(R.layout.facebook_event, parent, false))
@@ -46,7 +48,7 @@ class FaceBookEventAdapter(val items : ArrayList<FaceBookEvent>, val context: Co
 
 }
 
-class FaceBookEvent(var id: String, var name: String, var location: String, var datetime: String)
+class FacebookEvent(var id: String, var name: String, var location: String, var datetime: String,var loc:Location,var dt:String)
 
 class ViewHolderFacebookEvent (view: View) : RecyclerView.ViewHolder(view) {
     val card_view = view.card_view

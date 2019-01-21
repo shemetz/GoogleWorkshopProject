@@ -90,8 +90,9 @@ class GroupsFragment : Fragment() {
     override fun onAttach(activity: Activity?) {
         super.onAttach(activity)
         this.context = activity
-
     }
+
+
 
     companion object {
         /**
