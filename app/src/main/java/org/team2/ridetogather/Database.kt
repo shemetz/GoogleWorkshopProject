@@ -486,7 +486,9 @@ object Database {
             "pickupLat" to pickup.pickupSpot.latitude,
             "pickupLong" to pickup.pickupSpot.longitude,
             "pickupHour" to pickup.pickupTime.hours,
-            "pickupMinute" to pickup.pickupTime.minutes
+            "pickupMinute" to pickup.pickupTime.minutes,
+            "inRide" to pickup.inRide,
+            "denied" to pickup.denied
         )
         val url = "/updatePickup/${pickup.id}"
 
