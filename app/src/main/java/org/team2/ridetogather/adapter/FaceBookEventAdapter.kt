@@ -28,8 +28,8 @@ class FacebookEventAdapter(val items : ArrayList<FacebookEvent>, val context: Co
         getEventUrl(facebookId) { pic_url ->
             Picasso.get()
                 .load(pic_url)
-                .placeholder(R.drawable.placeholder_profile)
-                .error(R.drawable.placeholder_profile)
+                .placeholder(R.drawable.ic_tab_events)
+                .error(R.drawable.ic_tab_events)
                 .into(holder.eventPicture)
         }
 
