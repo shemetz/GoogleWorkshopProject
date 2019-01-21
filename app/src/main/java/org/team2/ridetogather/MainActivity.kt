@@ -9,17 +9,11 @@ import android.support.v4.app.FragmentStatePagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ImageSpan
 import android.util.Log
 import android.view.*
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import android.widget.TextView
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
-import com.facebook.GraphResponse
 import com.facebook.HttpMethod
 import com.facebook.login.LoginManager
 import com.google.android.gms.common.ConnectionResult
@@ -29,7 +23,6 @@ import kotlinx.android.synthetic.main.content_main.*
 import org.team2.ridetogather.fragments.AllEvents
 import org.team2.ridetogather.fragments.GroupsFragment
 import org.team2.ridetogather.fragments.MyRides
-import org.w3c.dom.Text
 
 
 class MainActivity : AppCompatActivity() {
@@ -173,16 +166,6 @@ class MainActivity : AppCompatActivity() {
 //        parameters.putString("fields", "events")
 //        event_request.parameters = parameters
 //        event_request.executeAsync()
-
-        val eventID_request = GraphRequest.newGraphPathRequest(
-            AccessToken.getCurrentAccessToken(),
-            "/{event-id}", GraphRequest.Callback() { response: GraphResponse ->
-                try {
-                    Log.i(tag, "working")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            })
 
 
         // Create the adapter that will return a fragment for each of the three

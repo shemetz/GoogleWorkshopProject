@@ -2,34 +2,23 @@ package org.team2.ridetogather.fragments
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.TextView
-import android.widget.Toast
-import android.widget.Toast.LENGTH_SHORT
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
 import com.google.android.gms.maps.model.LatLng
-import org.team2.ridetogather.R
-import org.json.JSONObject
 import org.team2.ridetogather.*
-
 import org.team2.ridetogather.adapter.FacebookEvent
 import org.team2.ridetogather.adapter.FacebookEventAdapter
-import org.team2.ridetogather.formatDatetime
-import org.team2.ridetogather.parseStandardDatetime
 import org.team2.ridetogather.adapter.ItemClickListener
-import org.team2.ridetogather.adapter.UserEventsAdapter
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -106,8 +95,6 @@ class AllEvents : Fragment() {
             AccessToken.getCurrentAccessToken()
         ) { Json, response ->
             try {
-                Log.i(tag, "working")
-                Log.i(tag, Json.toString(4))
                 val eventsArray = Json.getJSONObject("events").getJSONArray("data")
                 val eventsList:ArrayList<FacebookEvent> =  ArrayList()
                 for (i in 0..(eventsArray.length() - 1)) {
@@ -125,7 +112,6 @@ class AllEvents : Fragment() {
                             locationObject.getDouble("latitude"),
                             locationObject.getDouble("longitude")
                         ).toLocation()
-                        Log.i(tag, "Event name = $eventName")
                         eventsList.add(FacebookEvent(eventId,eventName,location,datetime,loc,dt))
                     }
                 }

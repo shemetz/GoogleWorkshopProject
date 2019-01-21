@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.user_event.view.*
+import kotlinx.android.synthetic.main.facebook_event.view.*
 import org.team2.ridetogather.*
 import java.util.*
 
@@ -14,7 +14,7 @@ class UserEventsAdapter(val items: ArrayList<Event>, val context: Context, var i
     RecyclerView.Adapter<ViewHolderEvent>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderEvent {
-        return ViewHolderEvent(LayoutInflater.from(context).inflate(R.layout.user_event, parent, false))
+        return ViewHolderEvent(LayoutInflater.from(context).inflate(R.layout.facebook_event, parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolderEvent, position: Int) {
@@ -30,7 +30,6 @@ class UserEventsAdapter(val items: ArrayList<Event>, val context: Context, var i
                 .load(pic_url)
                 .placeholder(R.drawable.placeholder_profile)
                 .error(R.drawable.placeholder_profile)
-                .resize(256, 256)
                 .into(holder?.eventPicture)
         }
 
