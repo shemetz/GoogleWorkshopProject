@@ -54,6 +54,7 @@ class MyRides : Fragment() {
         val view = inflater.inflate(R.layout.fragment_my_rides, container, false)
         Database.getRidesForUser(Database.idOfCurrentUser) { rides: List<Ride> ->
             if (rides.isNotEmpty()) {
+                list.clear()
                 list.addAll(rides)
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
                 val myRidesAdapter = MyRidesAdapter(list, context!!, object : ItemClickListener {
@@ -71,6 +72,28 @@ class MyRides : Fragment() {
 
         }
         return view
+    }
+
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+        if (isVisibleToUser) {
+            Database.getRidesForUser(Database.idOfCurrentUser) { rides: List<Ride> ->
+                val updated_list = arrayListOf<Ride>()
+                updated_list.addAll(rides)
+                if(updated_list.size != list.size){
+                    fragmentManager!!.beginTransaction().detach(this).attach(this).commit()
+                }
+                else{
+                    for(i in 0 until list.size){
+                        if(list[i].id != updated_list[i].id){
+                            fragmentManager!!.beginTransaction().detach(this).attach(this).commit()
+                            break
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     internal var context: Context? = null

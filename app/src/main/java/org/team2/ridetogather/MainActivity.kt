@@ -37,11 +37,11 @@ class MainActivity : AppCompatActivity() {
         override fun getItem(position: Int): Fragment {
 
             if(position==0)
-                return GroupsFragment();
+                return GroupsFragment()
             if(position==1)
-                return AllEvents();
+                return AllEvents()
             if(position==2)
-                return MyRides();
+                return MyRides()
 
             return PlaceholderFragment.newInstance(position + 1)
 
