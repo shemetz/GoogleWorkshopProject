@@ -427,9 +427,7 @@ object Database {
             "user" to userId,
             "pickupLat" to pickupSpot.latitude,
             "pickupLong" to pickupSpot.longitude
-            //TODO: update pickup time by driver
-//            "pickupHour" to pickupTime.hours,
-//            "pickupMinute" to pickupTime.minutes
+            // others will be default (time = 00:00, inRide=false…)
         )
         val url = "/addPickup/"
 

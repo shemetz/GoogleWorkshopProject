@@ -507,6 +507,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 path.add(PolyUtil.decode(points))
             }
         }
+        val totalDistance = allLegs.sumBy { it.optJSONObject("duration")?.optInt("value") ?: 0 }
         val combinedPath = path.flatten()
         runOnUiThread {
             drawnRoute.forEach { it.remove() }

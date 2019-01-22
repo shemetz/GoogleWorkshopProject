@@ -109,26 +109,38 @@ class RidePageActivity : AppCompatActivity() {
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        updatePassengers(ride.id)
-        updateMainButton()
-        val success = resultCode == Activity.RESULT_OK
-        val toastTextResourceId = when (MapsActivity.Companion.RequestCode.values()[requestCode]) {
-            MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN -> {
-                R.string.weird_error
+        fun updateStuffAndMaybeShowToast() {
+            updatePassengers(ride.id)
+            updateMainButton()
+            val success = resultCode == Activity.RESULT_OK
+            val toastTextResourceId = when (MapsActivity.Companion.RequestCode.values()[requestCode]) {
+                MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN -> {
+                    R.string.weird_error
+                }
+                MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION -> {
+                    if (success) R.string.toast_join_ride_success else R.string.toast_join_ride_cancel
+                }
+                MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
+                    if (success && data?.getBooleanExtra(
+                            Keys.SOMETHING_CHANGED.name,
+                            false
+                        ) == true
+                    ) R.string.toast_ride_map_edit_success else R.string.null_string
+                }
             }
-            MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION -> {
-                if (success) R.string.toast_join_ride_success else R.string.toast_join_ride_cancel
-            }
-            MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                if (success && data?.getBooleanExtra(
-                        Keys.SOMETHING_CHANGED.name,
-                        false
-                    ) == true
-                ) R.string.toast_ride_map_edit_success else R.string.null_string
+            if (toastTextResourceId != R.string.null_string) {
+                Toast.makeText(this, getString(toastTextResourceId), Toast.LENGTH_SHORT).show()
             }
         }
-        if (toastTextResourceId != R.string.null_string) {
-            Toast.makeText(this, getString(toastTextResourceId), Toast.LENGTH_SHORT).show()
+
+        if (requestCode == MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal && resultCode == Activity.RESULT_OK) {
+            val pickedLocationStr = data!!.getStringExtra(Keys.LOCATION.name)
+            val pickedLocation = pickedLocationStr!!.decodeToLatLng().toLocation()
+            Database.addPickup(rideId, Database.idOfCurrentUser, pickedLocation) {
+                updateStuffAndMaybeShowToast()
+            }
+        } else {
+            updateStuffAndMaybeShowToast()
         }
     }
 
@@ -180,11 +192,17 @@ class RidePageActivity : AppCompatActivity() {
                             mainButton.isEnabled = true
                             mainButton.text = getString(R.string.join_ride)
                             mainButton.setOnClickListener {
-                                val intent = Intent(applicationContext, JoinRideActivity::class.java)
-                                intent.putExtra(Keys.RIDE_ID.name, rideId)
+                                val intent = Intent(applicationContext, MapsActivity::class.java)
                                 intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
-                                // request code doesn't matter - the activity doesn't check it
-                                startActivityForResult(intent, 1)
+                                intent.putExtra(Keys.RIDE_ID.name, rideId)
+                                intent.putExtra(
+                                    Keys.REQUEST_CODE.name,
+                                    MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal
+                                )
+                                startActivityForResult(
+                                    intent,
+                                    MapsActivity.Companion.RequestCode.PICK_PASSENGER_LOCATION.ordinal
+                                )
                             }
                         }
                     }
