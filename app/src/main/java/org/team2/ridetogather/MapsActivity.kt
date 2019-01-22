@@ -357,12 +357,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onPlaceSelected(place: Place?) {
                 place!!
                 Log.i(tag, "User selected place from autocomplete place picker: ${place.name} = ${place.address}")
-                mainMarker!!.position = place.latLng
-                map.moveCamera(CameraUpdateFactory.newLatLng(place.latLng))
-                setPinned(false)
-                mainMarkerIsFollowingCamera = true
-                cancelCurrentRoute()
-                onPinButtonClick()
+                map.animateCamera(CameraUpdateFactory.newLatLng(place.latLng))
+                if (mainMarker != null) {
+                    mainMarker!!.position = place.latLng
+                    setPinned(false)
+                    mainMarkerIsFollowingCamera = true
+                    cancelCurrentRoute()
+                    onPinButtonClick()
+                }
             }
 
             override fun onError(status: Status?) {
@@ -430,6 +432,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun onPinButtonClick(): Boolean {
+        if (mainMarker == null)
+            return false // move camera to marker, display info
         return if (!mainMarkerIsFollowingCamera) {
             Log.d(tag, "Unpinning main marker")
             setPinned(false)

@@ -190,9 +190,13 @@ class EventRidesActivity : AppCompatActivity() {
             geocode(context, ride.origin.toLatLng()) {
                 view.originLocationName.text = it
             }
-//            view.driverPicture.drawable = ???
-
             view.departureTime.text = ride.departureTime.shortenedTime()
+            Database.getPickupsForRide(ride.id) { pickups ->
+                val numOfExistingPassengers = pickups.count { it.inRide }
+                val passengerCountText = "$numOfExistingPassengers/${ride.passengerCount}"
+                view.passengerCount.text = passengerCountText
+            }
+
             holder.cardView.setOnClickListener {
                 RidePageActivity.start(view.context, ride.id, ride.driverId == Database.idOfCurrentUser)
             }

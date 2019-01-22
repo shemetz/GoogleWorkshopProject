@@ -31,14 +31,28 @@
             android:layout_marginEnd="8dp"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/driverName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/profileNameColor"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                tools:text="Dave Driverson" />
+
+            <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                <TextView
+                        android:id="@+id/driverName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/profileNameColor"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="Dave Driverson" />
+                <TextView
+                        android:textColor="@android:color/black"
+                        android:id="@+id/passengerCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        tools:text="6/9"/>
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/originLocationName"
