@@ -24,7 +24,6 @@
 
         <ImageView
                 android:id="@+id/img"
-                android:src="@drawable/star_slider"
                 android:layout_marginRight="8dp"
                 android:layout_width="100dp" android:layout_height="100dp"/>
         <TextView

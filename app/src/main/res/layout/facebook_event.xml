@@ -24,7 +24,6 @@
 
         <ImageView
                 android:id="@+id/eventPicture"
-                android:src="@drawable/star_slider"
                 android:layout_marginEnd="8dp"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
