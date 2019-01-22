@@ -78,6 +78,7 @@ class MyRides : Fragment() {
         super.setUserVisibleHint(isVisibleToUser)
         if (isVisibleToUser) {
             Database.getRidesForUser(Database.idOfCurrentUser) { rides: List<Ride> ->
+                fragmentManager ?: return@getRidesForUser // possibly a crash fix
                 val updated_list = arrayListOf<Ride>()
                 updated_list.addAll(rides)
                 if(updated_list.size != list.size){

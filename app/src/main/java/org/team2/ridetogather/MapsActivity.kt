@@ -154,9 +154,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         originMarker = map.addMarker(originMarkerOptions)
         originMarker.tag = "originMarker"
 
-        val rideId: Id = intent.getIntExtra(Keys.RIDE_ID.name, -1)
-        Database.getPickupsForRide(rideId) { pickups ->
-            pickups
+        if (pickups != null) {
+            pickups!!
                 .filter { !it.denied }
                 .filter { it.inRide || requestCode == RequestCode.CONFIRM_OR_DENY_PASSENGERS }
                 .forEach { pickup ->
@@ -166,23 +165,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             .position(position)
                             .title(passenger.name)
                             .snippet(pickup.pickupTime.shortenedTime())
-                            // TODO use profile picture
                             .icon(createCombinedMarker(R.drawable.ic_person_white_sub_icon, 36))
                             .zIndex(4f)
                             .alpha(if (pickup.inRide) 1f else 0.5f)
                         val marker = map.addMarker(markerOptions)
-                        val pickupMarker = PickupMarker(pickup, marker)
+                        val pickupMarker = PickupMarker(pickup, marker, IconTarget(marker))
                         marker.tag = pickupMarker
                         pickupMarkers.add(pickupMarker)
                         getProfilePicUrl(passenger.facebookProfileId) { picUrl ->
-                            val markerTarget = IconTarget(marker)
+                            Log.i(tag, "Picasso is loading profile pic")
                             Picasso.get()
                                 .load(picUrl)
                                 .placeholder(R.drawable.placeholder_profile_circle)
                                 .error(R.drawable.placeholder_profile_circle)
                                 .resize(48, 48)
                                 .transform(CircleTransform())
-                                .into(markerTarget)
+                                .into(pickupMarker.iconTarget)
                         }
                     }
                 }
@@ -712,7 +710,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     class PickupMarker(
         val pickup: Pickup,
-        val marker: Marker
+        val marker: Marker,
+        val iconTarget: IconTarget
     )
 
     private fun selectPickupMarker(pickupMarker: PickupMarker) {
@@ -803,29 +802,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      * From https://stackoverflow.com/a/48356646/1703463
      */
     private fun createCombinedMarker(@DrawableRes subIconDrawable: Int, size: Int): BitmapDescriptor {
-        val bottomIconDrawable: Int
-        val leftOffset: Int
-        val upOffset: Int
-        when (size) {
+        val bottomIconDrawable: Int = when (size) {
             36 -> {
-                bottomIconDrawable = R.drawable.ic_marker_full_blue_36dp
-                leftOffset = 26
-                upOffset = 13
+                R.drawable.ic_marker_full_blue_36dp
             }
             48 -> {
-                bottomIconDrawable = R.drawable.ic_marker_full_blue_48dp
-                leftOffset = 42
-                upOffset = 23
+                R.drawable.ic_marker_full_blue_48dp
             }
             else -> {
-                bottomIconDrawable = R.drawable.ic_marker_full_blue_48dp
-                leftOffset = 42
-                upOffset = 23
+                R.drawable.ic_marker_full_blue_48dp
             }
         }
         val background = ContextCompat.getDrawable(this, bottomIconDrawable)
         background!!.setBounds(0, 0, background.intrinsicWidth, background.intrinsicHeight)
         val vectorDrawable = ContextCompat.getDrawable(this, subIconDrawable)
+        val leftOffset = background.intrinsicWidth / 2 - size / 2
+        val upOffset = background.intrinsicHeight / 2 - size / 2 - size / 4
         vectorDrawable!!.setBounds(
             leftOffset,
             upOffset,
@@ -840,17 +832,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     inner class IconTarget(private val marker: Marker) : com.squareup.picasso.Target {
-        override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
+        override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+        }
 
-        override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {}
+        override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+            Log.e(tag, "Failed to load facebook profile icon")
+        }
 
         override fun onBitmapLoaded(profileBitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-            val leftOffset = 36
-            val upOffset = 18
+            if (profileBitmap == null) {
+                Log.e(tag, "Facebook profile icon loaded as null")
+                return
+            }
             val background = ContextCompat.getDrawable(this@MapsActivity, R.drawable.ic_marker_full_blue_36dp)
             background!!.setBounds(0, 0, background.intrinsicWidth, background.intrinsicHeight)
-            Log.i(tag, "oh ok so $profileBitmap and $from")
             val vectorDrawable = BitmapDrawable(resources, profileBitmap)
+            val leftOffset = background.intrinsicWidth / 2 - profileBitmap.width / 2
+            val upOffset = background.intrinsicHeight / 2 - profileBitmap.height / 2 - 12
             vectorDrawable.setBounds(
                 leftOffset,
                 upOffset,
@@ -858,7 +856,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 vectorDrawable.intrinsicHeight + upOffset
             )
             Log.i(tag, "ok so it's intWidth=${background.intrinsicWidth}, intHeight=${background.intrinsicHeight}, " +
-                    "leftOffset=36, upOffset=18, profileBitmap=${profileBitmap!!.width}x${profileBitmap.height}")
+                    "leftOffset=$leftOffset, upOffset=$upOffset, profileBitmap=${profileBitmap.width}x${profileBitmap.height}")
             val finalBitmap =
                 Bitmap.createBitmap(background.intrinsicWidth, background.intrinsicHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(finalBitmap)
