@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
@@ -224,8 +225,29 @@ class EventRidesActivity : AppCompatActivity() {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 true
             }
+            R.id.action_leave_group -> {
+                buildDialog()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun buildDialog() {
+        val builder = AlertDialog.Builder(this, R.style.AlertDialogStyle)
+        //builder.setTitle("Hey there")
+        builder.setMessage("Are you sure you want to leave group?")
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+
+        builder.setPositiveButton(R.string.stay_group) { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.setNegativeButton(R.string.leave_group) { dialog, which ->
+            Database.removeUserFromEvent(Database.idOfCurrentUser,eventId)
+            startActivity(Intent(applicationContext, MainActivity::class.java))
+        }
+        builder.show()
+
     }
 
     class MarginItemDecoration(private val spaceHeight: Int) : RecyclerView.ItemDecoration() {

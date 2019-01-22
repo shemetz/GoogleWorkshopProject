@@ -89,9 +89,10 @@ class AllEvents : Fragment() {
         })
 
     }
-    fun checkIfPassed(dt : String):Int{
+    private fun checkIfPassed(dt : String):Int{
         val date = dt.substring(0,10)
         val date2 = SimpleDateFormat("yyyy-MM-dd").parse(date).toString()
+        Log.i("~~~~~~",date2)
         val date3 = date2.substring(4,10).plus(", ".plus(date2.substring(30,34)))
         val today = DateFormat.getDateInstance(DateFormat.DEFAULT).format(Date())
         val comp =SimpleDateFormat("MMM dd',' yyyy").parse(date3)
