@@ -4,9 +4,17 @@
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="match_parent"
                                              android:layout_height="match_parent"
-                                             android:background="@drawable/roadtrip"
                                              android:id="@+id/facebook_login_layout"
                                              tools:context=".FacebookLoginActivity">
+
+    <!--Using an ImageView that's moved a bit to the left via padding, as background-->
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/roadtrip"
+            android:scaleType="centerCrop"
+            android:paddingEnd="40dp"
+            tools:ignore="ContentDescription"/>
 
     <com.facebook.login.widget.LoginButton
             android:id="@+id/login_button"

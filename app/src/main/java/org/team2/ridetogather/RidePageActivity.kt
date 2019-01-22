@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
@@ -38,6 +37,7 @@ class RidePageActivity : AppCompatActivity() {
     private var rideId: Id = -1 // updates in onCreate
     private lateinit var ride: Ride
     private val driversPerspective: Boolean by lazy { intent.getBooleanExtra(Keys.DRIVER_PERSPECTIVE.name, false) }
+    private lateinit var menu: Menu
 
 
     private fun showRideDetails(ride: Ride) {
@@ -64,8 +64,8 @@ class RidePageActivity : AppCompatActivity() {
         departureTime.visibility = View.INVISIBLE
         details.visibility = View.INVISIBLE
 
-        mainButton.isEnabled = false
-        mainButton.text = getString(R.string.loading)
+        mainActionButton.isEnabled = false
+        mainActionButton.text = getString(R.string.loading)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,14 +104,14 @@ class RidePageActivity : AppCompatActivity() {
             updatePassengers(ride.id)
         }
 
-        updateMainButton()
+        updateButtons()
     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         fun updateStuffAndMaybeShowToast() {
             updatePassengers(ride.id)
-            updateMainButton()
+            updateButtons()
             val success = resultCode == Activity.RESULT_OK
             val toastTextResourceId = when (MapsActivity.Companion.RequestCode.values()[requestCode]) {
                 MapsActivity.Companion.RequestCode.PICK_DRIVER_ORIGIN -> {
@@ -126,6 +126,9 @@ class RidePageActivity : AppCompatActivity() {
                             false
                         ) == true
                     ) R.string.toast_ride_map_edit_success else R.string.null_string
+                }
+                MapsActivity.Companion.RequestCode.JUST_LOOK_AT_MAP -> {
+                    R.string.null_string
                 }
             }
             if (toastTextResourceId != R.string.null_string) {
@@ -144,40 +147,53 @@ class RidePageActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateMainButton() {
-        mainButton.isEnabled = false
-        mainButton.text = getString(R.string.loading)
-        if (driversPerspective) {
-            // "Confirm pickups"
-            Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
-                var somePickupsAreNotInRide = false
-                for (pickup in pickups) {
-                    if (!pickup.inRide && !pickup.denied) {
-                        somePickupsAreNotInRide = true
-                    }
-                }
-                if (somePickupsAreNotInRide) {
-                    mainButton.isEnabled = true
-                    mainButton.text = getString(R.string.ride_map_with_pending_request)
-                } else {
-                    mainButton.isEnabled = true
-                    mainButton.text = getString(R.string.ride_map)
-                }
+    private fun updateButtons() {
+        Database.getRide(rideId) { ride ->
+            rideMapButton.setOnClickListener {
+                val intent = Intent(applicationContext, MapsActivity::class.java)
+                intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
+                intent.putExtra(Keys.RIDE_ID.name, rideId)
+                intent.putExtra(Keys.LOCATION.name, ride.origin.toLatLng().encodeToString())
+                intent.putExtra(
+                    Keys.REQUEST_CODE.name,
+                    MapsActivity.Companion.RequestCode.JUST_LOOK_AT_MAP.ordinal
+                )
+                startActivityForResult(
+                    intent,
+                    MapsActivity.Companion.RequestCode.JUST_LOOK_AT_MAP.ordinal
+                )
+            }
+        }
 
-                Database.getRide(rideId) { ride ->
-                    mainButton.setOnClickListener {
-                        val intent = Intent(applicationContext, MapsActivity::class.java)
-                        intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
-                        intent.putExtra(Keys.RIDE_ID.name, rideId)
-                        intent.putExtra(Keys.LOCATION.name, ride.origin.toLatLng().encodeToString())
-                        intent.putExtra(
-                            Keys.REQUEST_CODE.name,
-                            MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
-                        )
-                        startActivityForResult(
-                            intent,
-                            MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
-                        )
+        mainActionButton.isEnabled = false
+        mainActionButton.text = getString(R.string.loading)
+        if (driversPerspective) {
+            Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
+                val requestCount = pickups.count { !it.inRide && !it.denied }
+                if (requestCount == 0) {
+                    mainActionButton.text = getString(R.string.waiting_for_requests)
+                } else {
+                    Database.getRide(rideId) { ride ->
+                        mainActionButton.isEnabled = true
+                        if (requestCount == 1) {
+                            mainActionButton.text = getString(R.string.confirm_1_pending_request)
+                        } else {
+                            mainActionButton.text = getString(R.string.confirm_multiple_pending_requests, requestCount)
+                        }
+                        mainActionButton.setOnClickListener {
+                            val intent = Intent(applicationContext, MapsActivity::class.java)
+                            intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
+                            intent.putExtra(Keys.RIDE_ID.name, rideId)
+                            intent.putExtra(Keys.LOCATION.name, ride.origin.toLatLng().encodeToString())
+                            intent.putExtra(
+                                Keys.REQUEST_CODE.name,
+                                MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
+                            )
+                            startActivityForResult(
+                                intent,
+                                MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
+                            )
+                        }
                     }
                 }
             }
@@ -188,10 +204,11 @@ class RidePageActivity : AppCompatActivity() {
                 when {
                     pickupOfCurrentUser == null -> {
                         // Pickup does not exist yet - create it
+                        menu.findItem(R.id.action_delete_ride).isVisible = false
                         Database.getRide(rideId) { ride ->
-                            mainButton.isEnabled = true
-                            mainButton.text = getString(R.string.join_ride)
-                            mainButton.setOnClickListener {
+                            mainActionButton.isEnabled = true
+                            mainActionButton.text = getString(R.string.join_ride)
+                            mainActionButton.setOnClickListener {
                                 val intent = Intent(applicationContext, MapsActivity::class.java)
                                 intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
                                 intent.putExtra(Keys.RIDE_ID.name, rideId)
@@ -208,16 +225,19 @@ class RidePageActivity : AppCompatActivity() {
                     }
                     pickupOfCurrentUser.denied -> {
                         // Pickup request was declined
-                        mainButton.isEnabled = false
-                        mainButton.text = getString(R.string.request_declined)
+                        menu.findItem(R.id.action_delete_ride).isVisible = false
+                        mainActionButton.isEnabled = false
+                        mainActionButton.text = getString(R.string.request_declined)
                     }
                     pickupOfCurrentUser.inRide -> {
                         // Pickup request was approved
-                        mainButton.isEnabled = true
-                        mainButton.text = getString(R.string.leave_ride)
-                        mainButton.setBackgroundColor(ContextCompat.getColor(this, R.color.errorRed))
-                        mainButton.setTextColor(ContextCompat.getColor(this, R.color.title_light))
-                        mainButton.setOnClickListener {
+                        menu.findItem(R.id.action_delete_ride).isVisible = true
+                        menu.findItem(R.id.action_delete_ride).title = getString(R.string.leave_ride)
+                        mainActionButton.isEnabled = false
+                        mainActionButton.text = getString(R.string.request_accepted)
+
+                        // the listener is actually a listener for the options menu button, now
+                        mainActionButton.setOnClickListener {
                             AlertDialog.Builder(this, R.style.AlertDialogStyle)
                                 .setTitle(R.string.leave_ride)
                                 .setMessage(getString(R.string.leave_ride_are_you_sure))
@@ -233,17 +253,21 @@ class RidePageActivity : AppCompatActivity() {
                                         ).show()
                                         recreate() // to be updated
                                     }
-                                    mainButton.isEnabled = false
-                                    mainButton.text = getString(R.string.updating)
+                                    mainActionButton.isEnabled = false
+                                    mainActionButton.text = getString(R.string.updating)
                                 }
                                 .setNegativeButton(R.string.no, null).show()
                         }
                     }
                     else -> {
                         // Pickup request is still pending
-                        mainButton.isEnabled = true
-                        mainButton.text = getString(R.string.request_is_pending)
-                        mainButton.setOnClickListener {
+                        menu.findItem(R.id.action_delete_ride).isVisible = true
+                        menu.findItem(R.id.action_delete_ride).title = getString(R.string.cancel_request)
+                        mainActionButton.isEnabled = false
+                        mainActionButton.text = getString(R.string.request_is_pending)
+
+                        // the listener is actually a listener for the options menu button, now
+                        mainActionButton.setOnClickListener {
                             AlertDialog.Builder(this, R.style.AlertDialogStyle)
                                 .setTitle(R.string.cancel_request)
                                 .setMessage(getString(R.string.cancel_request_are_you_sure))
@@ -257,8 +281,8 @@ class RidePageActivity : AppCompatActivity() {
                                         ).show()
                                         recreate() // to be updated
                                     }
-                                    mainButton.isEnabled = false
-                                    mainButton.text = getString(R.string.updating)
+                                    mainActionButton.isEnabled = false
+                                    mainActionButton.text = getString(R.string.updating)
                                 }
                                 .setNegativeButton(R.string.no, null).show()
                         }
@@ -281,8 +305,9 @@ class RidePageActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    override fun onCreateOptionsMenu(menu_: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
+        menu = menu_
         menuInflater.inflate(R.menu.menu_ride_page, menu)
 
         if (!driversPerspective) {
@@ -310,9 +335,19 @@ class RidePageActivity : AppCompatActivity() {
 //                val intent = Intent(applicationContext, RideCreationActivity::class.java)
 //                intent.putExtra(Keys.RIDE_ID.name, rideId)
 //                startActivity(intent)
+                Toast.makeText(this, "Sorry, editing rides is unsupported right now!", Toast.LENGTH_LONG).show()
                 true
             }
             R.id.action_delete_ride -> {
+
+                // The action_delete_ride button is actually used for deleting a ride, canceling a pending request, and leaving a ride.
+                if (!driversPerspective) {
+                    // because we're dirty shortcut-takers, the callback is defined somewhere else
+                    mainActionButton.callOnClick()
+                    return true
+                }
+
+                //else - normal button behaviour
                 AlertDialog.Builder(this, R.style.AlertDialogStyle)
                     .setTitle(R.string.delete_ride_title)
                     .setMessage(getString(R.string.delete_ride_are_you_sure))

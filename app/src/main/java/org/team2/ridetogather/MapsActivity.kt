@@ -8,6 +8,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.SystemClock
@@ -29,6 +31,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.PolyUtil
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -123,22 +126,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val rideId: Id = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Database.getPickupsForRide(rideId) { pickups ->
-            pickups.filter { !it.denied }.forEach { pickup ->
-                Database.getUser(pickup.userId) { passenger ->
-                    val position = pickup.pickupSpot.toLatLng()
-                    val markerOptions = MarkerOptions()
-                        .position(position)
-                        .title(passenger.name)
-                        .snippet(pickup.pickupTime.shortenedTime())
-                        .icon(createCombinedMarker(R.drawable.ic_person_white_sub_icon, 36)) // TODO use profile picture
-                        .zIndex(4f)
-                        .alpha(if (pickup.inRide) 1f else 0.5f)
-                    val marker = map.addMarker(markerOptions)
-                    val pickupMarker = PickupMarker(pickup, marker)
-                    marker.tag = pickupMarker
-                    pickupMarkers.add(pickupMarker)
+            pickups
+                .filter { !it.denied }
+                .filter { it.inRide || requestCode == RequestCode.CONFIRM_OR_DENY_PASSENGERS }
+                .forEach { pickup ->
+                    Database.getUser(pickup.userId) { passenger ->
+                        val position = pickup.pickupSpot.toLatLng()
+                        val markerOptions = MarkerOptions()
+                            .position(position)
+                            .title(passenger.name)
+                            .snippet(pickup.pickupTime.shortenedTime())
+                            // TODO use profile picture
+                            .icon(createCombinedMarker(R.drawable.ic_person_white_sub_icon, 36))
+                            .zIndex(4f)
+                            .alpha(if (pickup.inRide) 1f else 0.5f)
+                        val marker = map.addMarker(markerOptions)
+                        val pickupMarker = PickupMarker(pickup, marker)
+                        marker.tag = pickupMarker
+                        pickupMarkers.add(pickupMarker)
+                        getProfilePicUrl(passenger.facebookProfileId) { picUrl ->
+                            val markerTarget = IconTarget(marker)
+                            Picasso.get()
+                                .load(picUrl)
+                                .placeholder(R.drawable.placeholder_profile)
+                                .error(R.drawable.placeholder_profile)
+                                .resize(48, 48)
+                                .transform(CircleTransform())
+                                .into(markerTarget)
+                        }
+                    }
                 }
-            }
         }
         when (requestCode) {
             RequestCode.PICK_DRIVER_ORIGIN -> {
@@ -158,6 +175,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 mainMarker = newPickupMarker
             }
             RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
+                mainMarker = null
+            }
+            RequestCode.JUST_LOOK_AT_MAP -> {
                 mainMarker = null
             }
         }
@@ -262,6 +282,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
                 }
+                RequestCode.JUST_LOOK_AT_MAP -> {
+                    finishAndReturn()
+                }
             }
         }
 
@@ -278,7 +301,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (mainMarker!!.alpha == 0.5f)
                     fab_confirm_location.hide()
             }
-            RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
+            RequestCode.CONFIRM_OR_DENY_PASSENGERS, RequestCode.JUST_LOOK_AT_MAP -> {
                 fab_confirm_location.visibility = View.VISIBLE
                 fab_pin_or_unpin.visibility = View.GONE
             }
@@ -529,7 +552,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun onPickupMarkerClick(pickupMarker: PickupMarker): Boolean {
         return when (requestCode) {
-            RequestCode.PICK_PASSENGER_LOCATION -> {
+            RequestCode.PICK_PASSENGER_LOCATION, RequestCode.JUST_LOOK_AT_MAP -> {
                 false  // display stuff
             }
             RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
@@ -662,6 +685,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
+    inner class IconTarget(private val marker: Marker) : com.squareup.picasso.Target {
+        override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
+
+        override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {}
+
+        override fun onBitmapLoaded(profileBitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+            val leftOffset = 36
+            val upOffset = 18
+            val background = ContextCompat.getDrawable(this@MapsActivity, R.drawable.ic_marker_full_blue_36dp)
+            background!!.setBounds(0, 0, background.intrinsicWidth, background.intrinsicHeight)
+            val vectorDrawable = BitmapDrawable(resources, profileBitmap)
+            vectorDrawable.setBounds(
+                leftOffset,
+                upOffset,
+                vectorDrawable.intrinsicWidth + leftOffset,
+                vectorDrawable.intrinsicHeight + upOffset
+            )
+            val finalBitmap = Bitmap.createBitmap(background.intrinsicWidth, background.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(finalBitmap)
+            background.draw(canvas)
+            vectorDrawable.draw(canvas)
+            marker.setIcon(BitmapDescriptorFactory.fromBitmap(finalBitmap))
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(StoredInstanceKeys.CAMERA_POSITION.name, map.cameraPosition)
         outState.putParcelable(StoredInstanceKeys.ORIGIN_LOCATION.name, originMarker.position)
@@ -674,6 +722,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             PICK_DRIVER_ORIGIN,
             PICK_PASSENGER_LOCATION,
             CONFIRM_OR_DENY_PASSENGERS,
+            JUST_LOOK_AT_MAP,
         }
 
         enum class StoredInstanceKeys {

@@ -8,6 +8,7 @@
         android:title="@string/action_edit_ride"
         android:icon="@drawable/ic_edit_white_24dp"
         app:showAsAction="ifRoom" />
+    <!--The action_delete_ride button is actually used for deleting a ride, canceling a pending request, and leaving a ride.-->
     <item
         android:id="@+id/action_delete_ride"
         android:orderInCategory="2"
