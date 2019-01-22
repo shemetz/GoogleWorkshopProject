@@ -206,6 +206,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 newPickupMarker = map.addMarker(newPickupMarkerOptions)
                 mainMarkerIsFollowingCamera = true
                 mainMarker = newPickupMarker
+                setPinned(false)
             }
             RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
                 mainMarker = null
