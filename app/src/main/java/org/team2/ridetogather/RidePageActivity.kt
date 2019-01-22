@@ -170,7 +170,8 @@ class RidePageActivity : AppCompatActivity() {
             if (driversPerspective) {
                 val numOfRequests = pickups.count { !it.inRide && !it.denied }
                 passengersSummary.text = if (numOfRequests > 0) getString(
-                    R.string.passengers_summary_for_driver,
+                    if (numOfRequests >= 2) R.string.passengers_summary_for_driver_plural
+                    else R.string.passengers_summary_for_driver_single,
                     numOfExistingPassengers,
                     ride.passengerCount,
                     numOfRequests

@@ -76,7 +76,8 @@
     <string name="toast_leave_ride_success">Left ride!</string>
     <string name="toast_ride_map_edit_success">Updated ride map!</string>
     <string name="passengers_summary_for_passenger">%d/%d passengers</string>
-    <string name="passengers_summary_for_driver">%d/%d passengers + %d requests</string>
+    <string name="passengers_summary_for_driver_single">%d/%d passengers + %d request</string>
+    <string name="passengers_summary_for_driver_plural">%d/%d passengers + %d requests</string>
 
     <!-- Pickup -->
     <string name="passenger_name">Name</string>
