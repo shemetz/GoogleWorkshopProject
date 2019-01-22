@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
@@ -179,8 +180,8 @@ class EventRidesActivity : AppCompatActivity() {
                 getProfilePicUrl(facebookId) { pic_url ->
                     Picasso.get()
                         .load(pic_url)
-                        .placeholder(R.drawable.placeholder_profile)
-                        .error(R.drawable.placeholder_profile)
+                        .placeholder(R.drawable.placeholder_profile_circle)
+                        .error(R.drawable.placeholder_profile_circle)
                         .resize(256, 256)
                         .transform(CircleTransform())
                         .into(view.driverPicture)
@@ -189,16 +190,16 @@ class EventRidesActivity : AppCompatActivity() {
             geocode(context, ride.origin.toLatLng()) {
                 view.originLocationName.text = it
             }
-//            view.driverPicture.drawable = ???
-
             view.departureTime.text = ride.departureTime.shortenedTime()
+            Database.getPickupsForRide(ride.id) { pickups ->
+                val numOfExistingPassengers = pickups.count { it.inRide }
+                val passengerCountText = "$numOfExistingPassengers/${ride.passengerCount}"
+                view.passengerCount.text = passengerCountText
+            }
+
             holder.cardView.setOnClickListener {
                 RidePageActivity.start(view.context, ride.id, ride.driverId == Database.idOfCurrentUser)
             }
-            /*holder.cardView.joinRidePlusButton.setOnClickListener{
-                val intent = Intent(context,JoinRideActivity::class.java)
-                intent.putExtra(Keys.RIDE_ID.name, ride.id)
-                startActivity(context, intent,null)}*/
         }
 
         override fun getItemCount() = rides.size
@@ -228,8 +229,29 @@ class EventRidesActivity : AppCompatActivity() {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 true
             }
+            R.id.action_leave_group -> {
+                buildDialog()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun buildDialog() {
+        val builder = AlertDialog.Builder(this, R.style.AlertDialogStyle)
+        //builder.setTitle("Hey there")
+        builder.setMessage("Are you sure you want to leave group?")
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+
+        builder.setPositiveButton(R.string.stay_group) { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.setNegativeButton(R.string.leave_group) { dialog, which ->
+            Database.removeUserFromEvent(Database.idOfCurrentUser,eventId)
+            startActivity(Intent(applicationContext, MainActivity::class.java))
+        }
+        builder.show()
+
     }
 
     class MarginItemDecoration(private val spaceHeight: Int) : RecyclerView.ItemDecoration() {

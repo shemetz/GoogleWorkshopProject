@@ -30,7 +30,6 @@ class UserEventsAdapter(val items: ArrayList<Event>, val context: Context, var i
                 .load(pic_url)
                 .placeholder(R.drawable.ic_tab_events)
                 .error(R.drawable.ic_tab_events)
-                .resize(256, 256)
                 .into(holder?.eventPicture)
         }
 

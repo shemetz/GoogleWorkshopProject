@@ -43,6 +43,9 @@
     <!-- Event Rides -->
     <string name="content_description_profile_picture">Profile picture</string>
     <string name="action_open_event_on_facebook">Open on Facebook</string>
+    <string name="action_leave_group">Leave group</string>
+    <string name="leave_group">Yes</string>
+    <string name="stay_group">No, stay</string>
 
     <!-- Ride -->
     <string name="driver_name">Name</string>
@@ -59,10 +62,12 @@
     <string name="join_ride">Join ride</string>
     <string name="request_is_pending">Request is pending</string>
     <string name="request_declined">Request declined</string>
+    <string name="request_accepted">You are in this ride!</string>
     <string name="leave_ride">Leave ride</string>
     <string name="cancel_request">Cancel request</string>
     <string name="ride_map">Ride map</string>
-    <string name="ride_map_with_pending_request">Ride map (+Requests)</string>
+    <string name="edit_route">Edit route</string>
+    <string name="view_requests">View requests</string>
     <string name="cancel_request_are_you_sure">Your request is pending until the driver approves it. Would you like to cancel the request?</string>
     <string name="leave_ride_are_you_sure">Are you sure you want to leave this ride?</string>
     <string name="toast_join_ride_success">Request sent!</string>
@@ -70,6 +75,9 @@
     <string name="toast_cancel_request_success">Request canceled!</string>
     <string name="toast_leave_ride_success">Left ride!</string>
     <string name="toast_ride_map_edit_success">Updated ride map!</string>
+    <string name="passengers_summary_for_passenger">%d/%d passengers</string>
+    <string name="passengers_summary_for_driver_single">%d/%d passengers + %d request</string>
+    <string name="passengers_summary_for_driver_plural">%d/%d passengers + %d requests</string>
 
     <!-- Pickup -->
     <string name="passenger_name">Name</string>
@@ -78,8 +86,8 @@
     <string name="choose_a_pick_up_location">Choose a pickup location!</string>
 
     <!-- Map -->
-    <string name="pickup_click_title"/>
-    <string name="pickup_click_description">Do you want to add %s to the ride?</string>
+    <string name="pickup_decline_title">Decline request</string>
+    <string name="pickup_decline_description">Do you want to decline %s\'s request to join your ride?</string>
 
     <!-- Slider -->
     <string name="next">NEXT</string>
@@ -87,7 +95,7 @@
     <string name="start">GOT IT</string>
     <string name="welcome_screen_1_text">Share your ride with others.</string>
     <string name="welcome_screen_2_text">Join other rides.</string>
-    <string name="welcome_screen_3_text">Earn credits for sharing!</string>
+    <string name="welcome_screen_3_text">Get to the event and meet new people!</string>
 
     <!-- Error strings -->
     <string name="error_field_required">This field is required</string>

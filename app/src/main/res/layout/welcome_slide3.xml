@@ -23,7 +23,7 @@
                 android:textSize="18sp"/>
         <ImageView
                 android:layout_width="301dp"
-                android:layout_height="254dp" app:srcCompat="@drawable/star_slider"
+                android:layout_height="254dp" app:srcCompat="@drawable/meet_slider"
                 android:id="@+id/imageView4"/>
 
     </LinearLayout>

@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import kotlinx.android.synthetic.main.content_eventrides.*
 import org.team2.ridetogather.adapter.PassengerssAdapter
 
@@ -31,7 +30,7 @@ class PassengersListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        val view= inflater.inflate(R.layout.fragment_passengers_list, container, false)
+        val view = inflater.inflate(R.layout.fragment_passengers_list, container, false)
         return view;
 
     }
@@ -47,22 +46,29 @@ class PassengersListFragment : Fragment() {
         }
 
     }
-    var list= arrayListOf<User>();
+
+    var list = arrayListOf<User>();
     private fun updatePassengers() {
         Database.getUsersForEvent(eventId) { users ->
-            if(users.size!=0) {
-                list.addAll(users);
+            if (users.size != 0) {
+                list.clear()
+                if (rides_list_recycler_view.adapter != null) {
+                    val adapter = rides_list_recycler_view.adapter as PassengerssAdapter
+                    val size = adapter.itemCount
+                    adapter.items.clear()
+                    adapter.notifyItemRangeRemoved(0, size)
+                }
+                list.addAll(users)
                 rides_list_recycler_view.adapter = PassengerssAdapter(list, context)
                 rides_list_recycler_view.adapter.notifyDataSetChanged()
-            }
-            else
-            {
+            } else {
 
-                tvEmpty.visibility=View.VISIBLE
+                tvEmpty.visibility = View.VISIBLE
             }
 
         }
     }
+
     override fun onResume() {
         super.onResume()
         updatePassengers();

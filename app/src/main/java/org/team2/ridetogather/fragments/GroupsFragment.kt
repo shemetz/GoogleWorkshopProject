@@ -45,7 +45,7 @@ class GroupsFragment : Fragment() {
         }
     }
 
-    var list = arrayListOf<Event>();
+    var list = arrayListOf<Event>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -55,11 +55,12 @@ class GroupsFragment : Fragment() {
 
         Database.getEventsForUser(Database.idOfCurrentUser) { events: List<Event> ->
             if (events.size != 0) {
-                list.addAll(events);
+                list.clear()
+                list.addAll(events)
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
                 val userEventAdapter = UserEventsAdapter(list, context!!, object : ItemClickListener {
                     override fun onItemClicked(item: Any, pos: Int) {
-                        val event: Event = item as Event;
+                        val event: Event = item as Event
                         EventRidesActivity.start(context, event.id)
                     }
                 })
@@ -72,10 +73,31 @@ class GroupsFragment : Fragment() {
 
         }
 
-
         return view
     }
 
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+        if (isVisibleToUser) {
+            Database.getEventsForUser(Database.idOfCurrentUser) { rides: List<Event> ->
+                fragmentManager ?: return@getEventsForUser  // possibly a crash fix
+                val updated_list = arrayListOf<Event>()
+                updated_list.addAll(rides)
+                if(updated_list.size != list.size){
+                    fragmentManager!!.beginTransaction().detach(this).attach(this).commit()
+                }
+                else{
+                    for(i in 0 until list.size){
+                        if(list[i].id != updated_list[i].id){
+                            fragmentManager!!.beginTransaction().detach(this).attach(this).commit()
+                            break
+                        }
+                    }
+                }
+            }
+
+        }
+    }
 
     internal var context: Context? = null
     override fun onAttach(context: Context?) {

@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.format.DateUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +21,11 @@ import org.team2.ridetogather.*
 import org.team2.ridetogather.adapter.FacebookEvent
 import org.team2.ridetogather.adapter.FacebookEventAdapter
 import org.team2.ridetogather.adapter.ItemClickListener
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.time.DayOfWeek
+import java.time.LocalDateTime
+import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -49,7 +56,7 @@ class AllEvents : Fragment() {
 
     fun createEvent(context: Context?,facebookEvent: FacebookEvent){
         val builder = AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-        builder.setMessage("There is no group for this event, do you want to create one?")
+        builder.setMessage("Join event's rides group?")
 
         builder.setPositiveButton(R.string.yes) { dialog, which ->
             Database.addEventWithCallback(facebookEvent.name,facebookEvent.loc,facebookEvent.dt,facebookEvent.id)
@@ -70,7 +77,7 @@ class AllEvents : Fragment() {
             EventRidesActivity.start(context,event.id)
         },{
             val builder = AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-            builder.setMessage("There is already group for this event, do you want to join?")
+            builder.setMessage("Join event's rides group?")
 
             builder.setPositiveButton(R.string.yes) { dialog, which ->
                 Database.addEventToUser(Database.idOfCurrentUser,event.id)
@@ -83,6 +90,16 @@ class AllEvents : Fragment() {
         })
 
     }
+    private fun checkIfPassed(dt : String):Int{
+        val date = dt.substring(0,10)
+        Log.i("~~~~~~",date)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+        val strDate = dateFormat.format(Date())
+        Log.i("~~~~~~",strDate)
+        val comp =SimpleDateFormat("yyyy-MM-dd").parse(date)
+            .compareTo(SimpleDateFormat("yyyy-MM-dd").parse(strDate))
+        return comp
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -90,7 +107,6 @@ class AllEvents : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view= inflater.inflate(R.layout.fragment_all_events, container, false)
-        val listView = view.findViewById<ListView>(R.id.events_list)
         val event_request = GraphRequest.newMeRequest(
             AccessToken.getCurrentAccessToken()
         ) { Json, response ->
@@ -101,9 +117,14 @@ class AllEvents : Fragment() {
                     val eventId = eventsArray.optJSONObject(i).getString("id")
                     val eventName = eventsArray.optJSONObject(i).getString("name")
                     val dt = eventsArray.optJSONObject(i).getString("start_time")
+                    if(checkIfPassed(dt) == -1){
+                        continue
+                    }
                     val datetime = formatDatetime(parseStandardDatetime(eventsArray.optJSONObject(i).getString("start_time")))
                     val placeObject = eventsArray.optJSONObject(i).optJSONObject("place")
-                    if (placeObject?.opt("location") != null){
+                    if (placeObject?.getJSONObject("location") != null){
+
+
                         val locationObject = placeObject.getJSONObject("location")
                         val location = placeObject.getString("name")+", "+locationObject.getString("city")+", "+locationObject.getString("country")
                         val loc = LatLng(
@@ -114,8 +135,7 @@ class AllEvents : Fragment() {
                     }
                 }
                 if(eventsList.size!=0) {
-
-
+                    eventsList.reverse()
                     val recycle = view.findViewById<RecyclerView>(R.id.recycle)
                     val userEventAdapter = FacebookEventAdapter(eventsList, context, object : ItemClickListener {
                         override fun onItemClicked( item: Any, pos: Int) {

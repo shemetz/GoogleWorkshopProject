@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.user_ride.view.*
 import org.team2.ridetogather.*
@@ -18,34 +19,38 @@ class MyRidesAdapter(val items: ArrayList<Ride>, val context: Context, var itemC
     }
 
     override fun onBindViewHolder(holder: ViewHolderRide, position: Int) {
-        Database.getEvent(items.get(position).eventId) { event: Event ->
-            holder?.eventName?.text = event.name
-            holder?.eventDateTime?.text = formatDatetime(event.datetime)
+        val ride = items[position]
+        Database.getEvent(ride.eventId) { event: Event ->
+            holder.eventName?.text = event.name
+            holder.eventDateTime?.text = formatDatetime(event.datetime)
             geocode(context, event.location.toLatLng()) {
-                holder?.eventLocation?.text = it
+                holder.eventLocation?.text = it
             }
         }
-        Database.getDriver(items.get(position).driverId) { driver: Driver ->
-            holder?.driverName?.text = driver.name
-
+        Database.getDriver(ride.driverId) { driver: Driver ->
+            holder.driverName?.text = driver.name
+            Database.getPickupsForRide(ride.id) { pickups ->
+                val numOfExistingPassengers = pickups.count { it.inRide }
+                val passengerCountText = "$numOfExistingPassengers/${ride.passengerCount}"
+                holder.card_view.findViewById<TextView>(R.id.passengerCount).text = passengerCountText
+            }
             val facebookId = driver.facebookProfileId
             getProfilePicUrl(facebookId) { pic_url ->
                 Picasso.get()
                     .load(pic_url)
-                    .placeholder(R.drawable.placeholder_profile)
-                    .error(R.drawable.placeholder_profile)
+                    .placeholder(R.drawable.placeholder_profile_circle)
+                    .error(R.drawable.placeholder_profile_circle)
                     .resize(256, 256)
                     .transform(CircleTransform())
-                    .into(holder?.driverPicture)
+                    .into(holder.driverPicture)
             }
 
         }
 
 
-        holder?.card_view.setOnClickListener(View.OnClickListener {
-
-            itemClickListener?.onItemClicked(items.get(position), position)
-        })
+        holder.card_view.setOnClickListener {
+            itemClickListener?.onItemClicked(ride, position)
+        }
 
     }
 

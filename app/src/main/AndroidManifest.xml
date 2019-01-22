@@ -85,10 +85,6 @@
                 android:name=".MapsActivity"
                 android:label="@string/title_activity_maps"
                 android:theme="@style/AppTheme.NoActionBar"/>
-        <activity
-                android:name=".JoinRideActivity"
-                android:label="@string/title_activity_joinride">
-        </activity>
     </application>
 
 </manifest>

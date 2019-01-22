@@ -49,26 +49,25 @@ fun geocode(context: Context, latLng: LatLng, successCallback: (String) -> Unit)
         successCallback(geocodingCache[latLng]!!)
         return
     }
-    khttp.async.get(
-        url = "https://maps.googleapis.com/maps/api/geocode/json",
-        params = mapOf(
+    Database.requestJsonObjectFromGoogleApi(
+        partialUrl = "maps/api/geocode/json",
+        getParams = mapOf(
             "key" to context.getString(R.string.SECRET_GOOGLE_API_KEY),
             "latlng" to "${latLng.latitude},${latLng.longitude}"
-        ),
-        onResponse = {
-            Log.v("Google Geocode", jsonObject.toString(4))
-            CoroutineScope(Dispatchers.Main).launch {
-                // dirty hack, sorry
-                val result = if (jsonObject.getString("status") == "ZERO_RESULTS")
-                    alternativeGeocode(context, latLng)
-                else
-                    jsonObject.getJSONArray("results").getJSONObject(0).getString("formatted_address")
-                Log.v("Google Geocode", "Caching result: $latLng → $result")
-                geocodingCache[latLng] = result
-                successCallback(result)
-            }
+        )
+    ) { jsonObject ->
+        Log.v("Google Geocode", jsonObject.toString(4))
+        CoroutineScope(Dispatchers.Main).launch {
+            // dirty hack, sorry
+            val result = if (jsonObject.getString("status") == "ZERO_RESULTS")
+                alternativeGeocode(context, latLng)
+            else
+                jsonObject.getJSONArray("results").getJSONObject(0).getString("formatted_address")
+            Log.v("Google Geocode", "Caching result: $latLng → $result")
+            geocodingCache[latLng] = result
+            successCallback(result)
         }
-    )
+    }
 }
 
 /**
@@ -95,7 +94,7 @@ fun alternativeGeocode(context: Context?, latLng: LatLng): String {
             val address = addresses[0]
             // combine address lines into one comma-separated line, it is usually the best address format!
             val addressString =
-                (0..address.maxAddressLineIndex).map { i -> address.getAddressLine(i) }.joinToString(separator = ", ")
+                (0..address.maxAddressLineIndex).joinToString(separator = ", ") { i -> address.getAddressLine(i) }
 //            val city = address.locality
 //            val state = address.adminArea
 //            val country = address.countryName
@@ -154,7 +153,7 @@ fun String.decodeToLatLng(): LatLng {
 }
 
 fun getProfilePicUrl(facebookId: String, callback: (String) -> Unit) {
-    if (facebookId.equals("fakeprofile")) {
+    if (facebookId == "fakeprofile") {
         callback("http://pluspng.com/img-png/png-hd-of-puppies-puppy-other-400.png")
     } else {
         val request = GraphRequest.newGraphPathRequest(
@@ -193,4 +192,38 @@ fun parseStandardDatetime(datetimeString: String): Datetime {
 
 fun formatDatetime(datetime: Datetime): String {
     return SimpleDateFormat("EEEE, dd/M/yy 'at' HH:mm", Locale.getDefault()).format(datetime)
+}
+
+@Suppress("IntroduceWhenSubject")
+fun durationToString(durationInSeconds: Int): String {
+    if (durationInSeconds <= 0)
+        return "Unknown~"
+    val seconds = durationInSeconds % 60
+    val minutes = (durationInSeconds / 60) % 60
+    val hours = (durationInSeconds / 60 / 60) % 24
+    val days = durationInSeconds / 60 / 60 / 24
+    val secondsStr = when {
+        minutes > 0 -> ""
+        seconds == 0 -> "nothing"
+        seconds == 1 -> "1 second"
+        else -> "$seconds seconds"
+    }
+    val minutesStr = when {
+        days > 0 -> ""
+        minutes == 0 -> ""
+        minutes == 1 -> "1 minute"
+        else -> "$minutes minutes"
+    }
+    val hoursStr = when {
+        hours == 0 -> ""
+        hours == 1 -> "1 hour"
+        else -> "$hours hours"
+    }
+    val daysStr = when {
+        days == 0 -> ""
+        days == 1 -> "1 day"
+        else -> "$days days"
+    }
+
+    return "$daysStr $hoursStr $minutesStr $secondsStr".trimStart()
 }
