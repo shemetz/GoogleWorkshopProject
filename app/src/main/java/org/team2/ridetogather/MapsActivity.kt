@@ -582,8 +582,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val origin = originMarker.position
         val destination = eventMarker.position
-        val waypoints = pickupMarkers
+        val pickupsInRoute = pickupMarkers
             .filter { it.pickup.inRide }
+            .take(23) // that's the maximum
+        val waypoints = pickupsInRoute
             .map { it.marker.position }
         CoroutineScope(Dispatchers.Default).launch {
             Log.v(tag, "Starting countdown(${waypoints.size})…")
@@ -605,7 +607,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         "stopover" to true
                     )
                 }
-                .take(23) // that's the maximum
 
             val params = mapOf(
                 "key" to getString(R.string.SECRET_GOOGLE_API_KEY),
@@ -617,15 +618,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 "optimizeWaypoints" to "true"
             ) else emptyMap()
             Log.i(tag, "Requesting route from Google Maps API…")
-            Log.v(tag, params.toString())
             Database.requestJsonObjectFromGoogleApi(
                 "maps/api/directions/json", params
             ) { responseJson ->
                 Log.i(tag, "Got a response! \\o/")
-//                Log.i(tag, this.text)
                 if (responseJson.optJSONArray("routes")?.length() != 0) {
                     routeJson = responseJson
                     drawRoute(routeJson!!)
+                    updatePickupTimesAutomatically(routeJson!!, pickupsInRoute)
                 } else {
                     runOnUiThread {
                         Log.e(tag, "Failed to find any route..!")
@@ -670,8 +670,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 path.add(PolyUtil.decode(points))
             }
         }
-        val totalDuration = allLegs.sumBy { it.optJSONObject("duration")?.optInt("value") ?: 0 }
-        val totalDurationStr = durationToString(totalDuration)
+        val totalDurationSeconds = allLegs.sumBy { it.optJSONObject("duration")?.optInt("value") ?: 0 }
+        val totalDurationStr = durationToString(totalDurationSeconds)
         val combinedPath = path.flatten()
         runOnUiThread {
             drawnRoute.forEach { it.remove() }
@@ -685,6 +685,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             drawnRoute.add(polyLine)
             route_total_time.visibility = View.VISIBLE
             route_total_time.text = "Total time: ~$totalDurationStr"
+        }
+    }
+
+    private fun updatePickupTimesAutomatically(routeJson: JSONObject, pickupMarkersInRoute: List<PickupMarker>) {
+        if (pickupMarkersInRoute.isEmpty())
+            return
+        val routes = routeJson.getJSONArray("routes")
+        val onlyRoute = routes.getJSONObject(0)
+        val legs = onlyRoute.getJSONArray("legs")
+        val allLegs: List<JSONObject> = (0 until legs.length()).map { i -> legs.getJSONObject(i) }
+        var totalDurationSeconds = 0
+        val waypointOrder = onlyRoute.getJSONArray("waypoint_order")
+        allLegs.forEachIndexed { index, leg ->
+            totalDurationSeconds += leg.optJSONObject("duration")?.optInt("value") ?: 0
+            if (index < waypointOrder.length()) {
+                val waypointIndex = waypointOrder.getInt(index)
+                val hours = (ride!!.departureTime.hours + (totalDurationSeconds / 60 / 60)) % 24
+                val minutes = (ride!!.departureTime.minutes + (totalDurationSeconds / 60)) % 60
+                val pickupMarker = pickupMarkersInRoute[waypointIndex]
+                pickupMarker.pickup.pickupTime = TimeOfDay(hours, minutes)
+                val cal = Calendar.getInstance()
+                cal.set(Calendar.HOUR_OF_DAY, pickupMarker.pickup.pickupTime.hours)
+                cal.set(Calendar.MINUTE, pickupMarker.pickup.pickupTime.minutes)
+                pickupMarker.marker.snippet =
+                        SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                refreshMarkerInfoWindow(pickupMarker)
+            }
         }
     }
 

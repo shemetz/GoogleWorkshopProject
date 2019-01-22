@@ -94,7 +94,7 @@
             android:layout_height="wrap_content"
             app:layout_anchorGravity="center|top"
             app:layout_anchor="@id/map"
-            android:layout_marginTop="120dp"
+            android:layout_marginTop="80dp"
             android:layout_marginBottom="16dp"
             android:textSize="18sp"
             tools:text="Total time: ~1 hour 23 minutes"/>
