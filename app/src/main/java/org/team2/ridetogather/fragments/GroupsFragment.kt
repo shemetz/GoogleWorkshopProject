@@ -45,7 +45,7 @@ class GroupsFragment : Fragment() {
         }
     }
 
-    var list = arrayListOf<Event>();
+    var list = arrayListOf<Event>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -55,11 +55,11 @@ class GroupsFragment : Fragment() {
 
         Database.getEventsForUser(Database.idOfCurrentUser) { events: List<Event> ->
             if (events.size != 0) {
-                list.addAll(events);
+                list.addAll(events)
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
                 val userEventAdapter = UserEventsAdapter(list, context!!, object : ItemClickListener {
                     override fun onItemClicked(item: Any, pos: Int) {
-                        val event: Event = item as Event;
+                        val event: Event = item as Event
                         EventRidesActivity.start(context, event.id)
                     }
                 })
@@ -71,7 +71,6 @@ class GroupsFragment : Fragment() {
             }
 
         }
-
 
         return view
     }
