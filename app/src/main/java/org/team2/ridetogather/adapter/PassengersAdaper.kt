@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_passengers.view.*
-import org.team2.ridetogather.*
-import kotlin.reflect.jvm.internal.impl.incremental.UtilsKt
+import org.team2.ridetogather.CircleTransform
+import org.team2.ridetogather.R
+import org.team2.ridetogather.User
+import org.team2.ridetogather.getProfilePicUrl
 
-public class PassengerssAdapter(val items : ArrayList<User>, val context: Context?) : RecyclerView.Adapter<ViewHolderPes>() {
+class PassengerssAdapter(val items: ArrayList<User>, val context: Context?) : RecyclerView.Adapter<ViewHolderPes>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPes {
         return ViewHolderPes(LayoutInflater.from(context).inflate(R.layout.item_passengers, parent, false))
@@ -19,8 +21,8 @@ public class PassengerssAdapter(val items : ArrayList<User>, val context: Contex
     override fun onBindViewHolder(holder: ViewHolderPes, position: Int) {
 
 
-        holder?.passengerName?.text = items.get(position).name
-        holder?.credits?.text = items.get(position).credits.toString()
+        holder.passengerName?.text = items.get(position).name
+        holder.credits?.text = items.get(position).credits.toString()
 
         val facebookId = items.get(position).facebookProfileId
         getProfilePicUrl(facebookId) { pic_url ->
@@ -30,7 +32,7 @@ public class PassengerssAdapter(val items : ArrayList<User>, val context: Contex
                 .error(R.drawable.placeholder_profile)
                 .resize(256, 256)
                 .transform(CircleTransform())
-                .into(holder?.passengerPicture)
+                .into(holder.passengerPicture)
         }
 
 
@@ -44,7 +46,7 @@ public class PassengerssAdapter(val items : ArrayList<User>, val context: Contex
 
 }
 
-public class ViewHolderPes (view: View) : RecyclerView.ViewHolder(view) {
+class ViewHolderPes(view: View) : RecyclerView.ViewHolder(view) {
     // Holds the TextView that will add each animal to
     val passengerName = view.passengerName
     val passengerPicture = view.passengerPicture

@@ -123,7 +123,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val rideId: Id = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Database.getPickupsForRide(rideId) { pickups ->
-            pickups.filter { !it.denied } .forEach { pickup ->
+            pickups.filter { !it.denied }.forEach { pickup ->
                 Database.getUser(pickup.userId) { passenger ->
                     val position = pickup.pickupSpot.toLatLng()
                     val markerOptions = MarkerOptions()
@@ -455,28 +455,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             ) else emptyMap()
             Log.i(tag, "Requesting route from Google Maps API…")
             Log.v(tag, params.toString())
-            khttp.async.get(
-                url = "https://maps.googleapis.com/maps/api/directions/json",
-                params = params,
-                onResponse = {
-                    val responseJson = this.jsonObject
-                    Log.i(tag, "Got a response! \\o/")
+            Database.requestJsonObjectFromGoogleApi(
+                "maps/api/directions/json", params
+            ) { responseJson ->
+                Log.i(tag, "Got a response! \\o/")
 //                Log.i(tag, this.text)
-                    if (responseJson.optJSONArray("routes")?.length() != 0) {
-                        routeJson = responseJson
-                        drawRoute(routeJson!!)
-                    } else {
-                        routeJson = null
-                        runOnUiThread {
-                            Log.e(tag, "Failed to find any route..!")
-                            Log.e(tag, responseJson.toString(4))
-                            Toast.makeText(this@MapsActivity, "No route was found :(", Toast.LENGTH_SHORT).show()
-                            // remove existing route if it exists
-                            drawnRoute.forEach { it.remove() }
-                        }
+                if (responseJson.optJSONArray("routes")?.length() != 0) {
+                    routeJson = responseJson
+                    drawRoute(routeJson!!)
+                } else {
+                    routeJson = null
+                    runOnUiThread {
+                        Log.e(tag, "Failed to find any route..!")
+                        Log.e(tag, responseJson.toString(4))
+                        Toast.makeText(this@MapsActivity, "No route was found :(", Toast.LENGTH_SHORT).show()
+                        // remove existing route if it exists
+                        drawnRoute.forEach { it.remove() }
                     }
                 }
-            )
+            }
         }
     }
 
