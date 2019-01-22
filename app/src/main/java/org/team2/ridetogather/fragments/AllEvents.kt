@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.format.DateUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +21,10 @@ import org.team2.ridetogather.*
 import org.team2.ridetogather.adapter.FacebookEvent
 import org.team2.ridetogather.adapter.FacebookEventAdapter
 import org.team2.ridetogather.adapter.ItemClickListener
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.time.DayOfWeek
+import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -83,6 +89,15 @@ class AllEvents : Fragment() {
         })
 
     }
+    fun checkIfPassed(dt : String):Int{
+        val date = dt.substring(0,10)
+        val date2 = SimpleDateFormat("yyyy-MM-dd").parse(date).toString()
+        val date3 = date2.substring(4,10).plus(", ".plus(date2.substring(30,34)))
+        val today = DateFormat.getDateInstance(DateFormat.DEFAULT).format(Date())
+        val comp =SimpleDateFormat("MMM dd',' yyyy").parse(date3)
+            .compareTo(SimpleDateFormat("MMM dd',' yyyy").parse(today))
+        return comp
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -100,6 +115,9 @@ class AllEvents : Fragment() {
                     val eventId = eventsArray.optJSONObject(i).getString("id")
                     val eventName = eventsArray.optJSONObject(i).getString("name")
                     val dt = eventsArray.optJSONObject(i).getString("start_time")
+                    if(checkIfPassed(dt) == -1){
+                        continue
+                    }
                     val datetime = formatDatetime(parseStandardDatetime(eventsArray.optJSONObject(i).getString("start_time")))
                     val placeObject = eventsArray.optJSONObject(i).optJSONObject("place")
                     if (placeObject?.getJSONObject("location") != null){
@@ -115,8 +133,7 @@ class AllEvents : Fragment() {
                     }
                 }
                 if(eventsList.size!=0) {
-
-
+                    eventsList.reverse()
                     val recycle = view.findViewById<RecyclerView>(R.id.recycle)
                     val userEventAdapter = FacebookEventAdapter(eventsList, context, object : ItemClickListener {
                         override fun onItemClicked( item: Any, pos: Int) {
