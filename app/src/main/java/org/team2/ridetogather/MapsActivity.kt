@@ -61,6 +61,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var mainMarker: Marker? = null
     private var mainMarkerIsFollowingCamera =
         false  // when not pinned it will be half-transparent and will follow the camera
+    private var preexistingOriginLocation: LatLng? = null
     private var somethingChanged = false  // true if something was edited
     private var selectedPickupMarker: PickupMarker? = null
     private val mapLoadingLatch = CountDownLatch(1)
@@ -72,6 +73,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val requestCodeInt = intent.getIntExtra(Keys.REQUEST_CODE.name, -1)
         requestCode = MapsActivity.Companion.RequestCode.values()[requestCodeInt]
         Log.d(tag, "Created $tag for Event ID $eventId, Request code: $requestCode")
+        preexistingOriginLocation = intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
         setupBeforeSetups()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -204,8 +206,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             RequestCode.PICK_DRIVER_ORIGIN -> {
                 mainMarkerIsFollowingCamera = true
                 mainMarker = originMarker
-                val preexistingOriginLocation =
-                    intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
                 setPinned(false)
                 if (preexistingOriginLocation != null) {
                     onPinButtonClick()
@@ -235,8 +235,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupMapStartingPosition() {
-        val preexistingOriginLocation =
-            intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
         if (requestCode == RequestCode.PICK_DRIVER_ORIGIN && preexistingOriginLocation == null) {
             val startingZoomLevel = 13.0f
             val defaultOriginMarkerLocation =
@@ -443,14 +441,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupFabVisibility() {
         when (requestCode) {
             RequestCode.PICK_DRIVER_ORIGIN, RequestCode.PICK_PASSENGER_LOCATION -> {
-                fab_confirm_location.visibility = View.VISIBLE
-                fab_pin_or_unpin.visibility = View.VISIBLE
+                fab_confirm_location.visibility = View.INVISIBLE
+                if (preexistingOriginLocation != null)
+                    showFab(fab_confirm_location)
+                fab_pin_or_unpin.visibility = View.INVISIBLE
+                showFab(fab_pin_or_unpin)
                 if (mainMarker!!.alpha == 0.5f)
                     hideFab(fab_confirm_location)
                 fab_confirm_location.setImageDrawable(getDrawable(R.drawable.ic_done_black_24dp))
             }
             RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                fab_confirm_location.visibility = View.VISIBLE
+                fab_confirm_location.visibility = View.INVISIBLE
+                showFab(fab_confirm_location)
                 fab_pin_or_unpin.visibility = View.GONE
                 fab_decline.visibility = View.INVISIBLE
                 fab_plus_or_minus.visibility = View.INVISIBLE
@@ -458,12 +460,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 fab_confirm_location.setImageDrawable(getDrawable(R.drawable.ic_done_all_black_24dp))
             }
             RequestCode.JUST_LOOK_AT_MAP -> {
-                fab_confirm_location.visibility = View.VISIBLE
+                fab_confirm_location.visibility = View.INVISIBLE
+                showFab(fab_confirm_location)
                 fab_pin_or_unpin.visibility = View.GONE
                 fab_decline.visibility = View.GONE
                 fab_plus_or_minus.visibility = View.GONE
                 fab_change_time.visibility = View.GONE
                 fab_confirm_location.setImageDrawable(getDrawable(R.drawable.ic_done_black_24dp))
+
+                // this doesn't work for some reason :(
                 fab_confirm_location.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
             }
         }
