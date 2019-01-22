@@ -517,11 +517,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun finishAndReturn() {
         val resultIntent = Intent()
-        if (requestCode == RequestCode.PICK_DRIVER_ORIGIN) {
-            val originLocationStr = originMarker.position.encodeToString()
-            if (intent.getStringExtra(Keys.LOCATION.name) != originLocationStr)
+        if (mainMarker != null) {
+            val locationStr = mainMarker!!.position.encodeToString()
+            if (intent.getStringExtra(Keys.LOCATION.name) != locationStr)
                 somethingChanged = true
-            resultIntent.putExtra(Keys.LOCATION.name, originLocationStr)
+            resultIntent.putExtra(Keys.LOCATION.name, locationStr)
         }
         resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
         resultIntent.putExtra(Keys.SOMETHING_CHANGED.name, somethingChanged)
@@ -854,6 +854,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val upOffset = 18
             val background = ContextCompat.getDrawable(this@MapsActivity, R.drawable.ic_marker_full_blue_36dp)
             background!!.setBounds(0, 0, background.intrinsicWidth, background.intrinsicHeight)
+            Log.i(tag, "oh ok so $profileBitmap and $from")
             val vectorDrawable = BitmapDrawable(resources, profileBitmap)
             vectorDrawable.setBounds(
                 leftOffset,
@@ -861,6 +862,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 vectorDrawable.intrinsicWidth + leftOffset,
                 vectorDrawable.intrinsicHeight + upOffset
             )
+            Log.i(tag, "ok so it's intWidth=${background.intrinsicWidth}, intHeight=${background.intrinsicHeight}, " +
+                    "leftOffset=36, upOffset=18, profileBitmap=${profileBitmap!!.width}x${profileBitmap.height}")
             val finalBitmap =
                 Bitmap.createBitmap(background.intrinsicWidth, background.intrinsicHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(finalBitmap)
