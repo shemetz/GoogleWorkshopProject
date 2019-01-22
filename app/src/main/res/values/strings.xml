@@ -86,8 +86,8 @@
     <string name="choose_a_pick_up_location">Choose a pickup location!</string>
 
     <!-- Map -->
-    <string name="pickup_click_title"/>
-    <string name="pickup_click_description">Do you want to add %s to the ride?</string>
+    <string name="pickup_decline_title">Decline request</string>
+    <string name="pickup_decline_description">Do you want to decline %s\'s request to join your ride?</string>
 
     <!-- Slider -->
     <string name="next">NEXT</string>

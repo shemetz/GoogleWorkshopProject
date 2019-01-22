@@ -42,6 +42,33 @@
             app:layout_anchor="@+id/map">
 
         <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab_decline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:tint="@android:color/white"
+                android:layout_marginBottom="@dimen/fab_margin"
+                app:backgroundTint="@android:color/holo_red_dark"
+                app:srcCompat="@drawable/ic_block_black_24dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab_change_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:tint="@android:color/black"
+                android:layout_marginBottom="@dimen/fab_margin"
+                app:backgroundTint="@android:color/white"
+                app:srcCompat="@drawable/ic_access_time_black_24dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab_plus_or_minus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:tint="@android:color/black"
+                android:layout_marginBottom="@dimen/fab_margin"
+                app:backgroundTint="@android:color/white"
+                app:srcCompat="@drawable/ic_add_black_24dp"/>
+
+        <android.support.design.widget.FloatingActionButton
                 android:id="@+id/fab_confirm_location"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

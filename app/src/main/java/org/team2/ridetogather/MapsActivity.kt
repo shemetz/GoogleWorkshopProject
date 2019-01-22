@@ -61,6 +61,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var mainMarkerIsFollowingCamera =
         false  // when not pinned it will be half-transparent and will follow the camera
     private var somethingChanged = false  // true if something was edited
+    private var selectedPickupMarker: PickupMarker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,6 +111,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupBeforeSetups() {
         fab_confirm_location.visibility = View.GONE
         fab_pin_or_unpin.visibility = View.GONE
+        fab_decline.visibility = View.GONE
+        fab_plus_or_minus.visibility = View.GONE
+        fab_change_time.visibility = View.GONE
     }
 
     private fun onEverythingLoadedFromServer() {
@@ -118,6 +122,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         setupMainMarker()
         setupMapOptions()
         setupButtons()
+        setupFabVisibility()
         setupPlaceAutocomplete()
         setupRoute()
     }
@@ -216,7 +221,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
         if (requestCode == RequestCode.PICK_DRIVER_ORIGIN && preexistingOriginLocation == null) {
             val startingZoomLevel = 13.0f
-            val defaultOriginMarkerLocation = LatLng(event.location.toLatLng().latitude - 0.01, event.location.toLatLng().longitude)
+            val defaultOriginMarkerLocation =
+                LatLng(event.location.toLatLng().latitude - 0.01, event.location.toLatLng().longitude)
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(event.location.toLatLng(), startingZoomLevel / 2))
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultOriginMarkerLocation, startingZoomLevel))
             setPinned(false)
@@ -249,10 +255,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         map.setOnMarkerClickListener { marker: Marker? ->
-            if (marker?.tag == null)
+            if (marker?.tag == null) {
+                unselectPickupMarker()
                 return@setOnMarkerClickListener false // move camera to marker, display info
+            }
             when (marker.tag!!::class.java) {
                 String::class.java -> {
+                    unselectPickupMarker()
                     if ((marker.tag as String) == "mainMarker")
                         return@setOnMarkerClickListener onPinButtonClick()
                     else // e.g. if ((marker.tag as String) == "originMarker")
@@ -262,7 +271,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     return@setOnMarkerClickListener onPickupMarkerClick(marker.tag as PickupMarker)
                 }
             }
+            unselectPickupMarker()
             return@setOnMarkerClickListener false // move camera to marker, display info
+        }
+
+        map.setOnMapClickListener {
+            unselectPickupMarker()
+        }
+
+        map.setOnPoiClickListener {
+            unselectPickupMarker()
+        }
+
+        map.setOnGroundOverlayClickListener {
+            unselectPickupMarker()
         }
 
         // If location is enabled, we'll add a location marker and a button to go there
@@ -322,16 +344,88 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        fab_pin_or_unpin.setOnClickListener {
+            val shouldMoveCamera = onPinButtonClick()
+            if (!shouldMoveCamera) {
+                map.animateCamera(CameraUpdateFactory.newLatLng(mainMarker!!.position), 500, null)
+            }
+        }
+
+        fab_plus_or_minus.setOnClickListener {
+            val pickupMarker = selectedPickupMarker ?: return@setOnClickListener
+            val adding = !pickupMarker.pickup.inRide
+            pickupMarker.pickup.inRide = adding
+            pickupMarker.marker.alpha = if (adding) 1.0f else 0.5f
+            fab_plus_or_minus.setImageDrawable(getDrawable(if (adding) R.drawable.ic_remove_black_24dp else R.drawable.ic_add_black_24dp))
+            if (pickupMarker.pickup.denied) {
+                fab_decline.hide()
+                fab_change_time.hide()
+                pickupMarker.pickup.denied = false
+            }
+            calculateRoute()
+        }
+
+        fab_decline.setOnClickListener {
+            val pickupMarker = selectedPickupMarker ?: return@setOnClickListener
+            if (!pickupMarker.pickup.inRide) return@setOnClickListener
+            Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
+                AlertDialog.Builder(this, R.style.AlertDialogStyle)
+                    .setTitle(R.string.pickup_decline_title)
+                    .setMessage(getString(R.string.pickup_decline_description).format(pickupUser.name))
+                    .setPositiveButton(R.string.yes) { _, _ ->
+                        pickupMarker.pickup.inRide = false
+                        pickupMarker.pickup.denied = true
+                        pickupMarker.marker.alpha = 0.1f
+                        fab_decline.hide()
+                        fab_change_time.hide()
+                        calculateRoute()
+                    }
+                    .setNegativeButton(R.string.no) { _, _ ->
+                        //will be dismissed
+                    }
+                    .show()
+            }
+        }
+
+        fab_change_time.setOnClickListener {
+            val pickupMarker = selectedPickupMarker ?: return@setOnClickListener
+            if (!pickupMarker.pickup.inRide) return@setOnClickListener
+            val cal = Calendar.getInstance()
+            cal.set(Calendar.HOUR_OF_DAY, pickupMarker.pickup.pickupTime.hours)
+            cal.set(Calendar.MINUTE, pickupMarker.pickup.pickupTime.minutes)
+            val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+                cal.set(Calendar.HOUR_OF_DAY, hour)
+                cal.set(Calendar.MINUTE, minute)
+                val newTime = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+                if (newTime != pickupMarker.pickup.pickupTime) {
+                    somethingChanged = true
+                    pickupMarker.pickup.pickupTime = newTime
+                    pickupMarker.marker.snippet =
+                            SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                    if (pickupMarker.marker.isInfoWindowShown) {
+                        pickupMarker.marker.hideInfoWindow()
+                        pickupMarker.marker.showInfoWindow()
+                    }
+                }
+                if (!pickupMarker.pickup.inRide) {
+                    somethingChanged = true
+                }
+            }
+            TimePickerDialog(
+                this,
+                timeSetListener,
+                cal.get(Calendar.HOUR_OF_DAY),
+                cal.get(Calendar.MINUTE),
+                true
+            ).show()
+        }
+    }
+
+    private fun setupFabVisibility() {
         when (requestCode) {
             RequestCode.PICK_DRIVER_ORIGIN, RequestCode.PICK_PASSENGER_LOCATION -> {
                 fab_confirm_location.visibility = View.VISIBLE
                 fab_pin_or_unpin.visibility = View.VISIBLE
-                fab_pin_or_unpin.setOnClickListener {
-                    val shouldMoveCamera = onPinButtonClick()
-                    if (!shouldMoveCamera) {
-                        map.animateCamera(CameraUpdateFactory.newLatLng(mainMarker!!.position), 500, null)
-                    }
-                }
                 if (mainMarker!!.alpha == 0.5f)
                     fab_confirm_location.hide()
             }
@@ -357,6 +451,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onPlaceSelected(place: Place?) {
                 place!!
                 Log.i(tag, "User selected place from autocomplete place picker: ${place.name} = ${place.address}")
+                unselectPickupMarker()
                 map.animateCamera(CameraUpdateFactory.newLatLng(place.latLng))
                 if (mainMarker != null) {
                     mainMarker!!.position = place.latLng
@@ -573,56 +668,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val marker: Marker
     )
 
+    private fun selectPickupMarker(pickupMarker: PickupMarker) {
+        if (selectedPickupMarker == null) {
+            fab_plus_or_minus.show()
+            if (!pickupMarker.pickup.denied) {
+                fab_change_time.show()
+                fab_decline.show()
+            }
+        }
+        selectedPickupMarker = pickupMarker
+    }
+
+    private fun unselectPickupMarker() {
+        if (selectedPickupMarker != null) {
+            selectedPickupMarker!!.marker.hideInfoWindow()
+            selectedPickupMarker = null
+            fab_decline.hide()
+            fab_change_time.hide()
+            fab_plus_or_minus.hide()
+            setupFabVisibility()
+        }
+    }
+
     private fun onPickupMarkerClick(pickupMarker: PickupMarker): Boolean {
         return when (requestCode) {
             RequestCode.PICK_PASSENGER_LOCATION, RequestCode.JUST_LOOK_AT_MAP -> {
-                false  // display stuff
+                false  // move camera to marker and display info
             }
             RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
-                    AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                        .setTitle(R.string.pickup_click_title)
-                        .setMessage(getString(R.string.pickup_click_description).format(pickupUser.name))
-                        .setPositiveButton(R.string.confirm) { _, _ ->
-                            // user confirmed - now asking for an hour
-                            val cal = Calendar.getInstance()
-                            cal.set(Calendar.HOUR_OF_DAY, pickupMarker.pickup.pickupTime.hours)
-                            cal.set(Calendar.MINUTE, pickupMarker.pickup.pickupTime.minutes)
-                            val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                                cal.set(Calendar.HOUR_OF_DAY, hour)
-                                cal.set(Calendar.MINUTE, minute)
-                                val newTime = TimeOfDay(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
-                                if (newTime != pickupMarker.pickup.pickupTime) {
-                                    somethingChanged = true
-                                    pickupMarker.pickup.pickupTime = newTime
-                                    pickupMarker.marker.snippet =
-                                            SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
-                                }
-                                if (!pickupMarker.pickup.inRide) {
-                                    somethingChanged = true
-                                }
-                                pickupMarker.pickup.inRide = true
-                                pickupMarker.pickup.denied = false
-                                pickupMarker.marker.alpha = 1f
-                                calculateRoute()
-                            }
-                            TimePickerDialog(
-                                this,
-                                timeSetListener,
-                                cal.get(Calendar.HOUR_OF_DAY),
-                                cal.get(Calendar.MINUTE),
-                                true
-                            ).show()
-                        }
-                        .setNegativeButton(R.string.deny) { _, _ ->
-                            pickupMarker.pickup.inRide = false
-                            pickupMarker.pickup.denied = true
-                            pickupMarker.marker.alpha = 0.1f
-                            calculateRoute()
-                        }
-                        .show()
-                }
-                true
+                selectPickupMarker(pickupMarker)
+                false  // move camera to marker and display info
             }
             RequestCode.PICK_DRIVER_ORIGIN -> {
                 Log.e(tag, "This thing should never happen")
