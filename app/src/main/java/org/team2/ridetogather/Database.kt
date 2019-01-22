@@ -128,7 +128,7 @@ object Database {
             httpUrl.build().toString(),
             null,
             Response.Listener { response ->
-                Log.d(tag, "Got response for ${httpUrl.build().toString()}")
+                Log.d(tag, "Got response for ${httpUrl.build()}")
                 Log.v(tag, response.toString(4))
                 successCallback(response)
             },

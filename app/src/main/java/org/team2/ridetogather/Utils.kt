@@ -94,7 +94,7 @@ fun alternativeGeocode(context: Context?, latLng: LatLng): String {
             val address = addresses[0]
             // combine address lines into one comma-separated line, it is usually the best address format!
             val addressString =
-                (0..address.maxAddressLineIndex).map { i -> address.getAddressLine(i) }.joinToString(separator = ", ")
+                (0..address.maxAddressLineIndex).joinToString(separator = ", ") { i -> address.getAddressLine(i) }
 //            val city = address.locality
 //            val state = address.adminArea
 //            val country = address.countryName
@@ -153,7 +153,7 @@ fun String.decodeToLatLng(): LatLng {
 }
 
 fun getProfilePicUrl(facebookId: String, callback: (String) -> Unit) {
-    if (facebookId.equals("fakeprofile")) {
+    if (facebookId == "fakeprofile") {
         callback("http://pluspng.com/img-png/png-hd-of-puppies-puppy-other-400.png")
     } else {
         val request = GraphRequest.newGraphPathRequest(
