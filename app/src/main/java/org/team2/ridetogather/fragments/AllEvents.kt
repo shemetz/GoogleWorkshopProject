@@ -56,7 +56,7 @@ class AllEvents : Fragment() {
 
     fun createEvent(context: Context?,facebookEvent: FacebookEvent){
         val builder = AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-        builder.setMessage("Do you want to join the event's rides group?")
+        builder.setMessage("Join event's rides group?")
 
         builder.setPositiveButton(R.string.yes) { dialog, which ->
             Database.addEventWithCallback(facebookEvent.name,facebookEvent.loc,facebookEvent.dt,facebookEvent.id)
@@ -77,7 +77,7 @@ class AllEvents : Fragment() {
             EventRidesActivity.start(context,event.id)
         },{
             val builder = AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-            builder.setMessage("Do you want to join the event's rides group?")
+            builder.setMessage("Join event's rides group?")
 
             builder.setPositiveButton(R.string.yes) { dialog, which ->
                 Database.addEventToUser(Database.idOfCurrentUser,event.id)
