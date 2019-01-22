@@ -28,8 +28,8 @@ class PassengerssAdapter(val items: ArrayList<User>, val context: Context?) : Re
         getProfilePicUrl(facebookId) { pic_url ->
             Picasso.get()
                 .load(pic_url)
-                .placeholder(R.drawable.placeholder_profile)
-                .error(R.drawable.placeholder_profile)
+                .placeholder(R.drawable.placeholder_profile_circle)
+                .error(R.drawable.placeholder_profile_circle)
                 .resize(256, 256)
                 .transform(CircleTransform())
                 .into(holder.passengerPicture)
