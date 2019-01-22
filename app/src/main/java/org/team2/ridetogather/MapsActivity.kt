@@ -47,11 +47,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val tag = MapsActivity::class.java.simpleName
 
     private lateinit var map: GoogleMap
+    private lateinit var event: Event
+    private var ride: Ride? = null
+    private var pickups: List<Pickup>? = null
     private lateinit var originMarker: Marker
     private lateinit var newPickupMarker: Marker
     private lateinit var eventMarker: Marker
     private lateinit var requestCode: RequestCode
-    private var savedInstanceState: Bundle? = null // in case phone rotates
     private var drawnRoute: MutableList<Polyline> = mutableListOf()
     private var routeJson: JSONObject? = null
     private val pickupMarkers: MutableList<PickupMarker> = mutableListOf()
@@ -62,7 +64,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        this.savedInstanceState = savedInstanceState
         setContentView(R.layout.activity_maps)
         setupBeforeSetups()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -86,15 +87,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val requestCodeInt = intent.getIntExtra(Keys.REQUEST_CODE.name, -1)
         requestCode = MapsActivity.Companion.RequestCode.values()[requestCodeInt]
         Log.i(tag, "Map is ready for Event ID $eventId, Request code: $requestCode")
-        Database.getEvent(eventId) { event: Event ->
-            setupMarkers(event)
-            setupMapStartingPosition()
-            setupMapOptions()
-            setupButtons()
-            setupPlaceAutocomplete()
-            if (savedInstanceState != null)
-                setupWithSavedInstanceBundle()
-            setupRoute()
+        Log.i(tag, "Loading stuff from server to put on the map…")
+        Database.getEvent(eventId) { event ->
+            this.event = event
+            if (requestCode == RequestCode.PICK_DRIVER_ORIGIN) {
+                ride = null
+                pickups = null
+                onEverythingLoadedFromServer()
+            } else {
+                val rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
+                Database.getRide(rideId) { ride ->
+                    this.ride = ride
+                    Database.getPickupsForRide(rideId) { pickups ->
+                        this.pickups = pickups
+                        onEverythingLoadedFromServer()
+                    }
+                }
+            }
         }
     }
 
@@ -103,9 +112,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fab_pin_or_unpin.visibility = View.GONE
     }
 
-    private fun setupMarkers(event: Event) {
-        val preexistingOriginLocation =
-            intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
+    private fun onEverythingLoadedFromServer() {
+        setupMarkers()
+        setupMapStartingPosition()
+        setupMainMarker()
+        setupMapOptions()
+        setupButtons()
+        setupPlaceAutocomplete()
+        setupRoute()
+    }
+
+    private fun setupMarkers() {
         val eventLocation = event.location.toLatLng()
         val eventMarkerOptions = MarkerOptions()
             .title(event.name)
@@ -114,10 +131,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .zIndex(1f)
         eventMarker = map.addMarker(eventMarkerOptions)
 
-        val defaultOriginLocation = LatLng(eventLocation.latitude - 0.01, eventLocation.longitude)
+        // preexistingOriginLocation exists during ride creation only
+        val originLocation =
+            intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng()
+                ?: ride?.origin?.toLatLng()
+                // default origin location - will only be used for first ride created by the user!
+                ?: LatLng(eventLocation.latitude - 0.01, eventLocation.longitude)
         val originTitle = "The ride starts here"
         val originMarkerOptions = MarkerOptions()
-            .position(preexistingOriginLocation ?: defaultOriginLocation)
+            .position(originLocation)
             .title(originTitle)
             .icon(createCombinedMarker(R.drawable.ic_car_white_sub_icon, 36))
             .zIndex(5f)
@@ -148,8 +170,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             val markerTarget = IconTarget(marker)
                             Picasso.get()
                                 .load(picUrl)
-                                .placeholder(R.drawable.placeholder_profile)
-                                .error(R.drawable.placeholder_profile)
+                                .placeholder(R.drawable.placeholder_profile_circle)
+                                .error(R.drawable.placeholder_profile_circle)
                                 .resize(48, 48)
                                 .transform(CircleTransform())
                                 .into(markerTarget)
@@ -157,13 +179,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 }
         }
+    }
+
+    private fun setupMainMarker() {
         when (requestCode) {
             RequestCode.PICK_DRIVER_ORIGIN -> {
                 mainMarkerIsFollowingCamera = true
                 mainMarker = originMarker
             }
             RequestCode.PICK_PASSENGER_LOCATION -> {
-                val defaultNewPickupLocation = LatLng(eventLocation.latitude - 0.02, eventLocation.longitude + 0.02)
+                val defaultNewPickupLocation = map.cameraPosition.target // right in center
                 val newPickupTitle = "You will be picked up here"
                 val newPickupMarkerOptions = MarkerOptions()
                     .position(defaultNewPickupLocation)
@@ -182,20 +207,29 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         mainMarker?.tag = "mainMarker"
+
+        onPinButtonClick()
     }
 
     private fun setupMapStartingPosition() {
-        val preexistingLocation = intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
-        val startingZoomLevel = 13.0f
-        if (preexistingLocation == null) {
+        val preexistingOriginLocation =
+            intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
+        if (requestCode == RequestCode.PICK_DRIVER_ORIGIN && preexistingOriginLocation == null) {
+            val startingZoomLevel = 13.0f
+            val defaultOriginMarkerLocation = LatLng(event.location.toLatLng().latitude - 0.01, event.location.toLatLng().longitude)
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(event.location.toLatLng(), startingZoomLevel / 2))
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultOriginMarkerLocation, startingZoomLevel))
             setPinned(false)
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(eventMarker.position, startingZoomLevel / 2))
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(originMarker.position, startingZoomLevel))
         } else {
-            if (requestCode == RequestCode.PICK_DRIVER_ORIGIN || requestCode == RequestCode.PICK_PASSENGER_LOCATION) {
-                onPinButtonClick()
+            val builder = LatLngBounds.Builder()
+            builder.include(event.location.toLatLng())
+            builder.include(originMarker.position)
+            pickupMarkers.forEach {
+                builder.include(it.marker.position)
             }
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(preexistingLocation, startingZoomLevel))
+            val bounds = builder.build()
+            val padding = 120  // in pixels, between bounds and edge of view
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
         }
     }
 
@@ -348,43 +382,29 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setupRoute() {
-        if (routeJson == null)
+        if (routeJson == null) {
             when (requestCode) {
                 RequestCode.PICK_DRIVER_ORIGIN -> {
+                    // No route yet - we're still picking the driver origin
                 }
-                RequestCode.PICK_PASSENGER_LOCATION, RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
+                else -> {
                     // Calculate route
                     // TODO - store routes on server to prevent needless waste of API usage
                     calculateRoute()
                 }
             }
-    }
-
-    private fun setupWithSavedInstanceBundle() {
-        val savedInstanceState = this.savedInstanceState!!
-        val cameraPosition = savedInstanceState.getParcelable<CameraPosition>(StoredInstanceKeys.CAMERA_POSITION.name)
-        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
-        val originLocation = savedInstanceState.getParcelable<LatLng>(StoredInstanceKeys.ORIGIN_LOCATION.name)
-        originMarker.position = originLocation
-        val mainMarkerLocation = savedInstanceState.getParcelable<LatLng>(StoredInstanceKeys.MAIN_MARKER_LOCATION.name)
-        mainMarker?.position = mainMarkerLocation
-        if (mainMarkerIsFollowingCamera) {
-            onPinButtonClick()
-        }
-        val routeJsonStr = savedInstanceState.getString(StoredInstanceKeys.ROUTE_JSON.name)
-        if (routeJsonStr.isNotBlank()) {
-            routeJson = JSONObject(routeJsonStr)
+        } else {
             drawRoute(routeJson!!)
         }
     }
 
     private fun finishAndReturn() {
         val resultIntent = Intent()
-        if (mainMarker != null) {
-            val locationStr = mainMarker!!.position.encodeToString()
-            if (intent.getStringExtra(Keys.LOCATION.name) != locationStr)
+        if (requestCode == RequestCode.PICK_DRIVER_ORIGIN) {
+            val originLocationStr = originMarker.position.encodeToString()
+            if (intent.getStringExtra(Keys.LOCATION.name) != originLocationStr)
                 somethingChanged = true
-            resultIntent.putExtra(Keys.LOCATION.name, locationStr)
+            resultIntent.putExtra(Keys.LOCATION.name, originLocationStr)
         }
         resultIntent.putExtra(Keys.ROUTE_JSON.name, routeJson?.toString() ?: "")
         resultIntent.putExtra(Keys.SOMETHING_CHANGED.name, somethingChanged)
@@ -411,7 +431,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun onPinButtonClick(): Boolean {
         return if (!mainMarkerIsFollowingCamera) {
-            Log.d(tag, "Unpinning origin marker")
+            Log.d(tag, "Unpinning main marker")
             setPinned(false)
             val handler = Handler()
             /// Let the camera move towards the marker a bit, before making the marker move to the camera
@@ -420,7 +440,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }, 500)
             false // move camera to marker, display info
         } else {
-            Log.d(tag, "Pinning origin marker")
+            Log.d(tag, "Pinning main marker")
             mainMarkerIsFollowingCamera = false
             setPinned(true)
             if (routeJson == null && requestCode == RequestCode.PICK_DRIVER_ORIGIN)
@@ -487,13 +507,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     routeJson = responseJson
                     drawRoute(routeJson!!)
                 } else {
-                    routeJson = null
                     runOnUiThread {
                         Log.e(tag, "Failed to find any route..!")
                         Log.e(tag, responseJson.toString(4))
                         Toast.makeText(this@MapsActivity, "No route was found :(", Toast.LENGTH_SHORT).show()
                         // remove existing route if it exists
-                        drawnRoute.forEach { it.remove() }
+                        cancelCurrentRoute()
                     }
                 }
             }
@@ -702,19 +721,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 vectorDrawable.intrinsicWidth + leftOffset,
                 vectorDrawable.intrinsicHeight + upOffset
             )
-            val finalBitmap = Bitmap.createBitmap(background.intrinsicWidth, background.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val finalBitmap =
+                Bitmap.createBitmap(background.intrinsicWidth, background.intrinsicHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(finalBitmap)
             background.draw(canvas)
             vectorDrawable.draw(canvas)
             marker.setIcon(BitmapDescriptorFactory.fromBitmap(finalBitmap))
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelable(StoredInstanceKeys.CAMERA_POSITION.name, map.cameraPosition)
-        outState.putParcelable(StoredInstanceKeys.ORIGIN_LOCATION.name, originMarker.position)
-        outState.putString(StoredInstanceKeys.ROUTE_JSON.name, routeJson?.toString() ?: "")
-        super.onSaveInstanceState(outState)
     }
 
     companion object {
@@ -723,14 +736,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             PICK_PASSENGER_LOCATION,
             CONFIRM_OR_DENY_PASSENGERS,
             JUST_LOOK_AT_MAP,
-        }
-
-        enum class StoredInstanceKeys {
-            CAMERA_POSITION,
-            ORIGIN_LOCATION,
-            MAIN_MARKER_LOCATION,
-            ROUTE_JSON,
-            EDITED_SOMETHING,
         }
     }
 }

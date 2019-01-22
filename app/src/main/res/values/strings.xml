@@ -66,9 +66,8 @@
     <string name="leave_ride">Leave ride</string>
     <string name="cancel_request">Cancel request</string>
     <string name="ride_map">Ride map</string>
-    <string name="waiting_for_requests">Waiting for requests…</string>
-    <string name="confirm_1_pending_request">Confirm/decline pending request</string>
-    <string name="confirm_multiple_pending_requests">Confirm/decline %1$d pending requests</string>
+    <string name="edit_route">Edit route</string>
+    <string name="view_requests">View requests</string>
     <string name="cancel_request_are_you_sure">Your request is pending until the driver approves it. Would you like to cancel the request?</string>
     <string name="leave_ride_are_you_sure">Are you sure you want to leave this ride?</string>
     <string name="toast_join_ride_success">Request sent!</string>
@@ -76,6 +75,8 @@
     <string name="toast_cancel_request_success">Request canceled!</string>
     <string name="toast_leave_ride_success">Left ride!</string>
     <string name="toast_ride_map_edit_success">Updated ride map!</string>
+    <string name="passengers_summary_for_passenger">%d/%d passengers</string>
+    <string name="passengers_summary_for_driver">%d/%d passengers + %d requests</string>
 
     <!-- Pickup -->
     <string name="passenger_name">Name</string>

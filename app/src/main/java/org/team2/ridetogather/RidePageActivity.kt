@@ -40,7 +40,7 @@ class RidePageActivity : AppCompatActivity() {
     private lateinit var menu: Menu
 
 
-    private fun showRideDetails(ride: Ride) {
+    private fun showRideDetails() {
         carColor.visibility = View.VISIBLE
         originLocation.visibility = View.VISIBLE
         departureTime.visibility = View.VISIBLE
@@ -87,7 +87,7 @@ class RidePageActivity : AppCompatActivity() {
         showLoadingTextInsteadOfCarDetails()
         Database.getRide(rideId) { ride: Ride ->
             this.ride = ride
-            showRideDetails(ride)
+            showRideDetails()
             Database.getDriver(ride.driverId) { driver: Driver ->
                 driverNamePage.text = driver.name
                 val facebookId = driver.facebookProfileId
@@ -102,9 +102,9 @@ class RidePageActivity : AppCompatActivity() {
                 }
             }
             updatePassengers(ride.id)
+            updateButtons()
         }
 
-        updateButtons()
     }
 
 
@@ -148,58 +148,66 @@ class RidePageActivity : AppCompatActivity() {
     }
 
     private fun updateButtons() {
-        Database.getRide(rideId) { ride ->
-            rideMapButton.setOnClickListener {
-                val intent = Intent(applicationContext, MapsActivity::class.java)
-                intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
-                intent.putExtra(Keys.RIDE_ID.name, rideId)
-                intent.putExtra(Keys.LOCATION.name, ride.origin.toLatLng().encodeToString())
-                intent.putExtra(
-                    Keys.REQUEST_CODE.name,
-                    MapsActivity.Companion.RequestCode.JUST_LOOK_AT_MAP.ordinal
-                )
-                startActivityForResult(
-                    intent,
-                    MapsActivity.Companion.RequestCode.JUST_LOOK_AT_MAP.ordinal
-                )
-            }
+        rideMapButton.setOnClickListener {
+            val intent = Intent(applicationContext, MapsActivity::class.java)
+            intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
+            intent.putExtra(Keys.RIDE_ID.name, rideId)
+            intent.putExtra(
+                Keys.REQUEST_CODE.name,
+                MapsActivity.Companion.RequestCode.JUST_LOOK_AT_MAP.ordinal
+            )
+            startActivityForResult(
+                intent,
+                MapsActivity.Companion.RequestCode.JUST_LOOK_AT_MAP.ordinal
+            )
         }
 
         mainActionButton.isEnabled = false
         mainActionButton.text = getString(R.string.loading)
-        if (driversPerspective) {
-            Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
-                val requestCount = pickups.count { !it.inRide && !it.denied }
-                if (requestCount == 0) {
-                    mainActionButton.text = getString(R.string.waiting_for_requests)
+        passengersSummary.text = getString(R.string.loading)
+        Database.getPickupsForRide(rideId) { pickups ->
+            val numOfExistingPassengers = pickups.count { it.inRide }
+            if (driversPerspective) {
+                val numOfRequests = pickups.count { !it.inRide && !it.denied }
+                passengersSummary.text = if (numOfRequests > 0) getString(
+                    R.string.passengers_summary_for_driver,
+                    numOfExistingPassengers,
+                    ride.passengerCount,
+                    numOfRequests
+                ) else getString(
+                    R.string.passengers_summary_for_passenger,
+                    numOfExistingPassengers,
+                    ride.passengerCount
+                )
+
+                mainActionButton.isEnabled = true
+                if (numOfRequests == 0) {
+                    mainActionButton.text = getString(R.string.edit_route)
                 } else {
-                    Database.getRide(rideId) { ride ->
-                        mainActionButton.isEnabled = true
-                        if (requestCount == 1) {
-                            mainActionButton.text = getString(R.string.confirm_1_pending_request)
-                        } else {
-                            mainActionButton.text = getString(R.string.confirm_multiple_pending_requests, requestCount)
-                        }
-                        mainActionButton.setOnClickListener {
-                            val intent = Intent(applicationContext, MapsActivity::class.java)
-                            intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
-                            intent.putExtra(Keys.RIDE_ID.name, rideId)
-                            intent.putExtra(Keys.LOCATION.name, ride.origin.toLatLng().encodeToString())
-                            intent.putExtra(
-                                Keys.REQUEST_CODE.name,
-                                MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
-                            )
-                            startActivityForResult(
-                                intent,
-                                MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
-                            )
-                        }
+                    mainActionButton.text = getString(R.string.view_requests)
+                }
+                Database.getRide(rideId) { ride ->
+                    mainActionButton.setOnClickListener {
+                        val intent = Intent(applicationContext, MapsActivity::class.java)
+                        intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
+                        intent.putExtra(Keys.RIDE_ID.name, rideId)
+                        intent.putExtra(
+                            Keys.REQUEST_CODE.name,
+                            MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
+                        )
+                        startActivityForResult(
+                            intent,
+                            MapsActivity.Companion.RequestCode.CONFIRM_OR_DENY_PASSENGERS.ordinal
+                        )
                     }
                 }
-            }
-        } else {
-            // Enable join ride button if not already asking for a pickup.
-            Database.getPickupsForRide(rideId) { pickups: List<Pickup> ->
+            } else {
+                passengersSummary.text = getString(
+                    R.string.passengers_summary_for_passenger,
+                    numOfExistingPassengers,
+                    ride.passengerCount
+                )
+                // Enable join ride button if not already asking for a pickup.
                 val pickupOfCurrentUser = pickups.singleOrNull { it.userId == Database.idOfCurrentUser }
                 when {
                     pickupOfCurrentUser == null -> {
