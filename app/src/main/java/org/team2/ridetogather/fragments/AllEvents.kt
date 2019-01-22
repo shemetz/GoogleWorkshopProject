@@ -24,6 +24,7 @@ import org.team2.ridetogather.adapter.ItemClickListener
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
+import java.time.LocalDateTime
 import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
@@ -91,12 +92,12 @@ class AllEvents : Fragment() {
     }
     private fun checkIfPassed(dt : String):Int{
         val date = dt.substring(0,10)
-        val date2 = SimpleDateFormat("yyyy-MM-dd").parse(date).toString()
-        Log.i("~~~~~~",date2)
-        val date3 = date2.substring(4,10).plus(", ".plus(date2.substring(30,34)))
-        val today = DateFormat.getDateInstance(DateFormat.DEFAULT).format(Date())
-        val comp =SimpleDateFormat("MMM dd',' yyyy").parse(date3)
-            .compareTo(SimpleDateFormat("MMM dd',' yyyy").parse(today))
+        Log.i("~~~~~~",date)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+        val strDate = dateFormat.format(Date())
+        Log.i("~~~~~~",strDate)
+        val comp =SimpleDateFormat("yyyy-MM-dd").parse(date)
+            .compareTo(SimpleDateFormat("yyyy-MM-dd").parse(strDate))
         return comp
     }
 
