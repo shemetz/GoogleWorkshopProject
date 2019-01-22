@@ -169,6 +169,13 @@ class MainActivity : AppCompatActivity() {
         for (i in 0 until tabLayout.tabCount) {
             tabLayout.getTabAt(i)!!.setIcon(imageResId[i])
         }
+        Database.getEventsForUser(Database.idOfCurrentUser){events: List<Event> ->
+            if (events.isEmpty()){
+                val tab = tabLayout.getTabAt(1)
+                tab?.select()
+            }
+        }
+
         ///////
 
     }
