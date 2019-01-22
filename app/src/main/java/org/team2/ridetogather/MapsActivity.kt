@@ -192,6 +192,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             RequestCode.PICK_DRIVER_ORIGIN -> {
                 mainMarkerIsFollowingCamera = true
                 mainMarker = originMarker
+                val preexistingOriginLocation =
+                    intent.getStringExtra(Keys.LOCATION.name)?.decodeToLatLng() // null on first time
+                setPinned(false)
+                if (preexistingOriginLocation != null) {
+                    onPinButtonClick()
+                }
             }
             RequestCode.PICK_PASSENGER_LOCATION -> {
                 val defaultNewPickupLocation = map.cameraPosition.target // right in center
@@ -214,8 +220,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         mainMarker?.tag = "mainMarker"
-
-        onPinButtonClick()
     }
 
     private fun setupMapStartingPosition() {
@@ -227,7 +231,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 LatLng(event.location.toLatLng().latitude - 0.01, event.location.toLatLng().longitude)
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(event.location.toLatLng(), startingZoomLevel / 2))
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultOriginMarkerLocation, startingZoomLevel))
-            setPinned(false)
         } else {
             val builder = LatLngBounds.Builder()
             builder.include(event.location.toLatLng())
