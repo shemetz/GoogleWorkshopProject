@@ -1,6 +1,7 @@
 package org.team2.ridetogather
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.TimePickerDialog
@@ -115,6 +116,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fab_decline.visibility = View.GONE
         fab_plus_or_minus.visibility = View.GONE
         fab_change_time.visibility = View.GONE
+        route_total_time.visibility = View.GONE
     }
 
     private fun onEverythingLoadedFromServer() {
@@ -569,6 +571,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun cancelCurrentRoute() {
         drawnRoute.forEach { it.remove() }
         routeJson = null
+        route_total_time.visibility = View.INVISIBLE
     }
 
     private fun calculateRoute() {
@@ -639,6 +642,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     /**
      * NOTE: This function doesn't run on the main (UI) thread.
      */
+    @SuppressLint("SetTextI18n")
     private fun drawRoute(json: JSONObject) {
         val routes = json.getJSONArray("routes")
         if (routes.length() == 0) {
@@ -666,7 +670,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 path.add(PolyUtil.decode(points))
             }
         }
-        val totalDistance = allLegs.sumBy { it.optJSONObject("duration")?.optInt("value") ?: 0 }
+        val totalDuration = allLegs.sumBy { it.optJSONObject("duration")?.optInt("value") ?: 0 }
+        val totalDurationStr = durationToString(totalDuration)
         val combinedPath = path.flatten()
         runOnUiThread {
             drawnRoute.forEach { it.remove() }
@@ -678,6 +683,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .width(16f)
             )
             drawnRoute.add(polyLine)
+            route_total_time.visibility = View.VISIBLE
+            route_total_time.text = "Total time: ~$totalDurationStr"
         }
     }
 
