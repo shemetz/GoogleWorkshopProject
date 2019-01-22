@@ -462,12 +462,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val placeFragment =
             fragmentManager.findFragmentById(R.id.place_autocomplete_fragment) as PlaceAutocompleteFragment
 
-        // No places autocomplete/search when there's no reason to have it
-        if (requestCode == RequestCode.CONFIRM_OR_DENY_PASSENGERS) {
-            placeFragment.fragmentManager.beginTransaction().remove(placeFragment).commit()
-            return
-        }
-
         placeFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place?) {
                 place!!
