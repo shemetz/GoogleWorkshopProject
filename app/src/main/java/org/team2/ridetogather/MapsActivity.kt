@@ -40,7 +40,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import kotlin.math.max
@@ -64,32 +63,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         false  // when not pinned it will be half-transparent and will follow the camera
     private var somethingChanged = false  // true if something was edited
     private var selectedPickupMarker: PickupMarker? = null
+    private val mapLoadingLatch = CountDownLatch(1)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
+        val requestCodeInt = intent.getIntExtra(Keys.REQUEST_CODE.name, -1)
+        requestCode = MapsActivity.Companion.RequestCode.values()[requestCodeInt]
+        Log.d(tag, "Created $tag for Event ID $eventId, Request code: $requestCode")
         setupBeforeSetups()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
-        Log.d(tag, "Created $tag for Event ID $eventId")
-    }
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-        val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
-        val requestCodeInt = intent.getIntExtra(Keys.REQUEST_CODE.name, -1)
-        requestCode = MapsActivity.Companion.RequestCode.values()[requestCodeInt]
-        Log.i(tag, "Map is ready for Event ID $eventId, Request code: $requestCode")
         Log.i(tag, "Loading stuff from server to put on the map…")
         Database.getEvent(eventId) { event ->
             this.event = event
@@ -110,6 +96,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        Log.i(tag, "Map is ready.")
+        mapLoadingLatch.countDown()
+    }
+
     private fun setupBeforeSetups() {
         fab_confirm_location.visibility = View.GONE
         fab_pin_or_unpin.visibility = View.GONE
@@ -120,6 +120,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun onEverythingLoadedFromServer() {
+        CoroutineScope(Dispatchers.Default).launch {
+            mapLoadingLatch.await()
+            Log.i(tag, "Everything is loaded! Beginning setup of everything.")
+            CoroutineScope(Dispatchers.Main).launch {
+                setupEverything()
+            }
+        }
+    }
+
+    private fun setupEverything() {
         setupMarkers()
         setupMapStartingPosition()
         setupMainMarker()
@@ -153,6 +163,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .zIndex(5f)
         originMarker = map.addMarker(originMarkerOptions)
         originMarker.tag = "originMarker"
+        if (ride != null)
+            originMarker.snippet = ride!!.departureTime.shortenedTime()
 
         if (pickups != null) {
             pickups!!
@@ -411,8 +423,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (newTime != pickupMarker.pickup.pickupTime) {
                     somethingChanged = true
                     pickupMarker.pickup.pickupTime = newTime
-                    pickupMarker.marker.snippet =
-                            SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                    pickupMarker.marker.snippet = pickupMarker.pickup.pickupTime.shortenedTime()
                     refreshMarkerInfoWindow(selectedPickupMarker!!)
                 }
                 if (!pickupMarker.pickup.inRide) {
@@ -701,11 +712,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val minutes = (ride!!.departureTime.minutes + (totalDurationSeconds / 60)) % 60
                 val pickupMarker = pickupMarkersInRoute[waypointIndex]
                 pickupMarker.pickup.pickupTime = TimeOfDay(hours, minutes)
-                val cal = Calendar.getInstance()
-                cal.set(Calendar.HOUR_OF_DAY, pickupMarker.pickup.pickupTime.hours)
-                cal.set(Calendar.MINUTE, pickupMarker.pickup.pickupTime.minutes)
-                pickupMarker.marker.snippet =
-                        SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                pickupMarker.marker.snippet = pickupMarker.pickup.pickupTime.shortenedTime()
                 refreshMarkerInfoWindow(pickupMarker)
             }
         }
@@ -858,8 +865,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 vectorDrawable.intrinsicWidth + leftOffset,
                 vectorDrawable.intrinsicHeight + upOffset
             )
-            Log.i(tag, "ok so it's intWidth=${background.intrinsicWidth}, intHeight=${background.intrinsicHeight}, " +
-                    "leftOffset=$leftOffset, upOffset=$upOffset, profileBitmap=${profileBitmap.width}x${profileBitmap.height}")
+            Log.i(
+                tag, "ok so it's intWidth=${background.intrinsicWidth}, intHeight=${background.intrinsicHeight}, " +
+                        "leftOffset=$leftOffset, upOffset=$upOffset, profileBitmap=${profileBitmap.width}x${profileBitmap.height}"
+            )
             val finalBitmap =
                 Bitmap.createBitmap(background.intrinsicWidth, background.intrinsicHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(finalBitmap)
