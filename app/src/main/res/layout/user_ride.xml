@@ -29,11 +29,11 @@
         <TextView
                 android:padding="2dp"
                 android:layout_toRightOf="@id/img"
-                android:textColor="@color/bg_screen3"
+                android:textColor="@android:color/black"
                 android:id="@+id/driverName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="" android:textStyle="bold"/>
+                android:text="" android:textStyle="bold" android:textSize="18sp"/>
 
         <TextView
                 android:padding="2dp"
@@ -43,7 +43,7 @@
                 android:id="@+id/eventName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""/>
+                android:text="" android:textSize="16sp"/>
 
         <TextView
                 android:padding="2dp"
