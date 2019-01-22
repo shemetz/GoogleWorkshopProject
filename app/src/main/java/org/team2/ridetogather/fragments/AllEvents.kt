@@ -90,7 +90,6 @@ class AllEvents : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view= inflater.inflate(R.layout.fragment_all_events, container, false)
-        val listView = view.findViewById<ListView>(R.id.events_list)
         val event_request = GraphRequest.newMeRequest(
             AccessToken.getCurrentAccessToken()
         ) { Json, response ->
@@ -103,7 +102,7 @@ class AllEvents : Fragment() {
                     val dt = eventsArray.optJSONObject(i).getString("start_time")
                     val datetime = formatDatetime(parseStandardDatetime(eventsArray.optJSONObject(i).getString("start_time")))
                     val placeObject = eventsArray.optJSONObject(i).optJSONObject("place")
-                    if (placeObject != null){
+                    if (placeObject?.getJSONObject("location") != null){
 
 
                         val locationObject = placeObject.getJSONObject("location")
