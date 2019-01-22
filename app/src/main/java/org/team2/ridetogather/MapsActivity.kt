@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.SystemClock
 import android.support.annotation.DrawableRes
+import android.support.design.widget.FloatingActionButton
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -309,8 +310,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     finishAndReturn()
                 }
                 RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
-                    fab_confirm_location.hide()
-                    fab_pin_or_unpin.hide()
+                    hideFab(fab_confirm_location)
+                    hideFab(fab_pin_or_unpin)
 
                     /*
                     What we want to do here:
@@ -353,14 +354,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         fab_plus_or_minus.setOnClickListener {
             val pickupMarker = selectedPickupMarker ?: return@setOnClickListener
-            val adding = !pickupMarker.pickup.inRide
-            pickupMarker.pickup.inRide = adding
-            pickupMarker.marker.alpha = if (adding) 1.0f else 0.5f
-            fab_plus_or_minus.setImageDrawable(getDrawable(if (adding) R.drawable.ic_remove_black_24dp else R.drawable.ic_add_black_24dp))
-            if (pickupMarker.pickup.denied) {
-                fab_decline.hide()
-                fab_change_time.hide()
-                pickupMarker.pickup.denied = false
+            val inRide = !pickupMarker.pickup.inRide
+            pickupMarker.pickup.inRide = inRide
+            pickupMarker.marker.alpha = if (inRide) 1.0f else 0.5f
+            fab_plus_or_minus.setImageDrawable(getDrawable(if (inRide) R.drawable.ic_remove_black_24dp else R.drawable.ic_add_black_24dp))
+            if (inRide) {
+                if (pickupMarker.pickup.denied) {
+                    hideFab(fab_decline)
+                    hideFab(fab_change_time)
+                    pickupMarker.pickup.denied = false
+                }
+                showFab(fab_change_time)
+            } else {
+                hideFab(fab_change_time)
             }
             calculateRoute()
         }
@@ -376,8 +382,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         pickupMarker.pickup.inRide = false
                         pickupMarker.pickup.denied = true
                         pickupMarker.marker.alpha = 0.1f
-                        fab_decline.hide()
-                        fab_change_time.hide()
+                        fab_plus_or_minus.setImageDrawable(getDrawable(R.drawable.ic_add_black_24dp))
+                        hideFab(fab_decline)
+                        hideFab(fab_change_time)
                         calculateRoute()
                     }
                     .setNegativeButton(R.string.no) { _, _ ->
@@ -402,10 +409,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     pickupMarker.pickup.pickupTime = newTime
                     pickupMarker.marker.snippet =
                             SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
-                    if (pickupMarker.marker.isInfoWindowShown) {
-                        pickupMarker.marker.hideInfoWindow()
-                        pickupMarker.marker.showInfoWindow()
-                    }
+                    refreshMarkerInfoWindow(selectedPickupMarker!!)
                 }
                 if (!pickupMarker.pickup.inRide) {
                     somethingChanged = true
@@ -427,11 +431,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 fab_confirm_location.visibility = View.VISIBLE
                 fab_pin_or_unpin.visibility = View.VISIBLE
                 if (mainMarker!!.alpha == 0.5f)
-                    fab_confirm_location.hide()
+                    hideFab(fab_confirm_location)
+                fab_confirm_location.setImageDrawable(getDrawable(R.drawable.ic_done_black_24dp))
             }
-            RequestCode.CONFIRM_OR_DENY_PASSENGERS, RequestCode.JUST_LOOK_AT_MAP -> {
+            RequestCode.CONFIRM_OR_DENY_PASSENGERS -> {
                 fab_confirm_location.visibility = View.VISIBLE
                 fab_pin_or_unpin.visibility = View.GONE
+                fab_decline.visibility = View.INVISIBLE
+                fab_plus_or_minus.visibility = View.INVISIBLE
+                fab_change_time.visibility = View.INVISIBLE
+                fab_confirm_location.setImageDrawable(getDrawable(R.drawable.ic_done_all_black_24dp))
+            }
+            RequestCode.JUST_LOOK_AT_MAP -> {
+                fab_confirm_location.visibility = View.VISIBLE
+                fab_pin_or_unpin.visibility = View.GONE
+                fab_decline.visibility = View.GONE
+                fab_plus_or_minus.visibility = View.GONE
+                fab_change_time.visibility = View.GONE
+                fab_confirm_location.setImageDrawable(getDrawable(R.drawable.ic_done_black_24dp))
+                fab_confirm_location.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
             }
         }
     }
@@ -515,12 +533,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             pinned -> {
                 mainMarker!!.alpha = 1.0f
-                fab_confirm_location.show()
+                showFab(fab_confirm_location)
                 fab_pin_or_unpin.setImageDrawable(getDrawable(R.drawable.ic_edit_black_24dp))
             }
             else -> {
                 mainMarker!!.alpha = 0.5f
-                fab_confirm_location.hide()
+                hideFab(fab_confirm_location)
                 fab_pin_or_unpin.setImageDrawable(getDrawable(R.drawable.ic_pin_drop_black_24dp))
             }
         }
@@ -670,10 +688,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun selectPickupMarker(pickupMarker: PickupMarker) {
         if (selectedPickupMarker == null) {
-            fab_plus_or_minus.show()
+            val inRide = pickupMarker.pickup.inRide
+            fab_plus_or_minus.setImageDrawable(getDrawable(if (inRide) R.drawable.ic_remove_black_24dp else R.drawable.ic_add_black_24dp))
+            showFab(fab_plus_or_minus)
             if (!pickupMarker.pickup.denied) {
-                fab_change_time.show()
-                fab_decline.show()
+                showFab(fab_decline)
+                if (inRide)
+                    showFab(fab_change_time)
             }
         }
         selectedPickupMarker = pickupMarker
@@ -683,10 +704,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (selectedPickupMarker != null) {
             selectedPickupMarker!!.marker.hideInfoWindow()
             selectedPickupMarker = null
-            fab_decline.hide()
-            fab_change_time.hide()
-            fab_plus_or_minus.hide()
-            setupFabVisibility()
+            hideFab(fab_change_time)
+            hideFab(fab_decline)
+            hideFab(fab_plus_or_minus)
+        }
+    }
+
+    private fun refreshMarkerInfoWindow(pickupMarker: PickupMarker) {
+        if (pickupMarker.marker.isInfoWindowShown) {
+            pickupMarker.marker.hideInfoWindow()
+            pickupMarker.marker.showInfoWindow()
         }
     }
 
@@ -816,5 +843,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             CONFIRM_OR_DENY_PASSENGERS,
             JUST_LOOK_AT_MAP,
         }
+    }
+
+    /*
+    Thanks to these little functions, showing and hiding FABs will work with a slightly increasing
+    delay for each FAB, resulting in a cute animation :)
+    (this really puts the "fun" in kotlin functions)
+     */
+    private var fabAnimationDelay: Long = 0
+    private var fabAnimationLastMoment: Long = System.currentTimeMillis()
+    private fun delayMomentarilyAnd(doThing: () -> Unit) {
+        val now = System.currentTimeMillis()
+        if (now - fabAnimationLastMoment > 100) {
+            fabAnimationDelay = 0
+        }
+        fabAnimationLastMoment = now
+        val previousDelay = fabAnimationDelay
+        fabAnimationDelay += 75
+        val handler = Handler()
+        handler.postDelayed({
+            doThing()
+        }, previousDelay)
+    }
+
+    private fun showFab(fab: FloatingActionButton) = delayMomentarilyAnd {
+        fab.show()
+    }
+
+    private fun hideFab(fab: FloatingActionButton) = delayMomentarilyAnd {
+        fab.hide()
     }
 }
