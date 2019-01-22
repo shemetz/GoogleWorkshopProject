@@ -30,7 +30,7 @@ class MyPagerAdapter(fm: FragmentManager, private val eventId: Id) : FragmentPag
         return when (position) {
             0 -> "RIDES"
             else -> {
-                return "PASSENGERS"
+                return "GROUP MEMBERS"
             }
         }
     }
