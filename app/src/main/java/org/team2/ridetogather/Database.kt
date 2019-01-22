@@ -9,6 +9,7 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
+import okhttp3.HttpUrl
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -109,6 +110,34 @@ object Database {
         idOfCurrentUser = prefManager.thisUserId
     }
 
+    fun requestJsonObjectFromGoogleApi(
+        partialUrl: String,
+        getParams: Map<String, String>,
+        successCallback: (JSONObject) -> Unit = {}
+    ) {
+        val httpUrl = HttpUrl.Builder()
+            .scheme("https")
+            .host("maps.googleapis.com")
+            .addPathSegments(partialUrl)
+        getParams.entries.forEach {
+            val (key, value) = it
+            httpUrl.addQueryParameter(key, value)
+        }
+        val request = JsonObjectRequestWithNull(
+            Request.Method.GET,
+            httpUrl.build().toString(),
+            null,
+            Response.Listener { response ->
+                Log.d(tag, "Got response for ${httpUrl.build().toString()}")
+                Log.v(tag, response.toString(4))
+                successCallback(response)
+            },
+            Response.ErrorListener { error ->
+                logResponseError(error, partialUrl)
+            })
+        requestQueue.add(request)
+    }
+
     private fun logResponseError(error: VolleyError, url: String) {
         if (error.networkResponse == null) {
             Log.e(tag, "Response error: ${error.message} (for $url)")
@@ -122,40 +151,6 @@ object Database {
         } catch (e: JSONException) {
             Log.e(tag, "Response error: $errorData (for $url)")
         }
-    }
-
-    fun getEventByFacebook(facebookEventId: String, successCallback: (Event) -> Unit, failedCallback:() ->Unit ){
-        val url = "$SERVER_URL/getEventByFacebook/$facebookEventId"
-        val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
-            Response.Listener { response ->
-                Log.d(tag, "Got response for $url")
-                Log.v(tag, response.toString(4))
-                successCallback(JsonParse.event(response))
-            },
-            Response.ErrorListener { error ->
-                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
-                    failedCallback()
-                }
-            })
-        requestQueue.add(request)
-
-    }
-
-    fun getAttendingByIds(userId: Id,eventId: Id, successCallback: (Attending) -> Unit, failedCallback:() ->Unit ){
-        val url = "$SERVER_URL/getAttendingByIds/$userId/$eventId"
-        val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
-            Response.Listener { response ->
-                Log.d(tag, "Got response for $url")
-                Log.v(tag, response.toString(4))
-                successCallback(JsonParse.attending(response))
-            },
-            Response.ErrorListener { error ->
-                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
-                    failedCallback()
-                }
-            })
-        requestQueue.add(request)
-
     }
 
     private fun requestJsonObject(
@@ -296,6 +291,40 @@ object Database {
 
     fun getUsersForEvent(eventID: Id, successCallback: (List<User>) -> Unit) =
         generifiedGet1sFor2(eventID, "Users", "Event", JsonParse::user, successCallback)
+
+    fun getEventByFacebook(facebookEventId: String, successCallback: (Event) -> Unit, failedCallback:() ->Unit ){
+        val url = "$SERVER_URL/getEventByFacebook/$facebookEventId"
+        val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                Log.d(tag, "Got response for $url")
+                Log.v(tag, response.toString(4))
+                successCallback(JsonParse.event(response))
+            },
+            Response.ErrorListener { error ->
+                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
+                    failedCallback()
+                }
+            })
+        requestQueue.add(request)
+
+    }
+
+    fun getAttendingByIds(userId: Id,eventId: Id, successCallback: (Attending) -> Unit, failedCallback:() ->Unit ){
+        val url = "$SERVER_URL/getAttendingByIds/$userId/$eventId"
+        val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                Log.d(tag, "Got response for $url")
+                Log.v(tag, response.toString(4))
+                successCallback(JsonParse.attending(response))
+            },
+            Response.ErrorListener { error ->
+                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
+                    failedCallback()
+                }
+            })
+        requestQueue.add(request)
+
+    }
 
     fun addUser(name: String, facebookProfileId: String, credits: Int) {
         val postParams = jsonObjOf(

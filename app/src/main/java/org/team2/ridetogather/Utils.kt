@@ -49,26 +49,25 @@ fun geocode(context: Context, latLng: LatLng, successCallback: (String) -> Unit)
         successCallback(geocodingCache[latLng]!!)
         return
     }
-    khttp.async.get(
-        url = "https://maps.googleapis.com/maps/api/geocode/json",
-        params = mapOf(
+    Database.requestJsonObjectFromGoogleApi(
+        partialUrl = "maps/api/geocode/json",
+        getParams = mapOf(
             "key" to context.getString(R.string.SECRET_GOOGLE_API_KEY),
             "latlng" to "${latLng.latitude},${latLng.longitude}"
-        ),
-        onResponse = {
-            Log.v("Google Geocode", jsonObject.toString(4))
-            CoroutineScope(Dispatchers.Main).launch {
-                // dirty hack, sorry
-                val result = if (jsonObject.getString("status") == "ZERO_RESULTS")
-                    alternativeGeocode(context, latLng)
-                else
-                    jsonObject.getJSONArray("results").getJSONObject(0).getString("formatted_address")
-                Log.v("Google Geocode", "Caching result: $latLng → $result")
-                geocodingCache[latLng] = result
-                successCallback(result)
-            }
+        )
+    ) { jsonObject ->
+        Log.v("Google Geocode", jsonObject.toString(4))
+        CoroutineScope(Dispatchers.Main).launch {
+            // dirty hack, sorry
+            val result = if (jsonObject.getString("status") == "ZERO_RESULTS")
+                alternativeGeocode(context, latLng)
+            else
+                jsonObject.getJSONArray("results").getJSONObject(0).getString("formatted_address")
+            Log.v("Google Geocode", "Caching result: $latLng → $result")
+            geocodingCache[latLng] = result
+            successCallback(result)
         }
-    )
+    }
 }
 
 /**
