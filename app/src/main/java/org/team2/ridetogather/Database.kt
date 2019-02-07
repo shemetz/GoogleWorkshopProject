@@ -56,7 +56,8 @@ object JsonParse {
         val name = userJson.getString("name")
         val facebookProfileId = userJson.getString("facebookProfileId")
         val credits = userJson.getInt("credits")
-        return User(userId, name, facebookProfileId, credits)
+        val firebaseId = userJson.getString("firebaseId")
+        return User(userId, name, facebookProfileId, credits, firebaseId)
     }
 
     fun event(eventJson: JSONObject): Event {
@@ -326,11 +327,12 @@ object Database {
 
     }
 
-    fun addUser(name: String, facebookProfileId: String, credits: Int) {
+    fun addUser(name: String, facebookProfileId: String, credits: Int, firebaseId: String) {
         val postParams = jsonObjOf(
             "name" to name,
             "facebookProfileId" to facebookProfileId,
-            "credits" to credits
+            "credits" to credits,
+            "firebaseId" to firebaseId
         )
         val url = "/addUser/"
 
@@ -468,7 +470,8 @@ object Database {
         val postParams = jsonObjOf(
             "name" to user.name,
             "facebookProfileId" to user.facebookProfileId,
-            "credits" to user.credits
+            "credits" to user.credits,
+            "firebaseId" to user.firebaseId
         )
         val url = "/updateUser/${user.id}"
 
