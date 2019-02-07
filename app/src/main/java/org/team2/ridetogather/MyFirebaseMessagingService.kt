@@ -76,7 +76,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 intent = Intent(this, MainActivity::class.java)
             }
             Log.d(TAG, "click_action: " +remoteMessage.data["click_action"])
-            Log.d(TAG, "~~~~" + Keys.EVENT_ID.name)
 
 
 

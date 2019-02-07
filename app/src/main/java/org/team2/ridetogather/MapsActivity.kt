@@ -401,9 +401,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         hideFab(fab_change_time)
                         calculateRoute()
                         Database.getUser(Database.idOfCurrentUser){user ->
-                            val message = user.name + "rejected you from his ride"
+                            val title = user.name + " rejected you from his ride"
                             getProfilePicUrl(user.facebookProfileId){picUrl ->
-                                Database.sendFirebaseNotification(pickupUser.firebaseId,null,message,picUrl,
+                                Database.sendFirebaseNotification(pickupUser.firebaseId,title,null,picUrl,
                                     "com.google.firebase.RIDE_PAGE",Keys.RIDE_ID.name,ride!!.id)
                             }
                         }
