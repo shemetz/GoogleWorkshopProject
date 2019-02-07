@@ -104,20 +104,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Database.initialize(this)
 
-        FirebaseInstanceId.getInstance().instanceId
-            .addOnCompleteListener(OnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Log.w("Firebase", "getInstanceId failed", task.exception)
-                    return@OnCompleteListener
-                }
-
-                // Get new Instance ID token
-                val token = task.result?.token
-
-                // Log and toast
-                Log.d("Firebase", token)
-            })
-
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         Log.d(tag, "Created $tag")

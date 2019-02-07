@@ -16,6 +16,10 @@ import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.net.HttpURLConnection
 import java.nio.charset.Charset
+import com.android.volley.AuthFailureError
+import com.android.volley.VolleyError
+
+
 
 
 object JsonParse {
@@ -109,6 +113,33 @@ object Database {
         requestQueue = Volley.newRequestQueue(activityContext.applicationContext)
         val prefManager = PrefManager(activityContext)
         idOfCurrentUser = prefManager.thisUserId
+    }
+
+    fun sendFirebaseNotification(to:String, title: String, message:String){
+        val url = "https://fcm.googleapis.com/fcm/send"
+        val notification = jsonObjOf("title" to title, "body" to message)
+
+        val postParams = jsonObjOf(
+            "to" to to,
+            "notification" to notification
+        )
+        val request: JsonObjectRequest = object : JsonObjectRequest(
+            Request.Method.POST, url, postParams,
+            Response.Listener<JSONObject?> {response->
+                Log.d(tag, "Got response for $url")
+                Log.v(tag, response!!.toString(4))
+            }, Response.ErrorListener {error->
+                logResponseError(error, url)
+            }) {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                val headers = HashMap<String, String>()
+                headers["Content-Type"] = "application/json"
+                headers["Authorization"] = "key=AAAA2UXUXYM:APA91bG2bbXcooQiIRwjntn_mdCEq_yViJtEZQkGwl-LH6NyU9_DaHXmRy9wo7uJKP5O6xvk5F7P0KBvR5x4eLhQaTQ9um4RkfxpQhqVHDJ5AmYm3YA_NmyxOBoAidXJokkHAcZoTq0g"
+                return headers
+            }
+        }
+        requestQueue.add(request)
     }
 
     fun requestJsonObjectFromGoogleApi(
