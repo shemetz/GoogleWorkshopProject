@@ -35,7 +35,12 @@
             android:screenOrientation="portrait"
             android:label="@string/title_activity_eventrides"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="com.google.firebase.EventRides" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".SettingsActivity"
             android:screenOrientation="portrait"

@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
-import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -63,8 +62,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // Check if message contains a data payload.
         remoteMessage?.data?.isNotEmpty()?.let {
             createChannel()
+            val intent : Intent
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
-            val intent = Intent(this, MainActivity::class.java)
+            val click_action = remoteMessage.data["click_action"]
+            val keyName = remoteMessage.data["key_name"]
+            val key = remoteMessage.data["key"]?.toInt()
+            if(click_action != null){
+                intent = Intent(click_action)
+                intent.putExtra(keyName,key)
+            }
+            else{
+                intent = Intent(this, MainActivity::class.java)
+            }
+            Log.d(TAG, "click_action: " +remoteMessage.data["click_action"])
+            Log.d(TAG, "~~~~" + Keys.EVENT_ID.name)
+
+
+
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             val pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT)
