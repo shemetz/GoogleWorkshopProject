@@ -400,6 +400,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         hideFab(fab_decline)
                         hideFab(fab_change_time)
                         calculateRoute()
+                        Database.getUser(Database.idOfCurrentUser){user ->
+                            val message = user.name + "rejected you from his ride"
+                            getProfilePicUrl(user.facebookProfileId){picUrl ->
+                                Database.sendFirebaseNotification(pickupUser.firebaseId,null,message,picUrl,
+                                    "com.google.firebase.RIDE_PAGE",Keys.RIDE_ID.name,ride!!.id)
+                            }
+                        }
+
                     }
                     .setNegativeButton(R.string.no) { _, _ ->
                         //will be dismissed

@@ -61,7 +61,12 @@
             android:name=".RidePageActivity"
             android:screenOrientation="portrait"
             android:label="@string/title_activity_ridepage"
-            android:parentActivityName=".EventRidesActivity" />
+            android:parentActivityName=".EventRidesActivity" >
+        <intent-filter>
+            <action android:name="com.google.firebase.RIDE_PAGE" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+        </activity>
         <activity
             android:name=".RideCreationActivity"
             android:screenOrientation="portrait"
