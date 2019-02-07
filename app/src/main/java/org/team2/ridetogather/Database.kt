@@ -117,11 +117,11 @@ object Database {
 
     fun sendFirebaseNotification(to:String, title: String, message:String){
         val url = "https://fcm.googleapis.com/fcm/send"
-        val notification = jsonObjOf("title" to title, "body" to message)
+        val data = jsonObjOf("title" to title, "body" to message)
 
         val postParams = jsonObjOf(
             "to" to to,
-            "notification" to notification
+            "data" to data
         )
         val request: JsonObjectRequest = object : JsonObjectRequest(
             Request.Method.POST, url, postParams,

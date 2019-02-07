@@ -5,12 +5,16 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import android.support.v4.app.NotificationManagerCompat
+
+
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     val TAG = "Firebase Messaging"
@@ -30,6 +34,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Database.updateUser(user)
         }
     }
+    fun createChannel(){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val CHANNEL_ID = "ridetogather"
+            val name = "ridetogather_channel"
+            val Description = "RideToGather Channel"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val mChannel = NotificationChannel(CHANNEL_ID, name, importance)
+            mChannel.description = Description
+            mChannel.enableLights(true)
+            mChannel.lightColor = Color.RED
+            mChannel.enableVibration(true)
+            mChannel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+            mChannel.setShowBadge(false)
+            notificationManager.createNotificationChannel(mChannel)
+        }
+    }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage?) {
         // ...
@@ -40,7 +62,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         // Check if message contains a data payload.
         remoteMessage?.data?.isNotEmpty()?.let {
+            createChannel()
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            val pendingIntent = PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_ONE_SHOT)
+
+            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val notificationBuilder = NotificationCompat.Builder(this,"ridetogather")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(remoteMessage.data["title"])
+                .setContentText(remoteMessage.data["body"])
+                .setAutoCancel(true)
+                .setSound(soundUri)
+                .setContentIntent(pendingIntent)
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.notify(0, notificationBuilder.build())
         }
 
         // Check if message contains a notification payload.
