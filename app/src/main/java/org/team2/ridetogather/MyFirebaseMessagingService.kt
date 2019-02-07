@@ -67,6 +67,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val click_action = remoteMessage.data["click_action"]
             val keyName = remoteMessage.data["key_name"]
             val key = remoteMessage.data["key"]?.toInt()
+            val picUrl = remoteMessage.data["pic_url"]
             if(click_action != null){
                 intent = Intent(click_action)
                 intent.putExtra(keyName,key)
@@ -91,6 +92,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 .setAutoCancel(true)
                 .setSound(soundUri)
                 .setContentIntent(pendingIntent)
+            if(picUrl != null){
+                notificationBuilder.setLargeIcon(getBitmapFromURL(picUrl))
+            }
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.notify(0, notificationBuilder.build())
         }

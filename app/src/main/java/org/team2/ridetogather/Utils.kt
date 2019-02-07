@@ -14,6 +14,11 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.absoluteValue
+import android.graphics.BitmapFactory
+import android.graphics.Bitmap
+import java.net.HttpURLConnection
+import java.net.URL
+
 
 enum class Keys {
     RIDE_ID,
@@ -226,4 +231,19 @@ fun durationToString(durationInSeconds: Int): String {
     }
 
     return "$daysStr $hoursStr $minutesStr $secondsStr".trimStart()
+}
+
+fun getBitmapFromURL(src: String): Bitmap? {
+    try {
+        val url = URL(src)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.setDoInput(true)
+        connection.connect()
+        val input = connection.getInputStream()
+        return BitmapFactory.decodeStream(input)
+    } catch (e: IOException) {
+        // Log exception
+        return null
+    }
+
 }
