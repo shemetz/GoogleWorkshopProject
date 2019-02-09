@@ -12,7 +12,7 @@ import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import android.support.v4.app.NotificationManagerCompat
-
+import org.json.JSONObject
 
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -65,17 +65,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val intent : Intent
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
             val click_action = remoteMessage.data["click_action"]
-            val keyName = remoteMessage.data["key_name"]
-            val key = remoteMessage.data["key"]?.toInt()
             val picUrl = remoteMessage.data["pic_url"]
             if(click_action != null){
                 intent = Intent(click_action)
-                intent.putExtra(keyName,key)
+                val keysMap = JSONObject(remoteMessage.data["keys"])
+                for(key in keysMap.keys()){
+                    if(keysMap.optInt(key,-1) != -1){
+                        intent.putExtra(key, keysMap.optInt(key))
+                    }
+                    else{
+                        intent.putExtra(key, keysMap.optBoolean(key))
+                    }
+                    Log.d("FirebaseCheck", "key: " + key + "val: " + keysMap.get(key))
+                }
             }
             else{
                 intent = Intent(this, MainActivity::class.java)
             }
-            Log.d(TAG, "click_action: " +remoteMessage.data["click_action"])
 
 
 

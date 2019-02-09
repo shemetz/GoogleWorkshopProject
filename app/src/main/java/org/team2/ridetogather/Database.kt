@@ -115,17 +115,21 @@ object Database {
         idOfCurrentUser = prefManager.thisUserId
     }
 
-    fun sendFirebaseNotification(to:String, title: String?, message:String?, picUrl:String?, intentName:String, keyName:String, key:Int){
+    fun sendFirebaseNotification(to:Array<String>, title: String?, message:String?, picUrl:String?, intentName:String, keys:HashMap<String,Any>){
         val url = "https://fcm.googleapis.com/fcm/send"
+        val toJson = JSONArray()
+        val keysJson = JSONObject(keys)
+        for(i in to){
+            toJson.put(i)
+        }
         val data = jsonObjOf("title" to title,
             "body" to message,
             "click_action" to intentName,
-            "key_name" to keyName,
-            "key" to key,
+            "keys" to keysJson,
             "pic_url" to picUrl)
 
         val postParams = jsonObjOf(
-            "to" to to,
+            "registration_ids" to toJson,
             "data" to data
         )
         val request: JsonObjectRequest = object : JsonObjectRequest(

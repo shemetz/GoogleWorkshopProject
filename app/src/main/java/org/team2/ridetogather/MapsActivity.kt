@@ -403,8 +403,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         Database.getUser(Database.idOfCurrentUser){user ->
                             val title = user.name + " rejected you from his ride"
                             getProfilePicUrl(user.facebookProfileId){picUrl ->
-                                Database.sendFirebaseNotification(pickupUser.firebaseId,title,null,picUrl,
-                                    "com.google.firebase.RIDE_PAGE",Keys.RIDE_ID.name,ride!!.id)
+                                val to = arrayOf(pickupUser.firebaseId)
+                                val keys = hashMapOf(Keys.RIDE_ID.name to ride!!.id,Keys.DRIVER_PERSPECTIVE.name to false)
+                                Log.d("Firebase",to.toString())
+                                Database.sendFirebaseNotification(to,title,null,picUrl,
+                                    "com.google.firebase.RIDE_PAGE",keys)
                             }
                         }
 
