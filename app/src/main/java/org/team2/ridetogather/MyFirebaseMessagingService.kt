@@ -11,7 +11,6 @@ import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import android.support.v4.app.NotificationManagerCompat
 import org.json.JSONObject
 
 
@@ -97,6 +96,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 .setAutoCancel(true)
                 .setSound(soundUri)
                 .setContentIntent(pendingIntent)
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .setBigContentTitle(remoteMessage.data["title"])
+                    .bigText(remoteMessage.data["body"]))
             if(picUrl != null){
                 notificationBuilder.setLargeIcon(getBitmapFromURL(picUrl))
             }
