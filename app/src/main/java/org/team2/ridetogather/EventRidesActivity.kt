@@ -96,7 +96,8 @@ class EventRidesActivity : AppCompatActivity() {
         Database.getRidesForEvent(eventId) { rides: List<Ride> ->
             viewAdapter = MyAdapter(this, rides.toTypedArray())
 
-            recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
+            recyclerView = findViewById(R.id.rides_list_recycler_view)
+            recyclerView.apply {
                 // changes in content do not change the layout size of the RecyclerView
                 setHasFixedSize(true)
                 layoutManager = viewManager
