@@ -356,33 +356,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         // Send notification if needed
                         when (pickupMarker.changeMade) {
                             PickupMarkerChange.NONE -> Unit
-                            PickupMarkerChange.ACCEPTED -> {
+                            PickupMarkerChange.ACCEPTED, PickupMarkerChange.DENIED -> {
                                 Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
                                     Database.getUser(Database.idOfCurrentUser) { currentUser ->
                                         getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
-                                            val title = "Pick-up accepted"
-                                            val message = currentUser.name + " has accepted you to their ride."
-                                            val to = arrayOf(pickupUser.firebaseId)
-                                            val keys =
-                                                hashMapOf(
-                                                    Keys.RIDE_ID.name to ride!!.id,
-                                                    Keys.DRIVER_PERSPECTIVE.name to false
-                                                )
-                                            Log.d("Firebase", to.toString())
-                                            Database.sendFirebaseNotification(
-                                                to, title, message, picUrl,
-                                                "com.google.firebase.RIDE_PAGE", keys
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                            PickupMarkerChange.DENIED -> {
-                                Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
-                                    Database.getUser(Database.idOfCurrentUser) { currentUser ->
-                                        getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
-                                            val title = "Pick-up rejected"
-                                            val message = currentUser.name + " has rejected you from their ride."
+                                            val title: String
+                                            val message: String
+                                            if (pickupMarker.changeMade == PickupMarkerChange.ACCEPTED) {
+                                                title = "Pick-up accepted"
+                                                message = currentUser.name + " has accepted you to their ride."
+                                            } else {
+                                                title = "Pick-up rejected"
+                                                message = currentUser.name + " has rejected you from their ride."
+                                            }
                                             val to = arrayOf(pickupUser.firebaseId)
                                             val keys =
                                                 hashMapOf(
@@ -426,8 +412,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     hideFab(fab_change_time)
                     pickupMarker.pickup.denied = false
                 }
+                pickupMarker.changeMade = PickupMarkerChange.ACCEPTED
                 showFab(fab_change_time)
             } else {
+                pickupMarker.changeMade = PickupMarkerChange.NONE
                 hideFab(fab_change_time)
             }
             calculateRoute()
@@ -447,6 +435,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         fab_plus_or_minus.setImageDrawable(getDrawable(R.drawable.ic_add_black_24dp))
                         hideFab(fab_decline)
                         hideFab(fab_change_time)
+                        pickupMarker.changeMade = PickupMarkerChange.DENIED
                         calculateRoute()
                     }
                     .setNegativeButton(R.string.no) { _, _ ->
