@@ -184,7 +184,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             .zIndex(4f)
                             .alpha(if (pickup.inRide) 1f else 0.5f)
                         val marker = map.addMarker(markerOptions)
-                        val pickupMarker = PickupMarker(pickup, marker, IconTarget(marker))
+                        val state = when {
+                            pickup.denied -> PickupMarkerState.DENIED
+                            pickup.inRide -> PickupMarkerState.ACCEPTED
+                            else -> PickupMarkerState.PENDING
+                        }
+                        val pickupMarker = PickupMarker(pickup, marker, IconTarget(marker), state, state)
                         marker.tag = pickupMarker
                         pickupMarkers.add(pickupMarker)
                         getProfilePicUrl(passenger.facebookProfileId) { picUrl ->
@@ -354,15 +359,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
 
                         // Send notification if needed
-                        when (pickupMarker.changeMade) {
-                            PickupMarkerChange.NONE -> Unit
-                            PickupMarkerChange.ACCEPTED, PickupMarkerChange.DENIED -> {
+                        when (pickupMarker.newState) {
+                            PickupMarkerState.PENDING -> Unit
+                            pickupMarker.stateOnServer -> Unit  // to prevent irrelevant notification
+                            PickupMarkerState.ACCEPTED, PickupMarkerState.DENIED -> {
                                 Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
                                     Database.getUser(Database.idOfCurrentUser) { currentUser ->
                                         getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
                                             val title: String
                                             val message: String
-                                            if (pickupMarker.changeMade == PickupMarkerChange.ACCEPTED) {
+                                            if (pickupMarker.newState == PickupMarkerState.ACCEPTED) {
                                                 title = "Pick-up accepted"
                                                 message = currentUser.name + " has accepted you to their ride."
                                             } else {
@@ -412,10 +418,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     hideFab(fab_change_time)
                     pickupMarker.pickup.denied = false
                 }
-                pickupMarker.changeMade = PickupMarkerChange.ACCEPTED
+                pickupMarker.newState = PickupMarkerState.ACCEPTED
                 showFab(fab_change_time)
             } else {
-                pickupMarker.changeMade = PickupMarkerChange.NONE
+                pickupMarker.newState = PickupMarkerState.PENDING
                 hideFab(fab_change_time)
             }
             calculateRoute()
@@ -435,7 +441,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         fab_plus_or_minus.setImageDrawable(getDrawable(R.drawable.ic_add_black_24dp))
                         hideFab(fab_decline)
                         hideFab(fab_change_time)
-                        pickupMarker.changeMade = PickupMarkerChange.DENIED
+                        pickupMarker.newState = PickupMarkerState.DENIED
                         calculateRoute()
                     }
                     .setNegativeButton(R.string.no) { _, _ ->
@@ -764,7 +770,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val pickup: Pickup,
         val marker: Marker,
         val iconTarget: IconTarget,
-        var changeMade: PickupMarkerChange = PickupMarkerChange.NONE
+        val stateOnServer: PickupMarkerState,
+        var newState: PickupMarkerState
     )
 
     private fun selectPickupMarker(pickupMarker: PickupMarker) {
@@ -929,8 +936,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             JUST_LOOK_AT_MAP,
         }
 
-        enum class PickupMarkerChange {
-            NONE,
+        enum class PickupMarkerState {
+            PENDING,
             ACCEPTED,
             DENIED
         }
