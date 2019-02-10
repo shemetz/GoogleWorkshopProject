@@ -37,7 +37,7 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="com.google.firebase.EventRides" />
+                <action android:name="com.google.firebase.EVENT_RIDES" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

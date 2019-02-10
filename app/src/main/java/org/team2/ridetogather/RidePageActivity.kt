@@ -271,6 +271,18 @@ class RidePageActivity : AppCompatActivity() {
                                         ).show()
                                         recreate() // to be updated
                                     }
+                                    Database.getUser(ride.driverId){driver->
+                                        val to = arrayOf(driver.firebaseId)
+                                        val title = "Pick-up left the ride"
+                                        val keys = hashMapOf(Keys.RIDE_ID.name to ride!!.id,Keys.DRIVER_PERSPECTIVE.name to true)
+                                        Database.getUser(pickup.userId){pickupUser ->
+                                            val message = pickupUser.name + " has left your ride"
+                                            getProfilePicUrl(pickupUser.facebookProfileId){picUrl ->
+                                                Database.sendFirebaseNotification(to,title,message,picUrl,
+                                                    "com.google.firebase.RIDE_PAGE",keys)
+                                            }
+                                        }
+                                    }
                                     mainActionButton.isEnabled = false
                                     mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
                                     mainActionButton.text = getString(string.updating)
@@ -382,6 +394,27 @@ class RidePageActivity : AppCompatActivity() {
                                 "Your ride was deleted.",
                                 Toast.LENGTH_LONG
                             ).show()
+                            Database.getUser(ride.driverId){driver ->
+                                val keys = HashMap<String,Any>()
+                                keys[Keys.EVENT_ID.name]= ride!!.eventId
+                                val activityName = "com.google.firebase.EVENT_RIDES"
+                                val title = "Ride canceled"
+                                val message = driver.name + " has canceled his ride"
+                                val toList = ArrayList<String>()
+                                getProfilePicUrl(driver.facebookProfileId){picUrl->
+                                    Database.getPickupsForRide(rideId){pickups ->
+                                        for(pickup in pickups){
+                                            Database.getUser(pickup.userId){pickupUser->
+                                                toList.add(pickupUser.firebaseId)
+                                            }
+                                        }
+                                        val to = toList.toTypedArray()
+                                        Database.sendFirebaseNotification(to,title,message,picUrl,
+                                            activityName,keys)
+                                    }
+                                }
+
+                            }
                             val intent = Intent(applicationContext, EventRidesActivity::class.java)
                             intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
                             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
