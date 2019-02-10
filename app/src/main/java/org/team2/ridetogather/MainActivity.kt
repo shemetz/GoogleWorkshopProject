@@ -18,8 +18,6 @@ import com.facebook.HttpMethod
 import com.facebook.login.LoginManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_main.*
 import org.team2.ridetogather.fragments.AllEvents
 import org.team2.ridetogather.fragments.GroupsFragment
@@ -102,7 +100,7 @@ class MainActivity : AppCompatActivity() {
     private val pageTitles= arrayOf("Ride Groups","Events","My Rides")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Database.initialize(this)
+        Database.initializeIfNeeded(this)
 
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)

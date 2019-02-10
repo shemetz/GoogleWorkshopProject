@@ -69,6 +69,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        Database.initializeIfNeeded(this)
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         val requestCodeInt = intent.getIntExtra(Keys.REQUEST_CODE.name, -1)
         requestCode = MapsActivity.Companion.RequestCode.values()[requestCodeInt]

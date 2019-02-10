@@ -16,10 +16,6 @@ import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.net.HttpURLConnection
 import java.nio.charset.Charset
-import com.android.volley.AuthFailureError
-import com.android.volley.VolleyError
-
-
 
 
 object JsonParse {
@@ -107,7 +103,12 @@ object Database {
 
     val cacheOfGETs = mutableMapOf<String, CacheEntry>()
 
-    fun initialize(activityContext: Context) {
+    fun initializeIfNeeded(activityContext: Context) {
+        if (idOfCurrentUser != -1) {
+            Log.d(tag, "Database is already initialized, it's OK")
+            return
+        }
+        Log.i(tag, "Initializing Database")
         // applicationContext is key, it keeps you from leaking the
         // Activity or BroadcastReceiver if someone passes one in.
         requestQueue = Volley.newRequestQueue(activityContext.applicationContext)

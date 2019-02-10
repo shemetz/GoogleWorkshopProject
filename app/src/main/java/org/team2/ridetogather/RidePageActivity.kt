@@ -75,6 +75,7 @@ class RidePageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_ride_page)
 //        setSupportActionBar(toolbar)
+        Database.initializeIfNeeded(this)
         rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Ride ID $rideId")
 

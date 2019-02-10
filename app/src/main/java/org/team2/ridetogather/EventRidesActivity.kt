@@ -42,6 +42,7 @@ class EventRidesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_eventrides)
         setSupportActionBar(toolbar)
+        Database.initializeIfNeeded(this)
 
         // The next line gets the event ID either from the intent extras or from the saved activity state.
         eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
