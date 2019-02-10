@@ -352,6 +352,53 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         Database.updatePickup(pickupMarker.pickup) {
                             countDown()
                         }
+
+                        // Send notification if needed
+                        when (pickupMarker.changeMade) {
+                            PickupMarkerChange.NONE -> Unit
+                            PickupMarkerChange.ACCEPTED -> {
+                                Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
+                                    Database.getUser(Database.idOfCurrentUser) { currentUser ->
+                                        getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
+                                            val title = "Pick-up accepted"
+                                            val message = currentUser.name + " has accepted you to their ride."
+                                            val to = arrayOf(pickupUser.firebaseId)
+                                            val keys =
+                                                hashMapOf(
+                                                    Keys.RIDE_ID.name to ride!!.id,
+                                                    Keys.DRIVER_PERSPECTIVE.name to false
+                                                )
+                                            Log.d("Firebase", to.toString())
+                                            Database.sendFirebaseNotification(
+                                                to, title, message, picUrl,
+                                                "com.google.firebase.RIDE_PAGE", keys
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            PickupMarkerChange.DENIED -> {
+                                Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
+                                    Database.getUser(Database.idOfCurrentUser) { currentUser ->
+                                        getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
+                                            val title = "Pick-up rejected"
+                                            val message = currentUser.name + " has rejected you from their ride."
+                                            val to = arrayOf(pickupUser.firebaseId)
+                                            val keys =
+                                                hashMapOf(
+                                                    Keys.RIDE_ID.name to ride!!.id,
+                                                    Keys.DRIVER_PERSPECTIVE.name to false
+                                                )
+                                            Log.d("Firebase", to.toString())
+                                            Database.sendFirebaseNotification(
+                                                to, title, message, picUrl,
+                                                "com.google.firebase.RIDE_PAGE", keys
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 RequestCode.JUST_LOOK_AT_MAP -> {
@@ -401,18 +448,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         hideFab(fab_decline)
                         hideFab(fab_change_time)
                         calculateRoute()
-                        Database.getUser(Database.idOfCurrentUser){user ->
-                            val title = "Pick-up rejected"
-                            val message = user.name + " has rejected you from their ride"
-                            val to = arrayOf(pickupUser.firebaseId)
-                            val keys = hashMapOf(Keys.RIDE_ID.name to ride!!.id,Keys.DRIVER_PERSPECTIVE.name to false)
-                            getProfilePicUrl(user.facebookProfileId){picUrl ->
-                                Log.d("Firebase",to.toString())
-                                Database.sendFirebaseNotification(to,title,message,picUrl,
-                                    "com.google.firebase.RIDE_PAGE",keys)
-                            }
-                        }
-
                     }
                     .setNegativeButton(R.string.no) { _, _ ->
                         //will be dismissed
@@ -739,7 +774,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     class PickupMarker(
         val pickup: Pickup,
         val marker: Marker,
-        val iconTarget: IconTarget
+        val iconTarget: IconTarget,
+        var changeMade: PickupMarkerChange = PickupMarkerChange.NONE
     )
 
     private fun selectPickupMarker(pickupMarker: PickupMarker) {
@@ -902,6 +938,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             PICK_PASSENGER_LOCATION,
             CONFIRM_OR_DENY_PASSENGERS,
             JUST_LOOK_AT_MAP,
+        }
+
+        enum class PickupMarkerChange {
+            NONE,
+            ACCEPTED,
+            DENIED
         }
     }
 
