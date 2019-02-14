@@ -379,7 +379,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                             val keys =
                                                 hashMapOf(
                                                     Keys.RIDE_ID.name to ride!!.id,
-                                                    Keys.DRIVER_PERSPECTIVE.name to false
+                                                    Keys.DRIVER_PERSPECTIVE.name to false,
+                                                    Keys.EVENT_ID.name to ride!!.eventId
                                                 )
                                             Log.d("Firebase", to.toString())
                                             Database.sendFirebaseNotification(

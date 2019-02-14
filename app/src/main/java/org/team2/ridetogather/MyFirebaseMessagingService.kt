@@ -3,6 +3,7 @@ package org.team2.ridetogather
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -81,12 +82,26 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             else{
                 intent = Intent(this, MainActivity::class.java)
             }
-
-
-
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            val pendingIntent = PendingIntent.getActivity(this, 0, intent,
-                PendingIntent.FLAG_ONE_SHOT)
+
+            val mainIntent = Intent(applicationContext, MainActivity::class.java)
+            val eventIntent = Intent(applicationContext, EventRidesActivity::class.java)
+
+            val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+                addNextIntent(mainIntent)
+                if(click_action.equals("com.google.firebase.RIDE_PAGE")){
+                    eventIntent.putExtra(Keys.EVENT_ID.name,intent.getIntExtra(Keys.EVENT_ID.name,-1))
+                    addNextIntent(eventIntent)
+                }
+                addNextIntent(intent)
+                // Get the PendingIntent containing the entire back stack
+                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+            }
+
+
+
+            //val pendingIntent = PendingIntent.getActivity(this, 0, intent,
+            //    PendingIntent.FLAG_ONE_SHOT)
 
             val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val notificationBuilder = NotificationCompat.Builder(this,"ridetogather")
@@ -95,7 +110,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 .setContentText(remoteMessage.data["body"])
                 .setAutoCancel(true)
                 .setSound(soundUri)
-                .setContentIntent(pendingIntent)
+                .setContentIntent(resultPendingIntent)
                 .setStyle(NotificationCompat.BigTextStyle()
                     .setBigContentTitle(remoteMessage.data["title"])
                     .bigText(remoteMessage.data["body"]))
