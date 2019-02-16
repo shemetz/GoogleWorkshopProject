@@ -391,7 +391,6 @@ class RidePageActivity : AppCompatActivity() {
                         string.yes
                     ) { _, whichButton ->
                         if (whichButton == DialogInterface.BUTTON_POSITIVE) {
-                            Database.deleteRide(rideId)
                             Toast.makeText(
                                 this@RidePageActivity,
                                 "Your ride was deleted.",
@@ -403,17 +402,19 @@ class RidePageActivity : AppCompatActivity() {
                                 val activityName = "com.google.firebase.EVENT_RIDES"
                                 val title = "Ride canceled"
                                 val message = driver.name + " has canceled his ride"
-                                val toList = ArrayList<String>()
+                                //val toList = ArrayList<String>()
                                 getProfilePicUrl(driver.facebookProfileId){picUrl->
-                                    Database.getPickupsForRide(rideId){pickups ->
+                                    Database.getPickupsForRide(ride!!.id){pickups ->
                                         for(pickup in pickups){
+                                            Log.d("firebase", "!!!!" + pickup.userId.toString())
                                             Database.getUser(pickup.userId){pickupUser->
-                                                toList.add(pickupUser.firebaseId)
+                                                val to = arrayOf(pickupUser.firebaseId)
+                                                Database.sendFirebaseNotification(to,title,message,picUrl,
+                                                    activityName,keys)
                                             }
                                         }
-                                        val to = toList.toTypedArray()
-                                        Database.sendFirebaseNotification(to,title,message,picUrl,
-                                            activityName,keys)
+                                        //val to = toList.toTypedArray()
+                                        Database.deleteRide(rideId)
                                     }
                                 }
 
