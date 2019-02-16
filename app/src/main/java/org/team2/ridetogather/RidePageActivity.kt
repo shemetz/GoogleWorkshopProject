@@ -274,7 +274,10 @@ class RidePageActivity : AppCompatActivity() {
                                     Database.getUser(ride.driverId){driver->
                                         val to = arrayOf(driver.firebaseId)
                                         val title = "Pick-up left the ride"
-                                        val keys = hashMapOf(Keys.RIDE_ID.name to ride!!.id,Keys.DRIVER_PERSPECTIVE.name to true)
+                                        val keys = hashMapOf(
+                                            Keys.RIDE_ID.name to ride!!.id,
+                                            Keys.DRIVER_PERSPECTIVE.name to true,
+                                            Keys.EVENT_ID.name to ride!!.eventId)
                                         Database.getUser(pickup.userId){pickupUser ->
                                             val message = pickupUser.name + " has left your ride"
                                             getProfilePicUrl(pickupUser.facebookProfileId){picUrl ->
