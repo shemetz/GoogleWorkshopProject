@@ -18,6 +18,10 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
 import org.team2.ridetogather.R.*
+import android.support.constraint.ConstraintLayout
+import android.view.ViewGroup
+
+
 
 class RidePageActivity : AppCompatActivity() {
 
@@ -188,11 +192,17 @@ class RidePageActivity : AppCompatActivity() {
 
                 mainActionButton.isEnabled = true
                 mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.colorPrimary))
+                val layoutParams = mainActionButton.layoutParams as ConstraintLayout.LayoutParams
                 if (numOfRequests == 0) {
                     mainActionButton.text = getString(string.edit_route)
+                    layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
                 } else {
                     mainActionButton.text = getString(string.view_requests)
+                    layoutParams.width = 350
                 }
+                mainActionButton.layoutParams = layoutParams
+                mainActionButton.requestLayout()
+
                 Database.getRide(rideId) { ride ->
                     mainActionButton.setOnClickListener {
                         val intent = Intent(applicationContext, MapsActivity::class.java)
@@ -245,6 +255,10 @@ class RidePageActivity : AppCompatActivity() {
                         mainActionButton.isEnabled = false
                         mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
                         mainActionButton.text = getString(string.request_declined)
+                        val layoutParams = mainActionButton.layoutParams as ConstraintLayout.LayoutParams
+                        layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
+                        mainActionButton.layoutParams = layoutParams
+                        mainActionButton.requestLayout()
                     }
                     pickupOfCurrentUser.inRide -> {
                         // Pickup request was approved
@@ -275,9 +289,9 @@ class RidePageActivity : AppCompatActivity() {
                                         val to = arrayOf(driver.firebaseId)
                                         val title = "Pick-up left the ride"
                                         val keys = hashMapOf(
-                                            Keys.RIDE_ID.name to ride!!.id,
+                                            Keys.RIDE_ID.name to ride.id,
                                             Keys.DRIVER_PERSPECTIVE.name to true,
-                                            Keys.EVENT_ID.name to ride!!.eventId)
+                                            Keys.EVENT_ID.name to ride.eventId)
                                         Database.getUser(pickup.userId){pickupUser ->
                                             val message = pickupUser.name + " has left your ride"
                                             getProfilePicUrl(pickupUser.facebookProfileId){picUrl ->
@@ -398,13 +412,13 @@ class RidePageActivity : AppCompatActivity() {
                             ).show()
                             Database.getUser(ride.driverId){driver ->
                                 val keys = HashMap<String,Any>()
-                                keys[Keys.EVENT_ID.name]= ride!!.eventId
+                                keys[Keys.EVENT_ID.name]= ride.eventId
                                 val activityName = "com.google.firebase.EVENT_RIDES"
                                 val title = "Ride canceled"
                                 val message = driver.name + " has canceled his ride"
                                 //val toList = ArrayList<String>()
                                 getProfilePicUrl(driver.facebookProfileId){picUrl->
-                                    Database.getPickupsForRide(ride!!.id){pickups ->
+                                    Database.getPickupsForRide(ride.id){ pickups ->
                                         for(pickup in pickups){
                                             Log.d("firebase", "!!!!" + pickup.userId.toString())
                                             Database.getUser(pickup.userId){pickupUser->
