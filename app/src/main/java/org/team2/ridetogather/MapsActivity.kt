@@ -69,6 +69,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        Database.initializeIfNeeded(this)
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         val requestCodeInt = intent.getIntExtra(Keys.REQUEST_CODE.name, -1)
         requestCode = MapsActivity.Companion.RequestCode.values()[requestCodeInt]
@@ -183,7 +184,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             .zIndex(4f)
                             .alpha(if (pickup.inRide) 1f else 0.5f)
                         val marker = map.addMarker(markerOptions)
-                        val pickupMarker = PickupMarker(pickup, marker, IconTarget(marker))
+                        val state = when {
+                            pickup.denied -> PickupMarkerState.DENIED
+                            pickup.inRide -> PickupMarkerState.ACCEPTED
+                            else -> PickupMarkerState.PENDING
+                        }
+                        val pickupMarker = PickupMarker(pickup, marker, IconTarget(marker), state, state)
                         marker.tag = pickupMarker
                         pickupMarkers.add(pickupMarker)
                         getProfilePicUrl(passenger.facebookProfileId) { picUrl ->
@@ -351,6 +357,41 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         Database.updatePickup(pickupMarker.pickup) {
                             countDown()
                         }
+
+                        // Send notification if needed
+                        when (pickupMarker.newState) {
+                            PickupMarkerState.PENDING -> Unit
+                            pickupMarker.stateOnServer -> Unit  // to prevent irrelevant notification
+                            PickupMarkerState.ACCEPTED, PickupMarkerState.DENIED -> {
+                                Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
+                                    Database.getUser(Database.idOfCurrentUser) { currentUser ->
+                                        getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
+                                            val title: String
+                                            val message: String
+                                            if (pickupMarker.newState == PickupMarkerState.ACCEPTED) {
+                                                title = "Pick-up accepted"
+                                                message = currentUser.name + " has accepted you to their ride."
+                                            } else {
+                                                title = "Pick-up rejected"
+                                                message = currentUser.name + " has rejected you from their ride."
+                                            }
+                                            val to = arrayOf(pickupUser.firebaseId)
+                                            val keys =
+                                                hashMapOf(
+                                                    Keys.RIDE_ID.name to ride!!.id,
+                                                    Keys.DRIVER_PERSPECTIVE.name to false,
+                                                    Keys.EVENT_ID.name to ride!!.eventId
+                                                )
+                                            Log.d("Firebase", to.toString())
+                                            Database.sendFirebaseNotification(
+                                                to, title, message, picUrl,
+                                                "com.google.firebase.RIDE_PAGE", keys
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 RequestCode.JUST_LOOK_AT_MAP -> {
@@ -378,8 +419,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     hideFab(fab_change_time)
                     pickupMarker.pickup.denied = false
                 }
+                pickupMarker.newState = PickupMarkerState.ACCEPTED
                 showFab(fab_change_time)
             } else {
+                pickupMarker.newState = PickupMarkerState.PENDING
                 hideFab(fab_change_time)
             }
             calculateRoute()
@@ -399,6 +442,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         fab_plus_or_minus.setImageDrawable(getDrawable(R.drawable.ic_add_black_24dp))
                         hideFab(fab_decline)
                         hideFab(fab_change_time)
+                        pickupMarker.newState = PickupMarkerState.DENIED
                         calculateRoute()
                     }
                     .setNegativeButton(R.string.no) { _, _ ->
@@ -726,7 +770,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     class PickupMarker(
         val pickup: Pickup,
         val marker: Marker,
-        val iconTarget: IconTarget
+        val iconTarget: IconTarget,
+        val stateOnServer: PickupMarkerState,
+        var newState: PickupMarkerState
     )
 
     private fun selectPickupMarker(pickupMarker: PickupMarker) {
@@ -889,6 +935,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             PICK_PASSENGER_LOCATION,
             CONFIRM_OR_DENY_PASSENGERS,
             JUST_LOOK_AT_MAP,
+        }
+
+        enum class PickupMarkerState {
+            PENDING,
+            ACCEPTED,
+            DENIED
         }
     }
 

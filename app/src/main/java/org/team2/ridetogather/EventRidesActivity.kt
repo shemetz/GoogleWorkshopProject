@@ -42,6 +42,7 @@ class EventRidesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_eventrides)
         setSupportActionBar(toolbar)
+        Database.initializeIfNeeded(this)
 
         // The next line gets the event ID either from the intent extras or from the saved activity state.
         eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
@@ -95,7 +96,8 @@ class EventRidesActivity : AppCompatActivity() {
         Database.getRidesForEvent(eventId) { rides: List<Ride> ->
             viewAdapter = MyAdapter(this, rides.toTypedArray())
 
-            recyclerView = findViewById<RecyclerView>(R.id.rides_list_recycler_view).apply {
+            recyclerView = findViewById(R.id.rides_list_recycler_view)
+            recyclerView.apply {
                 // changes in content do not change the layout size of the RecyclerView
                 setHasFixedSize(true)
                 layoutManager = viewManager

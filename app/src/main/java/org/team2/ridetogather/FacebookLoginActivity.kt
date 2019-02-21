@@ -9,6 +9,8 @@ import android.view.View
 import android.widget.Toast
 import com.facebook.*
 import com.facebook.login.LoginResult
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_facebook_login.*
 import java.util.*
 
@@ -86,6 +88,19 @@ class FacebookLoginActivity : AppCompatActivity() {
             val facebookProfileId = response.jsonObject.getString("id")
             Database.getOrAddUserByFacebook(name, facebookProfileId) {user ->
                 Log.i(tag, "Updating stored user ID… (${prefManager.thisUserId} → ${user.id})")
+                FirebaseInstanceId.getInstance().instanceId
+                    .addOnCompleteListener(OnCompleteListener { task ->
+                        if (!task.isSuccessful) {
+                            Log.w("Firebase", "getInstanceId failed", task.exception)
+                            return@OnCompleteListener
+                        }
+                        val token = task.result?.token
+                        user.firebaseId = token!!
+                        Database.updateUser(user)
+
+                        // Log
+                        Log.d("Firebase", token)
+                    })
                 prefManager.thisUserId = user.id
                 Database.idOfCurrentUser = user.id
                 progress_bar.visibility = View.GONE

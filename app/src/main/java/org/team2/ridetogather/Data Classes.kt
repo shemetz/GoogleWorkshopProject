@@ -29,7 +29,8 @@ class User(
     id_: Id,
     var name: String,
     var facebookProfileId: FacebookId,
-    var credits: Int
+    var credits: Int,
+    var firebaseId: String
 ) : DatabaseObject(id_)
 
 class Event(

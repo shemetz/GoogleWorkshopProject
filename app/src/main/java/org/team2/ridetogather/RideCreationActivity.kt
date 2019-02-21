@@ -25,6 +25,7 @@ class RideCreationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ridecreation)
+        Database.initializeIfNeeded(this)
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         Log.d(tag, "Created $tag with Event ID $eventId")
 

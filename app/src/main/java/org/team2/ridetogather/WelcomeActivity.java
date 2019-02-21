@@ -28,7 +28,7 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Database.INSTANCE.initialize(this);
+        Database.INSTANCE.initializeIfNeeded(this);
 
         // Checking for first time launch - before calling setContentView()
         prefManager = new PrefManager(this);

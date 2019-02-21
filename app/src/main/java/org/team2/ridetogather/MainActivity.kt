@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
     private val pageTitles= arrayOf("Ride Groups","Events","My Rides")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Database.initialize(this)
+        Database.initializeIfNeeded(this)
 
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)

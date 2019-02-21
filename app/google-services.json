@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "933179448707",
+    "firebase_url": "https://ride-to-gather-225008.firebaseio.com",
+    "project_id": "ride-to-gather-225008",
+    "storage_bucket": "ride-to-gather-225008.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933179448707:android:a506c4d67e927716",
+        "android_client_info": {
+          "package_name": "org.team2.ridetogather"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933179448707-9n0d15rqr5042f4l9h29okei36d77elu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.team2.ridetogather",
+            "certificate_hash": "90a6e4875845cf0e8ca95877daee4c87a0d02525"
+          }
+        },
+        {
+          "client_id": "933179448707-nddgbifriumh34dol51ipifkbp7r8s5i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.team2.ridetogather",
+            "certificate_hash": "3b178b3b3af650ac01ea64862f23fabe4dcb3eb7"
+          }
+        },
+        {
+          "client_id": "933179448707-i7e0ddkjbm1d0nvd0cjurstd6pd873eq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBrzxzp1_Z13_iGXsABq9CtrNg8ftuNho"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933179448707-i7e0ddkjbm1d0nvd0cjurstd6pd873eq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

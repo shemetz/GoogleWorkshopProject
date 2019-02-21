@@ -1,6 +1,8 @@
 package org.team2.ridetogather
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Geocoder
 import android.util.Log
 import com.facebook.AccessToken
@@ -11,9 +13,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.absoluteValue
+
 
 enum class Keys {
     RIDE_ID,
@@ -58,11 +63,13 @@ fun geocode(context: Context, latLng: LatLng, successCallback: (String) -> Unit)
     ) { jsonObject ->
         Log.v("Google Geocode", jsonObject.toString(4))
         CoroutineScope(Dispatchers.Main).launch {
-            // dirty hack, sorry
-            val result = if (jsonObject.getString("status") == "ZERO_RESULTS")
-                alternativeGeocode(context, latLng)
-            else
+            val result = if (jsonObject.getJSONArray("results").length() > 0)
                 jsonObject.getJSONArray("results").getJSONObject(0).getString("formatted_address")
+            else {
+                if (jsonObject.getString("status") != "ZERO_RESULTS")
+                    Log.w("Google Geocode", "Got zero results but status is ${jsonObject.getString("status")}")
+                alternativeGeocode(context, latLng)
+            }
             Log.v("Google Geocode", "Caching result: $latLng → $result")
             geocodingCache[latLng] = result
             successCallback(result)
@@ -226,4 +233,19 @@ fun durationToString(durationInSeconds: Int): String {
     }
 
     return "$daysStr $hoursStr $minutesStr $secondsStr".trimStart()
+}
+
+fun getBitmapFromURL(src: String): Bitmap? {
+    try {
+        val url = URL(src)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.setDoInput(true)
+        connection.connect()
+        val input = connection.getInputStream()
+        return BitmapFactory.decodeStream(input)
+    } catch (e: IOException) {
+        // Log exception
+        return null
+    }
+
 }

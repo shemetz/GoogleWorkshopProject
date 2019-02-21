@@ -56,7 +56,8 @@ object JsonParse {
         val name = userJson.getString("name")
         val facebookProfileId = userJson.getString("facebookProfileId")
         val credits = userJson.getInt("credits")
-        return User(userId, name, facebookProfileId, credits)
+        val firebaseId = userJson.getString("firebaseId")
+        return User(userId, name, facebookProfileId, credits, firebaseId)
     }
 
     fun event(eventJson: JSONObject): Event {
@@ -102,12 +103,53 @@ object Database {
 
     val cacheOfGETs = mutableMapOf<String, CacheEntry>()
 
-    fun initialize(activityContext: Context) {
+    fun initializeIfNeeded(activityContext: Context) {
+        if (idOfCurrentUser != -1) {
+            Log.d(tag, "Database is already initialized, it's OK")
+            return
+        }
+        Log.i(tag, "Initializing Database")
         // applicationContext is key, it keeps you from leaking the
         // Activity or BroadcastReceiver if someone passes one in.
         requestQueue = Volley.newRequestQueue(activityContext.applicationContext)
         val prefManager = PrefManager(activityContext)
         idOfCurrentUser = prefManager.thisUserId
+    }
+
+    fun sendFirebaseNotification(to:Array<String>, title: String?, message:String?, picUrl:String?, intentName:String, keys:HashMap<String,Any>){
+        val url = "https://fcm.googleapis.com/fcm/send"
+        val toJson = JSONArray()
+        val keysJson = JSONObject(keys)
+        for(i in to){
+            toJson.put(i)
+        }
+        val data = jsonObjOf("title" to title,
+            "body" to message,
+            "click_action" to intentName,
+            "keys" to keysJson,
+            "pic_url" to picUrl)
+
+        val postParams = jsonObjOf(
+            "registration_ids" to toJson,
+            "data" to data
+        )
+        val request: JsonObjectRequest = object : JsonObjectRequest(
+            Request.Method.POST, url, postParams,
+            Response.Listener<JSONObject?> {response->
+                Log.d(tag, "Got response for $url")
+                Log.v(tag, response!!.toString(4))
+            }, Response.ErrorListener {error->
+                logResponseError(error, url)
+            }) {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                val headers = HashMap<String, String>()
+                headers["Content-Type"] = "application/json"
+                headers["Authorization"] = "key=AAAA2UXUXYM:APA91bG2bbXcooQiIRwjntn_mdCEq_yViJtEZQkGwl-LH6NyU9_DaHXmRy9wo7uJKP5O6xvk5F7P0KBvR5x4eLhQaTQ9um4RkfxpQhqVHDJ5AmYm3YA_NmyxOBoAidXJokkHAcZoTq0g"
+                return headers
+            }
+        }
+        requestQueue.add(request)
     }
 
     fun requestJsonObjectFromGoogleApi(
@@ -326,11 +368,12 @@ object Database {
 
     }
 
-    fun addUser(name: String, facebookProfileId: String, credits: Int) {
+    fun addUser(name: String, facebookProfileId: String, credits: Int, firebaseId: String) {
         val postParams = jsonObjOf(
             "name" to name,
             "facebookProfileId" to facebookProfileId,
-            "credits" to credits
+            "credits" to credits,
+            "firebaseId" to firebaseId
         )
         val url = "/addUser/"
 
@@ -468,7 +511,8 @@ object Database {
         val postParams = jsonObjOf(
             "name" to user.name,
             "facebookProfileId" to user.facebookProfileId,
-            "credits" to user.credits
+            "credits" to user.credits,
+            "firebaseId" to user.firebaseId
         )
         val url = "/updateUser/${user.id}"
 
