@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
@@ -18,8 +17,6 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
 import org.team2.ridetogather.R.*
-import android.view.ViewGroup
-
 
 
 class RidePageActivity : AppCompatActivity() {
@@ -156,10 +153,10 @@ class RidePageActivity : AppCompatActivity() {
                         val message = currentUser.name + " has asked to join your ride."
                         val to = arrayOf(driverUser.firebaseId)
                         val keys = hashMapOf(
-                                Keys.RIDE_ID.name to ride.id,
-                                Keys.DRIVER_PERSPECTIVE.name to true,
-                                Keys.EVENT_ID.name to ride.eventId
-                            )
+                            Keys.RIDE_ID.name to ride.id,
+                            Keys.DRIVER_PERSPECTIVE.name to true,
+                            Keys.EVENT_ID.name to ride.eventId
+                        )
                         Database.sendFirebaseNotification(
                             to, title, message, picUrl,
                             "com.google.firebase.RIDE_PAGE", keys
@@ -212,7 +209,7 @@ class RidePageActivity : AppCompatActivity() {
                 mainActionButton.setBackgroundResource(R.drawable.button_shape)
                 if (numOfRequests == 0) {
                     mainActionButton.text = getString(string.edit_route)
-                    if(numOfExistingPassengers == 0) {
+                    if (numOfExistingPassengers == 0) {
                         mainActionButton.visibility = View.GONE
                     }
                 } else {
@@ -297,18 +294,21 @@ class RidePageActivity : AppCompatActivity() {
                                         ).show()
                                         recreate() // to be updated
                                     }
-                                    Database.getUser(ride.driverId){driver->
+                                    Database.getUser(ride.driverId) { driver ->
                                         val to = arrayOf(driver.firebaseId)
                                         val title = getString(R.string.notification_title_left_ride)
                                         val keys = hashMapOf(
                                             Keys.RIDE_ID.name to ride.id,
                                             Keys.DRIVER_PERSPECTIVE.name to true,
-                                            Keys.EVENT_ID.name to ride.eventId)
-                                        Database.getUser(pickup.userId){pickupUser ->
+                                            Keys.EVENT_ID.name to ride.eventId
+                                        )
+                                        Database.getUser(pickup.userId) { pickupUser ->
                                             val message = pickupUser.name + " has left your ride"
-                                            getProfilePicUrl(pickupUser.facebookProfileId){picUrl ->
-                                                Database.sendFirebaseNotification(to,title,message,picUrl,
-                                                    "com.google.firebase.RIDE_PAGE",keys)
+                                            getProfilePicUrl(pickupUser.facebookProfileId) { picUrl ->
+                                                Database.sendFirebaseNotification(
+                                                    to, title, message, picUrl,
+                                                    "com.google.firebase.RIDE_PAGE", keys
+                                                )
                                             }
                                         }
                                     }
@@ -422,21 +422,23 @@ class RidePageActivity : AppCompatActivity() {
                                 "Your ride was deleted.",
                                 Toast.LENGTH_LONG
                             ).show()
-                            Database.getUser(ride.driverId){driver ->
-                                val keys = HashMap<String,Any>()
-                                keys[Keys.EVENT_ID.name]= ride.eventId
+                            Database.getUser(ride.driverId) { driver ->
+                                val keys = HashMap<String, Any>()
+                                keys[Keys.EVENT_ID.name] = ride.eventId
                                 val activityName = "com.google.firebase.EVENT_RIDES"
                                 val title = getString(R.string.notification_title_ride_canceled)
                                 val message = driver.name + " has canceled their ride"
                                 //val toList = ArrayList<String>()
-                                getProfilePicUrl(driver.facebookProfileId){picUrl->
-                                    Database.getPickupsForRide(ride.id){pickups ->
-                                        for(pickup in pickups){
+                                getProfilePicUrl(driver.facebookProfileId) { picUrl ->
+                                    Database.getPickupsForRide(ride.id) { pickups ->
+                                        for (pickup in pickups) {
                                             Log.d("firebase", "!!!!" + pickup.userId.toString())
-                                            Database.getUser(pickup.userId){pickupUser->
+                                            Database.getUser(pickup.userId) { pickupUser ->
                                                 val to = arrayOf(pickupUser.firebaseId)
-                                                Database.sendFirebaseNotification(to,title,message,picUrl,
-                                                    activityName,keys)
+                                                Database.sendFirebaseNotification(
+                                                    to, title, message, picUrl,
+                                                    activityName, keys
+                                                )
                                             }
                                         }
                                         //val to = toList.toTypedArray()

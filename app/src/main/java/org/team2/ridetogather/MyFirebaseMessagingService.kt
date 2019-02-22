@@ -28,12 +28,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // If you want to send messages to this application instance or
         // manage this apps subscriptions on the server side, send the
         // Instance ID token to your app server.
-        Database.getUser(Database.idOfCurrentUser){user: User ->
+        Database.getUser(Database.idOfCurrentUser) { user: User ->
             user.firebaseId = token!!
             Database.updateUser(user)
         }
     }
-    fun createChannel(){
+
+    fun createChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -78,24 +79,22 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
             }
             createChannel()
-            val intent : Intent
+            val intent: Intent
             Log.d(TAG, "Message data payload: " + remoteMessage.data)
             val click_action = remoteMessage.data["click_action"]
             val picUrl = remoteMessage.data["pic_url"]
-            if(click_action != null){
+            if (click_action != null) {
                 intent = Intent(click_action)
                 val keysMap = JSONObject(remoteMessage.data["keys"])
-                for(key in keysMap.keys()){
-                    if(keysMap.optInt(key,-1) != -1){
+                for (key in keysMap.keys()) {
+                    if (keysMap.optInt(key, -1) != -1) {
                         intent.putExtra(key, keysMap.optInt(key))
-                    }
-                    else{
+                    } else {
                         intent.putExtra(key, keysMap.optBoolean(key))
                     }
                     Log.d("FirebaseCheck", "key: " + key + "val: " + keysMap.get(key))
                 }
-            }
-            else{
+            } else {
                 intent = Intent(this, MainActivity::class.java)
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -105,8 +104,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
             val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
                 addNextIntent(mainIntent)
-                if(click_action.equals("com.google.firebase.RIDE_PAGE")){
-                    eventIntent.putExtra(Keys.EVENT_ID.name,intent.getIntExtra(Keys.EVENT_ID.name,-1))
+                if (click_action.equals("com.google.firebase.RIDE_PAGE")) {
+                    eventIntent.putExtra(Keys.EVENT_ID.name, intent.getIntExtra(Keys.EVENT_ID.name, -1))
                     addNextIntent(eventIntent)
                 }
                 addNextIntent(intent)
@@ -115,22 +114,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             }
 
 
-
             //val pendingIntent = PendingIntent.getActivity(this, 0, intent,
             //    PendingIntent.FLAG_ONE_SHOT)
 
             val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            val notificationBuilder = NotificationCompat.Builder(this,"ridetogather")
+            val notificationBuilder = NotificationCompat.Builder(this, "ridetogather")
                 .setSmallIcon(R.drawable.ic_notification_car)
                 .setContentTitle(remoteMessage.data["title"])
                 .setContentText(remoteMessage.data["body"])
                 .setAutoCancel(true)
                 .setSound(soundUri)
                 .setContentIntent(resultPendingIntent)
-                .setStyle(NotificationCompat.BigTextStyle()
-                    .setBigContentTitle(remoteMessage.data["title"])
-                    .bigText(remoteMessage.data["body"]))
-            if(picUrl != null){
+                .setStyle(
+                    NotificationCompat.BigTextStyle()
+                        .setBigContentTitle(remoteMessage.data["title"])
+                        .bigText(remoteMessage.data["body"])
+                )
+            if (picUrl != null) {
                 notificationBuilder.setLargeIcon(getBitmapFromURL(picUrl))
             }
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

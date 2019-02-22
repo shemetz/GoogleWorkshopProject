@@ -77,7 +77,7 @@ object JsonParse {
         val userId = eventJson.getInt("user")
         val eventId = eventJson.getInt("event")
         val isDriver = eventJson.getBoolean("isDriver")
-        return Attending(attendingId,userId,eventId,isDriver)
+        return Attending(attendingId, userId, eventId, isDriver)
     }
 
     fun <T> array(jsonArray: JSONArray, specificFunction: (JSONObject) -> T): List<T> {
@@ -116,18 +116,27 @@ object Database {
         idOfCurrentUser = prefManager.thisUserId
     }
 
-    fun sendFirebaseNotification(to:Array<String>, title: String?, message:String?, picUrl:String?, intentName:String, keys:HashMap<String,Any>){
+    fun sendFirebaseNotification(
+        to: Array<String>,
+        title: String?,
+        message: String?,
+        picUrl: String?,
+        intentName: String,
+        keys: HashMap<String, Any>
+    ) {
         val url = "https://fcm.googleapis.com/fcm/send"
         val toJson = JSONArray()
         val keysJson = JSONObject(keys)
-        for(i in to){
+        for (i in to) {
             toJson.put(i)
         }
-        val data = jsonObjOf("title" to title,
+        val data = jsonObjOf(
+            "title" to title,
             "body" to message,
             "click_action" to intentName,
             "keys" to keysJson,
-            "pic_url" to picUrl)
+            "pic_url" to picUrl
+        )
 
         val postParams = jsonObjOf(
             "registration_ids" to toJson,
@@ -135,17 +144,18 @@ object Database {
         )
         val request: JsonObjectRequest = object : JsonObjectRequest(
             Request.Method.POST, url, postParams,
-            Response.Listener<JSONObject?> {response->
+            Response.Listener<JSONObject?> { response ->
                 Log.d(tag, "Got response for $url")
                 Log.v(tag, response!!.toString(4))
-            }, Response.ErrorListener {error->
+            }, Response.ErrorListener { error ->
                 logResponseError(error, url)
             }) {
             @Throws(AuthFailureError::class)
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] = "key=AAAA2UXUXYM:APA91bG2bbXcooQiIRwjntn_mdCEq_yViJtEZQkGwl-LH6NyU9_DaHXmRy9wo7uJKP5O6xvk5F7P0KBvR5x4eLhQaTQ9um4RkfxpQhqVHDJ5AmYm3YA_NmyxOBoAidXJokkHAcZoTq0g"
+                headers["Authorization"] =
+                    "key=AAAA2UXUXYM:APA91bG2bbXcooQiIRwjntn_mdCEq_yViJtEZQkGwl-LH6NyU9_DaHXmRy9wo7uJKP5O6xvk5F7P0KBvR5x4eLhQaTQ9um4RkfxpQhqVHDJ5AmYm3YA_NmyxOBoAidXJokkHAcZoTq0g"
                 return headers
             }
         }
@@ -334,7 +344,7 @@ object Database {
     fun getUsersForEvent(eventID: Id, successCallback: (List<User>) -> Unit) =
         generifiedGet1sFor2(eventID, "Users", "Event", JsonParse::user, successCallback)
 
-    fun getEventByFacebook(facebookEventId: String, successCallback: (Event) -> Unit, failedCallback:() ->Unit ){
+    fun getEventByFacebook(facebookEventId: String, successCallback: (Event) -> Unit, failedCallback: () -> Unit) {
         val url = "$SERVER_URL/getEventByFacebook/$facebookEventId"
         val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
             Response.Listener { response ->
@@ -343,7 +353,7 @@ object Database {
                 successCallback(JsonParse.event(response))
             },
             Response.ErrorListener { error ->
-                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
+                if (error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
                     failedCallback()
                 }
             })
@@ -351,7 +361,7 @@ object Database {
 
     }
 
-    fun getAttendingByIds(userId: Id,eventId: Id, successCallback: (Attending) -> Unit, failedCallback:() ->Unit ){
+    fun getAttendingByIds(userId: Id, eventId: Id, successCallback: (Attending) -> Unit, failedCallback: () -> Unit) {
         val url = "$SERVER_URL/getAttendingByIds/$userId/$eventId"
         val request = JsonObjectRequestWithNull(Request.Method.GET, url, null,
             Response.Listener { response ->
@@ -360,7 +370,7 @@ object Database {
                 successCallback(JsonParse.attending(response))
             },
             Response.ErrorListener { error ->
-                if(error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND){
+                if (error.networkResponse.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
                     failedCallback()
                 }
             })
@@ -409,7 +419,13 @@ object Database {
         requestJsonObject(Request.Method.POST, url, postParams)
     }
 
-    fun addEventWithCallback(name: String, location: Location, datetime: String, facebookEventId: String,successCallback: (Event) -> Unit) {
+    fun addEventWithCallback(
+        name: String,
+        location: Location,
+        datetime: String,
+        facebookEventId: String,
+        successCallback: (Event) -> Unit
+    ) {
         val postParams = jsonObjOf(
             "name" to name,
             "locationLat" to location.latitude,
