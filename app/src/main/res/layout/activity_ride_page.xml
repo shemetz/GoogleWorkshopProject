@@ -31,7 +31,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    android:text="@string/driver_name"
+                    android:text=""
+                    tools:text="@string/driver_name"
                     android:textColor="@color/profileNameColor"
                     android:textSize="16sp"
                     android:textStyle="bold"/>
@@ -41,21 +42,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    android:text="@string/car_model"/>
+                    android:text=""
+                    tools:text="@string/car_model"/>
 
             <TextView
                     android:id="@+id/carColor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    android:text="@string/car_color"/>
+                    android:text=""
+                    tools:text="@string/car_color"/>
 
             <TextView
                     android:id="@+id/departureTime"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    android:text="@string/departure_time_default_value"/>
+                    android:text=""
+                    tools:text="@string/departure_time_default_value"/>
 
             <TextView
                     android:id="@+id/originLocation"
@@ -131,7 +135,8 @@
             android:layout_marginTop="28dp"
             app:layout_constraintTop_toBottomOf="@+id/mainActionButton"/>
     <TextView
-            android:text="@string/passengers_summary_for_driver_plural"
+            android:text=""
+            tools:text="@string/passengers_summary_for_driver_plural"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/passengersSummary"
