@@ -23,7 +23,7 @@ class FacebookLoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_facebook_login)
 
         val prefManager = PrefManager(this@FacebookLoginActivity)
-        login_button.setReadPermissions(Arrays.asList("public_profile", "email", "user_events", "user_friends"))
+        login_button.setReadPermissions(Arrays.asList("public_profile", "email", "user_events"))
 
         login_button.registerCallback(callbackManager,
             object : FacebookCallback<LoginResult> {
@@ -62,11 +62,6 @@ class FacebookLoginActivity : AppCompatActivity() {
             Database.idOfCurrentUser = -1
         }
     }
-
-    /*fun openLoginScreen() {
-        LoginManager.getInstance()
-            .logInWithReadPermissions(this, Arrays.asList("public_profile", "email", "user_events", "user_friends"))
-    }*/
 
     private fun goToMainActivity() {
         // Go to MainActivity and start it

@@ -19,14 +19,15 @@ import android.view.*
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_eventrides.*
 import kotlinx.android.synthetic.main.card_ride.view.*
+import kotlinx.android.synthetic.main.content_eventrides.*
 
 class EventRidesActivity : AppCompatActivity() {
     private val tag = EventRidesActivity::class.java.simpleName
 
     companion object {
-        fun start(context: Context?, evenid: Int?) {
+        fun start(context: Context?, eventId: Int?) {
             val intent = Intent(context, EventRidesActivity::class.java)
-            intent.putExtra(Keys.EVENT_ID.name, evenid)
+            intent.putExtra(Keys.EVENT_ID.name, eventId)
             context?.startActivity(intent)
 
         }
@@ -34,7 +35,6 @@ class EventRidesActivity : AppCompatActivity() {
 
     private var eventId: Id = -1
     private var facebookEventId: String? = null
-    private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
 
@@ -96,8 +96,7 @@ class EventRidesActivity : AppCompatActivity() {
         Database.getRidesForEvent(eventId) { rides: List<Ride> ->
             viewAdapter = MyAdapter(this, rides.toTypedArray())
 
-            recyclerView = findViewById(R.id.rides_list_recycler_view)
-            recyclerView.apply {
+            rides_list_recycler_view?.apply {
                 // changes in content do not change the layout size of the RecyclerView
                 setHasFixedSize(true)
                 layoutManager = viewManager
@@ -116,7 +115,7 @@ class EventRidesActivity : AppCompatActivity() {
             fab_create_ride.show()
             viewAdapter = MyAdapter(this, rides.toTypedArray())
             viewAdapter.notifyDataSetChanged()
-            recyclerView.adapter = viewAdapter
+            rides_list_recycler_view?.adapter = viewAdapter
 
             val rideCreatedByThisUser = rides.singleOrNull { it.driverId == Database.idOfCurrentUser }
             if (rideCreatedByThisUser == null) {
@@ -245,10 +244,10 @@ class EventRidesActivity : AppCompatActivity() {
         builder.setMessage("Are you sure you want to leave group?")
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
-        builder.setPositiveButton(R.string.stay_group) { dialog, which ->
+        builder.setPositiveButton(R.string.stay_group) { dialog, _ ->
             dialog.dismiss()
         }
-        builder.setNegativeButton(R.string.leave_group) { dialog, which ->
+        builder.setNegativeButton(R.string.leave_group) { _, _ ->
             Database.removeUserFromEvent(Database.idOfCurrentUser,eventId)
             startActivity(Intent(applicationContext, MainActivity::class.java))
         }
