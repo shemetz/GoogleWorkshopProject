@@ -14,21 +14,24 @@
 
 
     <!-- Settings -->
-    <string name="pref_title_login_settings">Login</string>
-    <string name="pref_title_change_password">Change password</string>
-    <string name="pref_title_change_password_hint">Change password hint</string>
-    <string name="pref_title_security_settings">Security</string>
-    <string name="pref_title_auto_lock">Enable auto-lock</string>
-    <string name="pref_title_about_settings">About</string>
-    <string name="pref_title_upgrade">Upgrade</string>
-    <string name="pref_title_contact_us">Contact us</string>
-    <string name="pref_title_version">Version</string>
-    <string name="pref_key_change_password">PREF_KEY_CHANGE_PASSWORD</string>
-    <string name="pref_key_change_password_hint">PREF_KEY_CHANGE_PASSWORD_HINT</string>
-    <string name="pref_key_auto_lock">PREF_KEY_AUTO_LOCK</string>
-    <string name="pref_key_upgrade">PREF_KEY_UPGRADE</string>
-    <string name="pref_key_contact_us">PREF_KEY_CONTACT_US</string>
-    <string name="pref_key_version">PREF_KEY_VERSION</string>
+    <string name="pref_title_notifications_settings">Notify me when…</string>
+    <string name="pref_title_notification_when_my_request_is_accepted">My join request is accepted</string>
+    <string name="pref_title_notification_when_my_request_is_rejected">My join request is rejected</string>
+    <string name="pref_title_notification_when_someone_cancels_a_ride_i_am_in">My ride is canceled</string>
+    <string name="pref_title_notification_when_someone_requests_to_join_me">Someone asks to join my ride</string>
+    <string name="pref_title_notification_when_someone_cancels_their_pickup">Someone cancels their pick-up</string>
+    <string name="pref_key_notification_when_my_request_is_accepted">KEY_PREF_MY_REQUEST_ACCEPTED</string>
+    <string name="pref_key_notification_when_my_request_is_rejected">KEY_PREF_MY_REQUEST_REJECTED</string>
+    <string name="pref_key_notification_when_someone_cancels_a_ride_i_am_in">KEY_PREF_MY_RIDE_IS_DELETED</string>
+    <string name="pref_key_notification_when_someone_requests_to_join_me">KEY_PREF_REQUEST_FOR_ME</string>
+    <string name="pref_key_notification_when_someone_cancels_their_pickup">KEY_PREF_PICKUP_CANCEL</string>
+
+    <!-- Notifications -->
+    <string name="notification_title_pickup_accepted">Pick-up accepted</string>
+    <string name="notification_title_pickup_rejected">Pick-up rejected</string>
+    <string name="notification_title_ride_canceled">Ride canceled</string>
+    <string name="notification_title_new_pickup">Pick-up request</string>
+    <string name="notification_title_left_ride">Passenger left</string>
 
     <!-- Main activity -->
     <string name="temp_button_label_switch_user">(temp) Switch to other user</string>

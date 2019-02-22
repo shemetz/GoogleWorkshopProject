@@ -36,6 +36,7 @@ public class WelcomeActivity extends AppCompatActivity {
             launchHomeScreen();
             return;
         }
+        prefManager.setDefaultNotificationPreferences(this);
 
         // Making notification bar transparent
         if (Build.VERSION.SDK_INT >= 21) {

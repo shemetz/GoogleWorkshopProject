@@ -1,46 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory
-        android:key="category_login_settings"
-        android:title="@string/pref_title_login_settings">
 
-        <Preference
-            android:key="@string/pref_key_change_password"
-            android:title="@string/pref_title_change_password" />
-
-        <EditTextPreference
-            android:key="@string/pref_key_change_password_hint"
-            android:title="@string/pref_title_change_password_hint" />
-    </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="category_security_settings"
-        android:title="@string/pref_title_security_settings">
+        android:key="category_notification_settings"
+        android:title="@string/pref_title_notifications_settings">
 
         <SwitchPreference
-            android:key="@string/pref_key_auto_lock"
-            android:summary="Always prompt password login when the app is inactive for a while"
-            android:title="@string/pref_title_auto_lock" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:key="category_about_settings"
-        android:title="@string/pref_title_about_settings">
-
-        <Preference
-            android:key="@string/pref_key_upgrade"
-            android:summary="Upgrade to the Pro version now!"
-            android:title="@string/pref_title_upgrade" />
-
-        <Preference
-            android:key="@string/pref_key_contact_us"
-            android:summary="Email us for question, suggestion or bug report"
-            android:title="@string/pref_title_contact_us" />
-
-        <Preference
-            android:key="@string/pref_key_version"
-            android:title="@string/pref_title_version" />
+            android:key="@string/pref_key_notification_when_my_request_is_accepted"
+            android:title="@string/pref_title_notification_when_my_request_is_accepted" />
+        <SwitchPreference
+            android:key="@string/pref_key_notification_when_my_request_is_rejected"
+            android:title="@string/pref_title_notification_when_my_request_is_rejected" />
+        <SwitchPreference
+            android:key="@string/pref_key_notification_when_someone_cancels_a_ride_i_am_in"
+            android:title="@string/pref_title_notification_when_someone_cancels_a_ride_i_am_in" />
+        <SwitchPreference
+            android:key="@string/pref_key_notification_when_someone_requests_to_join_me"
+            android:title="@string/pref_title_notification_when_someone_requests_to_join_me" />
+        <SwitchPreference
+            android:key="@string/pref_key_notification_when_someone_cancels_their_pickup"
+            android:title="@string/pref_title_notification_when_someone_cancels_their_pickup" />
 
     </PreferenceCategory>
 </PreferenceScreen>

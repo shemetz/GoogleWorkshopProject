@@ -1,6 +1,7 @@
 package org.team2.ridetogather
 
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.preference.PreferenceFragmentCompat
 import android.util.Log
@@ -29,9 +30,28 @@ class SettingsActivity : AppCompatActivity() {
 
         // android.R.id.content is probably for old style activity
         supportFragmentManager.beginTransaction()
-                // .replace(android.R.id.content, SettingsFragment())
-                .replace(R.id.content, SettingsFragment())
-                .commit()
+            // .replace(android.R.id.content, SettingsFragment())
+            .replace(R.id.content, SettingsFragment())
+            .commit()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val prefManager = PrefManager(this)
+        val preferenceKeys = listOf(
+            R.string.pref_key_notification_when_my_request_is_accepted,
+            R.string.pref_key_notification_when_my_request_is_rejected,
+            R.string.pref_key_notification_when_someone_cancels_a_ride_i_am_in,
+            R.string.pref_key_notification_when_someone_requests_to_join_me,
+            R.string.pref_key_notification_when_someone_cancels_their_pickup
+        )
+        val defaultPrefManager = PreferenceManager.getDefaultSharedPreferences(this)
+        preferenceKeys.forEach {
+            val key = getString(it)
+            val value = defaultPrefManager.getBoolean(key, false)
+            Log.d(tag, "Preference $key is ${value.toString().toUpperCase()}")
+            prefManager.setNotificationPreference(key, value)
+        }
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {

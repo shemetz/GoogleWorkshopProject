@@ -369,10 +369,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                             val title: String
                                             val message: String
                                             if (pickupMarker.newState == PickupMarkerState.ACCEPTED) {
-                                                title = "Pick-up accepted"
+                                                title = getString(R.string.notification_title_pickup_accepted)
                                                 message = currentUser.name + " has accepted you to their ride."
                                             } else {
-                                                title = "Pick-up rejected"
+                                                title = getString(R.string.notification_title_pickup_rejected)
                                                 message = currentUser.name + " has rejected you from their ride."
                                             }
                                             val to = arrayOf(pickupUser.firebaseId)

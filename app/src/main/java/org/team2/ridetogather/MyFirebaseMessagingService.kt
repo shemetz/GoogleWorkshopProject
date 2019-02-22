@@ -53,14 +53,30 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage?) {
-        // ...
-
-        // TODO(developer): Handle FCM messages here.
+        remoteMessage ?: return
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
-        Log.d(TAG, "From: ${remoteMessage?.from}")
+        Log.d(TAG, "From: ${remoteMessage.from}")
+
 
         // Check if message contains a data payload.
-        remoteMessage?.data?.isNotEmpty()?.let {
+        remoteMessage.data?.isNotEmpty()?.let {
+            val matchingNotificationPreferenceKey = when (remoteMessage.data["title"]) {
+                null -> null
+                getString(R.string.notification_title_pickup_accepted) -> getString(R.string.pref_key_notification_when_my_request_is_accepted)
+                getString(R.string.notification_title_pickup_rejected) -> getString(R.string.pref_key_notification_when_my_request_is_rejected)
+                getString(R.string.notification_title_ride_canceled) -> getString(R.string.pref_key_notification_when_someone_cancels_a_ride_i_am_in)
+                getString(R.string.notification_title_new_pickup) -> getString(R.string.pref_key_notification_when_someone_requests_to_join_me)
+                getString(R.string.notification_title_left_ride) -> getString(R.string.pref_key_notification_when_someone_cancels_their_pickup)
+                else -> null
+            }
+            if (matchingNotificationPreferenceKey != null) {
+                val prefManager = PrefManager(this)
+                val allowed = prefManager.getNotificationPreference(matchingNotificationPreferenceKey)
+                if (!allowed) {
+                    Log.i("Firebase", "Ignoring notification with title: ${remoteMessage.data["title"]}")
+                    return // will ignore notification
+                }
+            }
             createChannel()
             val intent : Intent
             Log.d(TAG, "Message data payload: " + remoteMessage.data)

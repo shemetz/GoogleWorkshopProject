@@ -280,7 +280,7 @@ class RidePageActivity : AppCompatActivity() {
                                     }
                                     Database.getUser(ride.driverId){driver->
                                         val to = arrayOf(driver.firebaseId)
-                                        val title = "Pick-up left the ride"
+                                        val title = getString(R.string.notification_title_left_ride)
                                         val keys = hashMapOf(
                                             Keys.RIDE_ID.name to ride.id,
                                             Keys.DRIVER_PERSPECTIVE.name to true,
@@ -407,11 +407,11 @@ class RidePageActivity : AppCompatActivity() {
                                 val keys = HashMap<String,Any>()
                                 keys[Keys.EVENT_ID.name]= ride.eventId
                                 val activityName = "com.google.firebase.EVENT_RIDES"
-                                val title = "Ride canceled"
-                                val message = driver.name + " has canceled his ride"
+                                val title = getString(R.string.notification_title_ride_canceled)
+                                val message = driver.name + " has canceled their ride"
                                 //val toList = ArrayList<String>()
                                 getProfilePicUrl(driver.facebookProfileId){picUrl->
-                                    Database.getPickupsForRide(ride.id){ pickups ->
+                                    Database.getPickupsForRide(ride.id){pickups ->
                                         for(pickup in pickups){
                                             Log.d("firebase", "!!!!" + pickup.userId.toString())
                                             Database.getUser(pickup.userId){pickupUser->
