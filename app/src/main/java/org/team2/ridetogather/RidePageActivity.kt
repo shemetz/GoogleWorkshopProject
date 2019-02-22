@@ -38,7 +38,7 @@ class RidePageActivity : AppCompatActivity() {
     private var rideId: Id = -1 // updates in onCreate
     private lateinit var ride: Ride
     private val driversPerspective: Boolean by lazy { intent.getBooleanExtra(Keys.DRIVER_PERSPECTIVE.name, false) }
-    private lateinit var menu: Menu
+    private var leaveRideMenuButtonText: String? = null
 
 
     private fun showRideDetails() {
@@ -190,7 +190,6 @@ class RidePageActivity : AppCompatActivity() {
         passengersSummary.text = getString(string.loading)
         Database.getPickupsForRide(rideId) { pickups ->
             val numOfExistingPassengers = pickups.count { it.inRide }
-            invalidateOptionsMenu()
             if (driversPerspective) {
                 val numOfRequests = pickups.count { !it.inRide && !it.denied }
                 passengersSummary.text = if (numOfRequests > 0) getString(
@@ -242,7 +241,7 @@ class RidePageActivity : AppCompatActivity() {
                 when {
                     pickupOfCurrentUser == null -> {
                         // Pickup does not exist yet - create it
-                        menu.findItem(id.action_delete_ride).isVisible = false
+                        leaveRideMenuButtonText = null
                         Database.getRide(rideId) { ride ->
                             mainActionButton.isEnabled = true
                             mainActionButton.setBackgroundResource(R.drawable.button_shape)
@@ -264,15 +263,14 @@ class RidePageActivity : AppCompatActivity() {
                     }
                     pickupOfCurrentUser.denied -> {
                         // Pickup request was declined
-                        menu.findItem(id.action_delete_ride).isVisible = false
+                        leaveRideMenuButtonText = null
                         mainActionButton.isEnabled = false
                         mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                         mainActionButton.text = getString(string.request_declined)
                     }
                     pickupOfCurrentUser.inRide -> {
                         // Pickup request was approved
-                        menu.findItem(id.action_delete_ride).isVisible = true
-                        menu.findItem(id.action_delete_ride).title = getString(string.leave_ride)
+                        leaveRideMenuButtonText = getString(string.leave_ride)
                         mainActionButton.isEnabled = false
                         mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                         mainActionButton.text = getString(string.request_accepted)
@@ -321,8 +319,7 @@ class RidePageActivity : AppCompatActivity() {
                     }
                     else -> {
                         // Pickup request is still pending
-                        menu.findItem(id.action_delete_ride).isVisible = true
-                        menu.findItem(id.action_delete_ride).title = getString(string.cancel_request)
+                        leaveRideMenuButtonText = getString(string.cancel_request)
                         mainActionButton.isEnabled = false
                         mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                         mainActionButton.text = getString(string.request_is_pending)
@@ -350,6 +347,7 @@ class RidePageActivity : AppCompatActivity() {
                         }
                     }
                 }
+                invalidateOptionsMenu()
             }
         }
     }
@@ -367,14 +365,18 @@ class RidePageActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu_: Menu): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        menu = menu_
         menuInflater.inflate(R.menu.menu_ride_page, menu)
 
         if (!driversPerspective) {
             menu.findItem(id.action_edit_ride).isVisible = false
-            menu.findItem(id.action_delete_ride).isVisible = false
+            if (leaveRideMenuButtonText == null)
+                menu.findItem(id.action_delete_ride).isVisible = false
+            else {
+                menu.findItem(id.action_delete_ride).isVisible = true
+                menu.findItem(id.action_delete_ride).title = leaveRideMenuButtonText
+            }
         }
         return true
     }
