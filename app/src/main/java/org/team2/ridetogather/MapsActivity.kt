@@ -513,7 +513,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 fab_confirm_location.setImageDrawable(getDrawable(R.drawable.ic_done_black_24dp))
 
                 // this doesn't work for some reason :(
-                fab_confirm_location.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                fab_confirm_location.setBackgroundResource(R.drawable.button_shape)
+
             }
         }
     }

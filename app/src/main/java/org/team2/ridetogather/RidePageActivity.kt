@@ -225,7 +225,7 @@ class RidePageActivity : AppCompatActivity() {
                         menu.findItem(id.action_delete_ride).isVisible = false
                         Database.getRide(rideId) { ride ->
                             mainActionButton.isEnabled = true
-                            mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.colorPrimary))
+                            mainActionButton.setBackgroundResource(R.drawable.button_shape)
                             mainActionButton.text = getString(string.join_ride)
                             mainActionButton.setOnClickListener {
                                 val intent = Intent(applicationContext, MapsActivity::class.java)
