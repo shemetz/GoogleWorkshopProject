@@ -23,7 +23,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginEnd="8dp"
                 android:src="@drawable/ic_face_black_24dp"
-                app:srcCompat="@drawable/example_profile_photo"
+                app:srcCompat="@drawable/placeholder_profile_circle"
                 tools:ignore="ContentDescription" />
 
         <LinearLayout
@@ -43,24 +43,6 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     tools:text="Dave Driverson" />
-            <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@android:drawable/star_on"
-                        android:layout_gravity="center"
-                        android:id="@+id/imageView3"/>
-                <TextView
-                        android:text="@string/credits"
-                        android:layout_width="wrap_content"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:layout_height="match_parent" android:id="@+id/passengerCredits"
-                />
-            </LinearLayout>
 
 
         </LinearLayout>

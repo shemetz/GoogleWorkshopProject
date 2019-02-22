@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.content_eventrides.*
-import org.team2.ridetogather.adapter.PassengerssAdapter
+import org.team2.ridetogather.adapter.PassengersAdapter
 
 
 /**
@@ -53,13 +53,13 @@ class PassengersListFragment : Fragment() {
             if (users.size != 0) {
                 list.clear()
                 if (rides_list_recycler_view.adapter != null) {
-                    val adapter = rides_list_recycler_view.adapter as PassengerssAdapter
+                    val adapter = rides_list_recycler_view.adapter as PassengersAdapter
                     val size = adapter.itemCount
                     adapter.items.clear()
                     adapter.notifyItemRangeRemoved(0, size)
                 }
                 list.addAll(users)
-                rides_list_recycler_view.adapter = PassengerssAdapter(list, context)
+                rides_list_recycler_view.adapter = PassengersAdapter(list, context)
                 rides_list_recycler_view.adapter.notifyDataSetChanged()
             } else {
 

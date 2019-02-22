@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.facebook_event.view.*
 import org.team2.ridetogather.*
 import java.util.*
 
-class UserEventsAdapter(val items: ArrayList<Event>, val context: Context, var itemClickListener: ItemClickListener?) :
+class UserEventsAdapter(private val items: ArrayList<Event>, val context: Context, private var itemClickListener: ItemClickListener?) :
     RecyclerView.Adapter<ViewHolderEvent>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderEvent {
@@ -18,34 +18,29 @@ class UserEventsAdapter(val items: ArrayList<Event>, val context: Context, var i
     }
 
     override fun onBindViewHolder(holder: ViewHolderEvent, position: Int) {
-        holder?.eventTitle?.text = items.get(position).name
-        geocode(context, items.get(position).location.toLatLng()) {
-            holder?.eventLocation?.text = it
+        holder.eventTitle.text = items[position].name
+        geocode(context, items[position].location.toLatLng()) {
+            holder.eventLocation.text = it
         }
-        holder?.eventDateTime?.text = formatDatetime(items.get(position).datetime)
+        holder.eventDateTime?.text = formatDatetime(items[position].datetime)
 
-        val facebookId = items.get(position).facebookEventId
+        val facebookId = items[position].facebookEventId
         getEventUrl(facebookId) { pic_url ->
             Picasso.get()
                 .load(pic_url)
                 .placeholder(R.drawable.ic_tab_events)
                 .error(R.drawable.ic_tab_events)
-                .into(holder?.eventPicture)
+                .into(holder.eventPicture)
         }
 
-        holder?.card_view.setOnClickListener(View.OnClickListener {
-
-            itemClickListener?.onItemClicked(items.get(position), position)
-        })
-
+        holder.card_view.setOnClickListener {
+            itemClickListener?.onItemClicked(items[position], position)
+        }
     }
 
-    // Gets the number of animals in the list
     override fun getItemCount(): Int {
         return items.size
     }
-
-
 }
 
 class ViewHolderEvent(view: View) : RecyclerView.ViewHolder(view) {
@@ -57,6 +52,5 @@ class ViewHolderEvent(view: View) : RecyclerView.ViewHolder(view) {
 }
 
 interface ItemClickListener {
-
     fun onItemClicked(item: Any, pos: Int)
 }

@@ -12,7 +12,7 @@ import org.team2.ridetogather.R
 import org.team2.ridetogather.User
 import org.team2.ridetogather.getProfilePicUrl
 
-class PassengerssAdapter(val items: ArrayList<User>, val context: Context?) : RecyclerView.Adapter<ViewHolderPes>() {
+class PassengersAdapter(val items: ArrayList<User>, val context: Context?) : RecyclerView.Adapter<ViewHolderPes>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPes {
         return ViewHolderPes(LayoutInflater.from(context).inflate(R.layout.item_passengers, parent, false))
@@ -22,7 +22,6 @@ class PassengerssAdapter(val items: ArrayList<User>, val context: Context?) : Re
 
 
         holder.passengerName?.text = items.get(position).name
-        holder.credits?.text = items.get(position).credits.toString()
 
         val facebookId = items.get(position).facebookProfileId
         getProfilePicUrl(facebookId) { pic_url ->
@@ -34,23 +33,15 @@ class PassengerssAdapter(val items: ArrayList<User>, val context: Context?) : Re
                 .transform(CircleTransform())
                 .into(holder.passengerPicture)
         }
-
-
     }
 
-    // Gets the number of animals in the list
     override fun getItemCount(): Int {
         return items.size
     }
-
-
 }
 
 class ViewHolderPes(view: View) : RecyclerView.ViewHolder(view) {
-    // Holds the TextView that will add each animal to
     val passengerName = view.passengerName
     val passengerPicture = view.passengerPicture
-    val credits = view.passengerCredits
-
 }
 
