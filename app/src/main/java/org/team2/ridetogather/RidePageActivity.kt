@@ -193,8 +193,12 @@ class RidePageActivity : AppCompatActivity() {
                 mainActionButton.setBackgroundResource(R.drawable.button_shape)
                 if (numOfRequests == 0) {
                     mainActionButton.text = getString(string.edit_route)
+                    if(numOfExistingPassengers == 0) {
+                        mainActionButton.visibility = View.GONE
+                    }
                 } else {
                     mainActionButton.text = getString(string.view_requests)
+                    mainActionButton.visibility = View.VISIBLE
                 }
                 Database.getRide(rideId) { ride ->
                     mainActionButton.setOnClickListener {
