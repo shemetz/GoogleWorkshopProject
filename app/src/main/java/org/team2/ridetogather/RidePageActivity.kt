@@ -148,6 +148,25 @@ class RidePageActivity : AppCompatActivity() {
             Database.addPickup(rideId, Database.idOfCurrentUser, pickedLocation) {
                 updateStuffAndMaybeShowToast()
             }
+            // Send notification
+            Database.getUser(ride.driverId) { driverUser ->
+                Database.getUser(Database.idOfCurrentUser) { currentUser ->
+                    getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
+                        val title = getString(R.string.notification_title_new_pickup)
+                        val message = currentUser.name + " has asked to join your ride."
+                        val to = arrayOf(driverUser.firebaseId)
+                        val keys = hashMapOf(
+                                Keys.RIDE_ID.name to ride.id,
+                                Keys.DRIVER_PERSPECTIVE.name to true,
+                                Keys.EVENT_ID.name to ride.eventId
+                            )
+                        Database.sendFirebaseNotification(
+                            to, title, message, picUrl,
+                            "com.google.firebase.RIDE_PAGE", keys
+                        )
+                    }
+                }
+            }
         } else {
             updateStuffAndMaybeShowToast()
         }
