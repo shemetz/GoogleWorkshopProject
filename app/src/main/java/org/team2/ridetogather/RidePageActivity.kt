@@ -18,7 +18,6 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_ride_page.*
 import kotlinx.android.synthetic.main.card_ride_page.view.*
 import org.team2.ridetogather.R.*
-import android.support.constraint.ConstraintLayout
 import android.view.ViewGroup
 
 
@@ -71,7 +70,7 @@ class RidePageActivity : AppCompatActivity() {
         details.visibility = View.INVISIBLE
 
         mainActionButton.isEnabled = false
-        mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
+        mainActionButton.setBackgroundResource(R.drawable.button_disabled)
         mainActionButton.text = getString(string.loading)
     }
 
@@ -171,7 +170,7 @@ class RidePageActivity : AppCompatActivity() {
         }
 
         mainActionButton.isEnabled = false
-        mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
+        mainActionButton.setBackgroundResource(R.drawable.button_disabled)
         mainActionButton.text = getString(string.loading)
         passengersSummary.text = getString(string.loading)
         Database.getPickupsForRide(rideId) { pickups ->
@@ -191,18 +190,12 @@ class RidePageActivity : AppCompatActivity() {
                 )
 
                 mainActionButton.isEnabled = true
-                mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.colorPrimary))
-                val layoutParams = mainActionButton.layoutParams as ConstraintLayout.LayoutParams
+                mainActionButton.setBackgroundResource(R.drawable.button_shape)
                 if (numOfRequests == 0) {
                     mainActionButton.text = getString(string.edit_route)
-                    layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
                 } else {
                     mainActionButton.text = getString(string.view_requests)
-                    layoutParams.width = 350
                 }
-                mainActionButton.layoutParams = layoutParams
-                mainActionButton.requestLayout()
-
                 Database.getRide(rideId) { ride ->
                     mainActionButton.setOnClickListener {
                         val intent = Intent(applicationContext, MapsActivity::class.java)
@@ -253,19 +246,15 @@ class RidePageActivity : AppCompatActivity() {
                         // Pickup request was declined
                         menu.findItem(id.action_delete_ride).isVisible = false
                         mainActionButton.isEnabled = false
-                        mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
+                        mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                         mainActionButton.text = getString(string.request_declined)
-                        val layoutParams = mainActionButton.layoutParams as ConstraintLayout.LayoutParams
-                        layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
-                        mainActionButton.layoutParams = layoutParams
-                        mainActionButton.requestLayout()
                     }
                     pickupOfCurrentUser.inRide -> {
                         // Pickup request was approved
                         menu.findItem(id.action_delete_ride).isVisible = true
                         menu.findItem(id.action_delete_ride).title = getString(string.leave_ride)
                         mainActionButton.isEnabled = false
-                        mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
+                        mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                         mainActionButton.text = getString(string.request_accepted)
 
                         // the listener is actually a listener for the options menu button, now
@@ -301,7 +290,7 @@ class RidePageActivity : AppCompatActivity() {
                                         }
                                     }
                                     mainActionButton.isEnabled = false
-                                    mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
+                                    mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                                     mainActionButton.text = getString(string.updating)
                                 }
                                 .setNegativeButton(string.no, null).show()
@@ -312,7 +301,7 @@ class RidePageActivity : AppCompatActivity() {
                         menu.findItem(id.action_delete_ride).isVisible = true
                         menu.findItem(id.action_delete_ride).title = getString(string.cancel_request)
                         mainActionButton.isEnabled = false
-                        mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
+                        mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                         mainActionButton.text = getString(string.request_is_pending)
 
                         // the listener is actually a listener for the options menu button, now
@@ -331,7 +320,7 @@ class RidePageActivity : AppCompatActivity() {
                                         recreate() // to be updated
                                     }
                                     mainActionButton.isEnabled = false
-                                    mainActionButton.setBackgroundColor(ContextCompat.getColor(this, color.disabledGrey))
+                                    mainActionButton.setBackgroundResource(R.drawable.button_disabled)
                                     mainActionButton.text = getString(string.updating)
                                 }
                                 .setNegativeButton(string.no, null).show()

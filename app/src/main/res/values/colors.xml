@@ -14,7 +14,8 @@
     <color name="firstScreen">#006064</color>
     <color name="confirmation">#04B518</color>
     <color name="routeColor">#0055ff</color>
-    <color name="disabledGrey">#AAAAAA</color>
+    <color name="disabledGrey">#aaaaaa</color>
+    <color name="disabledBorder">#aaaaaa</color>
     <!--template colors-->
 
 
