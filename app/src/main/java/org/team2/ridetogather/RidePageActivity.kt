@@ -20,7 +20,6 @@ import kotlinx.android.synthetic.main.card_ride_page.view.*
 import org.team2.ridetogather.R.*
 
 class RidePageActivity : AppCompatActivity() {
-
     companion object {
         fun start(context: Context?, rideId: Int?, driverPerspective: Boolean, clearPrevActivity: Boolean = false) {
             val intent = Intent(context, RidePageActivity::class.java)
@@ -172,6 +171,7 @@ class RidePageActivity : AppCompatActivity() {
         passengersSummary.text = getString(string.loading)
         Database.getPickupsForRide(rideId) { pickups ->
             val numOfExistingPassengers = pickups.count { it.inRide }
+            invalidateOptionsMenu()
             if (driversPerspective) {
                 val numOfRequests = pickups.count { !it.inRide && !it.denied }
                 passengersSummary.text = if (numOfRequests > 0) getString(
