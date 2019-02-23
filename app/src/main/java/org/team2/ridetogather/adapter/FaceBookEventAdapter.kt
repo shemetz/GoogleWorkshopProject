@@ -8,9 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.facebook_event.view.*
-import org.team2.ridetogather.Datetime
+import org.team2.ridetogather.ApiRequests
 import org.team2.ridetogather.R
-import org.team2.ridetogather.getEventUrl
 import java.util.*
 
 class FacebookEventAdapter(val items : ArrayList<FacebookEvent>, val context: Context?,var itemClickListener: ItemClickListener?) : RecyclerView.Adapter<ViewHolderFacebookEvent>() {
@@ -25,7 +24,7 @@ class FacebookEventAdapter(val items : ArrayList<FacebookEvent>, val context: Co
         holder.eventDateTime?.text = items[position].datetime
 
         val facebookId = items[position].id
-        getEventUrl(facebookId) { pic_url ->
+        ApiRequests.getEventUrl(facebookId) { pic_url ->
             Picasso.get()
                 .load(pic_url)
                 .placeholder(R.drawable.ic_tab_events)

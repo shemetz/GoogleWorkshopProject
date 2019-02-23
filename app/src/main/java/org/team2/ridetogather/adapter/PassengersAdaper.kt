@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.item_passengers.view.*
+import org.team2.ridetogather.ApiRequests
 import org.team2.ridetogather.CircleTransform
 import org.team2.ridetogather.R
 import org.team2.ridetogather.User
-import org.team2.ridetogather.getProfilePicUrl
 
 class PassengersAdapter(val items: ArrayList<User>, val context: Context?) : RecyclerView.Adapter<ViewHolderPes>() {
 
@@ -24,7 +24,7 @@ class PassengersAdapter(val items: ArrayList<User>, val context: Context?) : Rec
         holder.passengerName?.text = items.get(position).name
 
         val facebookId = items.get(position).facebookProfileId
-        getProfilePicUrl(facebookId) { pic_url ->
+        ApiRequests.getProfilePicUrl(facebookId) { pic_url ->
             Picasso.get()
                 .load(pic_url)
                 .placeholder(R.drawable.placeholder_profile_circle)

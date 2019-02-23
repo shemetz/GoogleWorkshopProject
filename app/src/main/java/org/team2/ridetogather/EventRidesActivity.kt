@@ -42,7 +42,7 @@ class EventRidesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_eventrides)
         setSupportActionBar(toolbar)
-        Database.initializeIfNeeded(this)
+        initializeAppIfNeeded(this)
 
         // The next line gets the event ID either from the intent extras or from the saved activity state.
         eventId = intent.getIntExtra(Keys.EVENT_ID.name, savedInstanceState?.getInt(Keys.EVENT_ID.name) ?: -1)
@@ -76,7 +76,7 @@ class EventRidesActivity : AppCompatActivity() {
             facebookEventId = event.facebookEventId
             toolbar_layout.title = event.name
             toolbar_layout.setExpandedTitleColor(ContextCompat.getColor(this, R.color.title_light))
-            geocode(this@EventRidesActivity, event.location.toLatLng()) {
+            ApiRequests.geocode(this@EventRidesActivity, event.location.toLatLng()) {
                 tv_description.text = it
             }
             tv_title.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -178,7 +178,7 @@ class EventRidesActivity : AppCompatActivity() {
                 view.driverName.text = driver.name
 
                 val facebookId = driver.facebookProfileId
-                getProfilePicUrl(facebookId) { pic_url ->
+                ApiRequests.getProfilePicUrl(facebookId) { pic_url ->
                     Picasso.get()
                         .load(pic_url)
                         .placeholder(R.drawable.placeholder_profile_circle)
@@ -188,7 +188,7 @@ class EventRidesActivity : AppCompatActivity() {
                         .into(view.driverPicture)
                 }
             }
-            geocode(context, ride.origin.toLatLng()) {
+            ApiRequests.geocode(context, ride.origin.toLatLng()) {
                 view.originLocationName.text = it
             }
             view.departureTime.text = ride.departureTime.shortenedTime()

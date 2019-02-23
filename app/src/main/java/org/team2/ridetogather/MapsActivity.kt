@@ -69,7 +69,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-        Database.initializeIfNeeded(this)
+        initializeAppIfNeeded(this)
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         val requestCodeInt = intent.getIntExtra(Keys.REQUEST_CODE.name, -1)
         requestCode = MapsActivity.Companion.RequestCode.values()[requestCodeInt]
@@ -192,7 +192,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         val pickupMarker = PickupMarker(pickup, marker, IconTarget(marker), state, state)
                         marker.tag = pickupMarker
                         pickupMarkers.add(pickupMarker)
-                        getProfilePicUrl(passenger.facebookProfileId) { picUrl ->
+                        ApiRequests.getProfilePicUrl(passenger.facebookProfileId) { picUrl ->
                             Log.i(tag, "Picasso is loading profile pic")
                             Picasso.get()
                                 .load(picUrl)
@@ -365,7 +365,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             PickupMarkerState.ACCEPTED, PickupMarkerState.DENIED -> {
                                 Database.getUser(pickupMarker.pickup.userId) { pickupUser ->
                                     Database.getUser(Database.idOfCurrentUser) { currentUser ->
-                                        getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
+                                        ApiRequests.getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
                                             val title: String
                                             val message: String
                                             if (pickupMarker.newState == PickupMarkerState.ACCEPTED) {
@@ -383,7 +383,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                                     Keys.EVENT_ID.name to ride!!.eventId
                                                 )
                                             Log.d("Firebase", to.toString())
-                                            Database.sendFirebaseNotification(
+                                            ApiRequests.sendFirebaseNotification(
                                                 to, title, message, picUrl,
                                                 "com.google.firebase.RIDE_PAGE", keys
                                             )
@@ -648,7 +648,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.v(tag, "Starting countdown(${waypoints.size})…")
             val countdown = CountDownLatch(waypoints.size)
             waypoints.forEach { latLng ->
-                geocode(this@MapsActivity, latLng) {
+                ApiRequests.geocode(this@MapsActivity, latLng) {
                     countdown.countDown()
                     Log.v(tag, "Completed $latLng → $it")
                 }
@@ -675,7 +675,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 "optimizeWaypoints" to "true"
             ) else emptyMap()
             Log.i(tag, "Requesting route from Google Maps API…")
-            Database.requestJsonObjectFromGoogleApi(
+            ApiRequests.requestJsonObjectFromGoogleApi(
                 "maps/api/directions/json", params
             ) { responseJson ->
                 Log.i(tag, "Got a response! \\o/")

@@ -25,7 +25,7 @@ class RideCreationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ridecreation)
-        Database.initializeIfNeeded(this)
+        initializeAppIfNeeded(this)
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
         val existingRideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Event ID $eventId")
@@ -146,7 +146,7 @@ class RideCreationActivity : AppCompatActivity() {
                 cal.set(Calendar.HOUR_OF_DAY, ride.departureTime.hours)
                 cal.set(Calendar.MINUTE, ride.departureTime.minutes)
                 pick_time_button.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
-                geocode(this@RideCreationActivity, originLocation!!.toLatLng()) {
+                ApiRequests.geocode(this@RideCreationActivity, originLocation!!.toLatLng()) {
                     btn_origin.text = it
                 }
             }
@@ -161,7 +161,7 @@ class RideCreationActivity : AppCompatActivity() {
                     originLocation = originLocationStr!!.decodeToLatLng().toLocation()
                     val routeJsonStr = data.getStringExtra(Keys.ROUTE_JSON.name)
                     btn_origin.text = getString(R.string.updating)
-                    geocode(this@RideCreationActivity, originLocation!!.toLatLng()) {
+                    ApiRequests.geocode(this@RideCreationActivity, originLocation!!.toLatLng()) {
                         btn_origin.text = it
                     }
                     if (routeJsonStr.isNotBlank()) {

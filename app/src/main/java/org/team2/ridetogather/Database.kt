@@ -2,208 +2,19 @@
 
 package org.team2.ridetogather
 
-import android.content.Context
 import android.util.Log
-import com.android.volley.*
+import com.android.volley.Request
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import com.google.android.gms.maps.model.LatLng
-import okhttp3.HttpUrl
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
-import java.io.UnsupportedEncodingException
 import java.net.HttpURLConnection
-import java.nio.charset.Charset
 
-
-object JsonParse {
-
-    fun ride(rideJson: JSONObject): Ride {
-        val rideId = rideJson.getInt("id")
-        val driverId = rideJson.getInt("driver")
-        val eventId = rideJson.getInt("event")
-        val origin = LatLng(
-            rideJson.getDouble("originLat"),
-            rideJson.getDouble("originLong")
-        ).toLocation()
-        val departureTime = TimeOfDay(rideJson.getInt("departureHour"), rideJson.getInt("departureMinute"))
-        val carModel = rideJson.getString("carModel")
-        val carColor = rideJson.getString("carColor")
-        val passengerCount = rideJson.getInt("passengerCount")
-        val extraDetails = rideJson.getString("extraDetails")
-
-        return Ride(rideId, driverId, eventId, origin, departureTime, carModel, carColor, passengerCount, extraDetails)
-    }
-
-    fun pickup(pickupJson: JSONObject): Pickup {
-        val pickupId = pickupJson.getInt("id")
-        val userId = pickupJson.getInt("user")
-        val rideId = pickupJson.getInt("ride")
-        val pickupSpot = LatLng(
-            pickupJson.getDouble("pickupLat"),
-            pickupJson.getDouble("pickupLong")
-        ).toLocation()
-        val pickupTime = TimeOfDay(pickupJson.optInt("pickupHour"), pickupJson.optInt("pickupMinute"))
-        val inRide = pickupJson.getBoolean("inRide")
-        val denied = pickupJson.getBoolean("denied")
-        return Pickup(pickupId, userId, rideId, pickupSpot, pickupTime, inRide, denied)
-    }
-
-    fun user(userJson: JSONObject): User {
-        val userId = userJson.getInt("id")
-        val name = userJson.getString("name")
-        val facebookProfileId = userJson.getString("facebookProfileId")
-        val credits = userJson.getInt("credits")
-        val firebaseId = userJson.getString("firebaseId")
-        return User(userId, name, facebookProfileId, credits, firebaseId)
-    }
-
-    fun event(eventJson: JSONObject): Event {
-        val eventId = eventJson.getInt("id")
-        val eventName = eventJson.getString("name")
-        val eventLocation = LatLng(
-            eventJson.getDouble("locationLat"),
-            eventJson.getDouble("locationLong")
-        ).toLocation()
-        val eventDatetime = parseStandardDatetime(eventJson.getString("datetime"))
-        val facebookEventId = eventJson.getString("facebookEventId")
-        return Event(eventId, eventName, eventLocation, eventDatetime, facebookEventId)
-    }
-
-    fun attending(eventJson: JSONObject): Attending {
-        val attendingId = eventJson.getInt("id")
-        val userId = eventJson.getInt("user")
-        val eventId = eventJson.getInt("event")
-        val isDriver = eventJson.getBoolean("isDriver")
-        return Attending(attendingId, userId, eventId, isDriver)
-    }
-
-    fun <T> array(jsonArray: JSONArray, specificFunction: (JSONObject) -> T): List<T> {
-        val things = mutableListOf<T>()
-        for (i in 0 until jsonArray.length()) {
-            things.add(specificFunction(jsonArray.getJSONObject(i)))
-        }
-        return things
-    }
-}
 
 object Database {
-    private lateinit var requestQueue: RequestQueue
     private val tag = Database::class.java.simpleName
     private const val SERVER_URL = "https://ridetogather.herokuapp.com"
-    private const val CACHE_TIME_MS = 1000 * 5  // 5 seconds
     var idOfCurrentUser: Id = -1
-
-    data class CacheEntry(
-        val response: Any,
-        val birthTime: Datetime
-    )
-
-    val cacheOfGETs = mutableMapOf<String, CacheEntry>()
-
-    fun initializeIfNeeded(activityContext: Context) {
-        if (idOfCurrentUser != -1) {
-            Log.d(tag, "Database is already initialized, it's OK")
-            return
-        }
-        Log.i(tag, "Initializing Database")
-        // applicationContext is key, it keeps you from leaking the
-        // Activity or BroadcastReceiver if someone passes one in.
-        requestQueue = Volley.newRequestQueue(activityContext.applicationContext)
-        val prefManager = PrefManager(activityContext)
-        idOfCurrentUser = prefManager.thisUserId
-    }
-
-    fun sendFirebaseNotification(
-        to: Array<String>,
-        title: String?,
-        message: String?,
-        picUrl: String?,
-        intentName: String,
-        keys: HashMap<String, Any>
-    ) {
-        val url = "https://fcm.googleapis.com/fcm/send"
-        val toJson = JSONArray()
-        val keysJson = JSONObject(keys)
-        for (i in to) {
-            toJson.put(i)
-        }
-        val data = jsonObjOf(
-            "title" to title,
-            "body" to message,
-            "click_action" to intentName,
-            "keys" to keysJson,
-            "pic_url" to picUrl
-        )
-
-        val postParams = jsonObjOf(
-            "registration_ids" to toJson,
-            "data" to data
-        )
-        val request: JsonObjectRequest = object : JsonObjectRequest(
-            Request.Method.POST, url, postParams,
-            Response.Listener<JSONObject?> { response ->
-                Log.d(tag, "Got response for $url")
-                Log.v(tag, response!!.toString(4))
-            }, Response.ErrorListener { error ->
-                logResponseError(error, url)
-            }) {
-            @Throws(AuthFailureError::class)
-            override fun getHeaders(): Map<String, String> {
-                val headers = HashMap<String, String>()
-                headers["Content-Type"] = "application/json"
-                headers["Authorization"] =
-                    "key=AAAA2UXUXYM:APA91bG2bbXcooQiIRwjntn_mdCEq_yViJtEZQkGwl-LH6NyU9_DaHXmRy9wo7uJKP5O6xvk5F7P0KBvR5x4eLhQaTQ9um4RkfxpQhqVHDJ5AmYm3YA_NmyxOBoAidXJokkHAcZoTq0g"
-                return headers
-            }
-        }
-        requestQueue.add(request)
-    }
-
-    fun requestJsonObjectFromGoogleApi(
-        partialUrl: String,
-        getParams: Map<String, String>,
-        successCallback: (JSONObject) -> Unit = {}
-    ) {
-        val httpUrl = HttpUrl.Builder()
-            .scheme("https")
-            .host("maps.googleapis.com")
-            .addPathSegments(partialUrl)
-        getParams.entries.forEach {
-            val (key, value) = it
-            httpUrl.addQueryParameter(key, value)
-        }
-        val request = JsonObjectRequestWithNull(
-            Request.Method.GET,
-            httpUrl.build().toString(),
-            null,
-            Response.Listener { response ->
-                Log.d(tag, "Got response for ${httpUrl.build()}")
-                Log.v(tag, response.toString(4))
-                successCallback(response)
-            },
-            Response.ErrorListener { error ->
-                logResponseError(error, partialUrl)
-            })
-        requestQueue.add(request)
-    }
-
-    private fun logResponseError(error: VolleyError, url: String) {
-        if (error.networkResponse == null) {
-            Log.e(tag, "Response error: ${error.message} (for $url)")
-            return
-        }
-        val errorData = String(error.networkResponse.data, Charset.forName("utf-8"))
-        try {
-            val errors = JSONObject(errorData).getJSONArray("errors")
-            val errorMessage = errors.getJSONObject(0).getString("message")
-            Log.e(tag, "Response error: $errorMessage (for $url)")
-        } catch (e: JSONException) {
-            Log.e(tag, "Response error: $errorData (for $url)")
-        }
-    }
 
     private fun requestJsonObject(
         method: Int,
@@ -212,9 +23,10 @@ object Database {
         successCallback: (JSONObject) -> Unit = {},
         errorListener: Response.ErrorListener? = null
     ) {
+        val cacheOfGETs = InternetRequests.cacheOfGETs
         val now = System.currentTimeMillis()
         if (cacheOfGETs.containsKey(url) && method == Request.Method.GET) {
-            if (now - cacheOfGETs[url]!!.birthTime.time < Database.CACHE_TIME_MS) {
+            if (now - cacheOfGETs[url]!!.birthTime.time < InternetRequests.CACHE_TIME_MS) {
                 Log.d(tag, "Cached response for $url")
                 successCallback(cacheOfGETs[url]!!.response as JSONObject)
                 return
@@ -235,13 +47,13 @@ object Database {
             Response.Listener { response ->
                 Log.d(tag, "Got response for $url")
                 Log.v(tag, response.toString(4))
-                cacheOfGETs[url] = CacheEntry(response, Datetime(now))
+                cacheOfGETs[url] = InternetRequests.CacheEntry(response, Datetime(now))
                 successCallback(response)
             },
             errorListener ?: Response.ErrorListener { error ->
-                logResponseError(error, url)
+                InternetRequests.logResponseError(error, url)
             })
-        requestQueue.add(request)
+        InternetRequests.addRequest(request)
     }
 
     private fun requestJsonArray(
@@ -252,9 +64,10 @@ object Database {
         successCallback: (JSONArray) -> Unit = {},
         errorListener: Response.ErrorListener? = null
     ) {
+        val cacheOfGETs = InternetRequests.cacheOfGETs
         val now = System.currentTimeMillis()
         if (cacheOfGETs.containsKey(url) && method == Request.Method.GET) {
-            if (now - cacheOfGETs[url]!!.birthTime.time < Database.CACHE_TIME_MS) {
+            if (now - cacheOfGETs[url]!!.birthTime.time < InternetRequests.CACHE_TIME_MS) {
                 Log.d(tag, "Cached response for $url")
                 successCallback(cacheOfGETs[url]!!.response as JSONArray)
                 return
@@ -269,13 +82,13 @@ object Database {
             Response.Listener { response ->
                 Log.d(tag, "Got response for $url")
                 Log.v(tag, response.toString(4))
-                cacheOfGETs[url] = CacheEntry(response, Datetime(now))
+                cacheOfGETs[url] = InternetRequests.CacheEntry(response, Datetime(now))
                 successCallback(response)
             },
             errorListener ?: Response.ErrorListener { error ->
-                logResponseError(error, url)
+                InternetRequests.logResponseError(error, url)
             })
-        requestQueue.add(request)
+        InternetRequests.addRequest(request)
     }
 
     private fun <T> generifiedGet(
@@ -357,7 +170,7 @@ object Database {
                     failedCallback()
                 }
             })
-        requestQueue.add(request)
+        InternetRequests.addRequest(request)
 
     }
 
@@ -374,7 +187,7 @@ object Database {
                     failedCallback()
                 }
             })
-        requestQueue.add(request)
+        InternetRequests.addRequest(request)
 
     }
 
@@ -585,44 +398,8 @@ object Database {
             postParams,
             { onCallback() },
             Response.ErrorListener { error ->
-                logResponseError(error, url)
+                InternetRequests.logResponseError(error, url)
                 onCallback()
             })
-    }
-
-    /**
-     * See: https://stackoverflow.com/a/29407122/1703463
-     * Solution from: https://stackoverflow.com/a/24566878/1703463
-     */
-    class JsonObjectRequestWithNull(
-        method: Int, url: String, jsonRequest: JSONObject?,
-        listener: Response.Listener<JSONObject>, errorListener: Response.ErrorListener
-    ) : JsonObjectRequest(
-        method,
-        url,
-        jsonRequest,
-        listener,
-        errorListener
-    ) {
-        override fun parseNetworkResponse(response: NetworkResponse): Response<JSONObject> {
-            val responseMaybeNull =
-                try {
-                    if (response.data.isEmpty()) {
-                        val responseData = "{}".toByteArray(charset("UTF8"))
-                        NetworkResponse(
-                            response.statusCode,
-                            responseData,
-                            response.notModified,
-                            response.networkTimeMs,
-                            response.allHeaders
-                        )
-                    } else response
-                } catch (e: UnsupportedEncodingException) {
-                    e.printStackTrace()
-                    response
-                }
-
-            return super.parseNetworkResponse(responseMaybeNull)
-        }
     }
 }

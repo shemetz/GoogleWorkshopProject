@@ -19,13 +19,13 @@ class UserEventsAdapter(private val items: ArrayList<Event>, val context: Contex
 
     override fun onBindViewHolder(holder: ViewHolderEvent, position: Int) {
         holder.eventTitle.text = items[position].name
-        geocode(context, items[position].location.toLatLng()) {
+        ApiRequests.geocode(context, items[position].location.toLatLng()) {
             holder.eventLocation.text = it
         }
         holder.eventDateTime?.text = formatDatetime(items[position].datetime)
 
         val facebookId = items[position].facebookEventId
-        getEventUrl(facebookId) { pic_url ->
+        ApiRequests.getEventUrl(facebookId) { pic_url ->
             Picasso.get()
                 .load(pic_url)
                 .placeholder(R.drawable.ic_tab_events)

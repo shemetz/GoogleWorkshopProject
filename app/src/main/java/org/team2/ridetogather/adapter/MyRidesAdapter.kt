@@ -23,7 +23,7 @@ class MyRidesAdapter(val items: ArrayList<Ride>, val context: Context, var itemC
         Database.getEvent(ride.eventId) { event: Event ->
             holder.eventName?.text = event.name
             holder.eventDateTime?.text = formatDatetime(event.datetime)
-            geocode(context, event.location.toLatLng()) {
+            ApiRequests.geocode(context, event.location.toLatLng()) {
                 holder.eventLocation?.text = it
             }
         }
@@ -35,7 +35,7 @@ class MyRidesAdapter(val items: ArrayList<Ride>, val context: Context, var itemC
                 holder.card_view.findViewById<TextView>(R.id.passengerCount).text = passengerCountText
             }
             val facebookId = driver.facebookProfileId
-            getProfilePicUrl(facebookId) { pic_url ->
+            ApiRequests.getProfilePicUrl(facebookId) { pic_url ->
                 Picasso.get()
                     .load(pic_url)
                     .placeholder(R.drawable.placeholder_profile_circle)

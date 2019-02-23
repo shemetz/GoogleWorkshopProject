@@ -49,7 +49,7 @@ class RidePageActivity : AppCompatActivity() {
 
         carModel.text = ride.carModel
         carColor.text = ride.carColor
-        geocode(this, ride.origin.toLatLng()) {
+        ApiRequests.geocode(this, ride.origin.toLatLng()) {
             originLocation.text = it
         }
         departureTime.text = ride.departureTime.shortenedTime()
@@ -74,7 +74,7 @@ class RidePageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_ride_page)
 //        setSupportActionBar(toolbar)
-        Database.initializeIfNeeded(this)
+        initializeAppIfNeeded(this)
         rideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Ride ID $rideId")
 
@@ -94,7 +94,7 @@ class RidePageActivity : AppCompatActivity() {
             Database.getDriver(ride.driverId) { driver: User ->
                 driverNamePage.text = driver.name
                 val facebookId = driver.facebookProfileId
-                getProfilePicUrl(facebookId) { pic_url ->
+                ApiRequests.getProfilePicUrl(facebookId) { pic_url ->
                     Picasso.get()
                         .load(pic_url)
                         .placeholder(drawable.placeholder_profile_circle)
@@ -148,7 +148,7 @@ class RidePageActivity : AppCompatActivity() {
             // Send notification
             Database.getUser(ride.driverId) { driverUser ->
                 Database.getUser(Database.idOfCurrentUser) { currentUser ->
-                    getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
+                    ApiRequests.getProfilePicUrl(currentUser.facebookProfileId) { picUrl ->
                         val title = getString(R.string.notification_title_new_pickup)
                         val message = currentUser.name + " has asked to join your ride."
                         val to = arrayOf(driverUser.firebaseId)
@@ -157,7 +157,7 @@ class RidePageActivity : AppCompatActivity() {
                             Keys.DRIVER_PERSPECTIVE.name to true,
                             Keys.EVENT_ID.name to ride.eventId
                         )
-                        Database.sendFirebaseNotification(
+                        ApiRequests.sendFirebaseNotification(
                             to, title, message, picUrl,
                             "com.google.firebase.RIDE_PAGE", keys
                         )
@@ -302,8 +302,8 @@ class RidePageActivity : AppCompatActivity() {
                                         )
                                         Database.getUser(pickup.userId) { pickupUser ->
                                             val message = pickupUser.name + " has left your ride"
-                                            getProfilePicUrl(pickupUser.facebookProfileId) { picUrl ->
-                                                Database.sendFirebaseNotification(
+                                            ApiRequests.getProfilePicUrl(pickupUser.facebookProfileId) { picUrl ->
+                                                ApiRequests.sendFirebaseNotification(
                                                     to, title, message, picUrl,
                                                     "com.google.firebase.RIDE_PAGE", keys
                                                 )
@@ -432,13 +432,13 @@ class RidePageActivity : AppCompatActivity() {
                                 val title = getString(R.string.notification_title_ride_canceled)
                                 val message = driver.name + " has canceled their ride"
                                 //val toList = ArrayList<String>()
-                                getProfilePicUrl(driver.facebookProfileId) { picUrl ->
+                                ApiRequests.getProfilePicUrl(driver.facebookProfileId) { picUrl ->
                                     Database.getPickupsForRide(ride.id) { pickups ->
                                         for (pickup in pickups) {
                                             Log.d("firebase", "!!!!" + pickup.userId.toString())
                                             Database.getUser(pickup.userId) { pickupUser ->
                                                 val to = arrayOf(pickupUser.firebaseId)
-                                                Database.sendFirebaseNotification(
+                                                ApiRequests.sendFirebaseNotification(
                                                     to, title, message, picUrl,
                                                     activityName, keys
                                                 )
@@ -496,13 +496,13 @@ class RidePageActivity : AppCompatActivity() {
                 view.passengerName.text = user.name
             }
 
-            geocode(context, pickup.pickupSpot.toLatLng()) {
+            ApiRequests.geocode(context, pickup.pickupSpot.toLatLng()) {
                 view.pickupSpot.text = it
             }
             // load profile picture of passenger
             Database.getUser(pickup.userId) { user: User ->
                 val facebookId = user.facebookProfileId
-                getProfilePicUrl(facebookId) { pic_url ->
+                ApiRequests.getProfilePicUrl(facebookId) { pic_url ->
                     Picasso.get()
                         .load(pic_url)
                         .placeholder(drawable.placeholder_profile_circle)
