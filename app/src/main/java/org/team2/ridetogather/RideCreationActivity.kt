@@ -83,7 +83,7 @@ class RideCreationActivity : AppCompatActivity() {
             if (car_color.text.isBlank()) allIsGood = markError(car_color)
             if (num_seats.text.isBlank()) allIsGood = markError(num_seats)
             else if (num_seats.text.toString().toInt() <= 0) allIsGood =
-                    markError(num_seats, getString(R.string.error_nonpositive_passenger_count))
+                markError(num_seats, getString(R.string.error_nonpositive_passenger_count))
             if (originLocation == null) allIsGood = markError(btn_origin)
             return allIsGood
         }
@@ -148,7 +148,7 @@ class RideCreationActivity : AppCompatActivity() {
                                 "Updating UI with route data: distance = $distanceInText, duration = $durationInText"
                             )
                             ride_time_and_distance.text =
-                                    "The ride should take about $durationInText ($distanceInText)."
+                                "The ride should take about $durationInText ($distanceInText)."
                             ride_time_and_distance.visibility = View.VISIBLE
                         } catch (e: JSONException) {
                             Log.e(tag, "Error in route json parsing, probably undefined distance", e)

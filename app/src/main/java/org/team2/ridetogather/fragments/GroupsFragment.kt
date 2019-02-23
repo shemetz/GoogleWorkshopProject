@@ -36,7 +36,6 @@ class GroupsFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -54,7 +53,7 @@ class GroupsFragment : Fragment() {
         val view: View = inflater.inflate(R.layout.fragment_groups, container, false)
 
         Database.getEventsForUser(Database.idOfCurrentUser) { events: List<Event> ->
-            if (events.size != 0) {
+            if (events.isNotEmpty()) {
                 list.clear()
                 list.addAll(events)
                 val recycle = view.findViewById<RecyclerView>(R.id.recycle)
@@ -70,9 +69,7 @@ class GroupsFragment : Fragment() {
                 val recycle = view.findViewById<TextView>(R.id.tvEmpty)
                 recycle.visibility = View.VISIBLE
             }
-
         }
-
         return view
     }
 
@@ -83,19 +80,17 @@ class GroupsFragment : Fragment() {
                 fragmentManager ?: return@getEventsForUser  // possibly a crash fix
                 val updated_list = arrayListOf<Event>()
                 updated_list.addAll(rides)
-                if(updated_list.size != list.size){
+                if (updated_list.size != list.size) {
                     fragmentManager!!.beginTransaction().detach(this).attach(this).commit()
-                }
-                else{
-                    for(i in 0 until list.size){
-                        if(list[i].id != updated_list[i].id){
+                } else {
+                    for (i in 0 until list.size) {
+                        if (list[i].id != updated_list[i].id) {
                             fragmentManager!!.beginTransaction().detach(this).attach(this).commit()
                             break
                         }
                     }
                 }
             }
-
         }
     }
 
@@ -103,14 +98,12 @@ class GroupsFragment : Fragment() {
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         this.context = context as Activity?
-
     }
 
     override fun onAttach(activity: Activity?) {
         super.onAttach(activity)
         this.context = activity
     }
-
 
 
     companion object {
