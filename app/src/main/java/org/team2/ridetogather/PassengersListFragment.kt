@@ -50,6 +50,7 @@ class PassengersListFragment : Fragment() {
     var list = arrayListOf<User>();
     private fun updatePassengers() {
         Database.getUsersForEvent(eventId) { users ->
+            rides_list_recycler_view ?: return@getUsersForEvent  // dirty patch that doesn't fix the actual issue
             if (users.size != 0) {
                 list.clear()
                 if (rides_list_recycler_view.adapter != null) {
