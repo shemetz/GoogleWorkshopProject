@@ -27,7 +27,7 @@ class MyRidesAdapter(val items: ArrayList<Ride>, val context: Context, var itemC
                 holder.eventLocation?.text = it
             }
         }
-        Database.getDriver(ride.driverId) { driver: Driver ->
+        Database.getDriver(ride.driverId) { driver: User ->
             holder.driverName?.text = driver.name
             Database.getPickupsForRide(ride.id) { pickups ->
                 val numOfExistingPassengers = pickups.count { it.inRide }

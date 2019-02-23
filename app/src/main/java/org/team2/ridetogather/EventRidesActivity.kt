@@ -174,7 +174,7 @@ class EventRidesActivity : AppCompatActivity() {
             val view = holder.cardView
             val ride = rides[position]
 
-            Database.getDriver(ride.driverId) { driver: Driver ->
+            Database.getDriver(ride.driverId) { driver: User ->
                 view.driverName.text = driver.name
 
                 val facebookId = driver.facebookProfileId

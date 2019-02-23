@@ -1,6 +1,5 @@
 package org.team2.ridetogather
 
-typealias Driver = User  // Currently, they are identical. driver ≡ user
 typealias Id = Int  // ID in our database
 typealias FacebookId = String // ID in Facebook's API
 typealias Location = android.location.Location

@@ -91,7 +91,7 @@ class RidePageActivity : AppCompatActivity() {
         Database.getRide(rideId) { ride: Ride ->
             this.ride = ride
             showRideDetails()
-            Database.getDriver(ride.driverId) { driver: Driver ->
+            Database.getDriver(ride.driverId) { driver: User ->
                 driverNamePage.text = driver.name
                 val facebookId = driver.facebookProfileId
                 getProfilePicUrl(facebookId) { pic_url ->

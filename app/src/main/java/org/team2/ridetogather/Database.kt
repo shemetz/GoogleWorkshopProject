@@ -308,7 +308,7 @@ object Database {
     fun getPickup(pickupId: Id, successCallback: (Pickup) -> Unit) =
         generifiedGet(pickupId, "Pickup", JsonParse::pickup, successCallback)
 
-    fun getDriver(driverId: Id, successCallback: (Driver) -> Unit) {
+    fun getDriver(driverId: Id, successCallback: (User) -> Unit) {
         // Currently drivers are identical to users!
         return getUser(driverId, successCallback)
     }
