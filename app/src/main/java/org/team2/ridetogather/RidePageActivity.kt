@@ -396,10 +396,11 @@ class RidePageActivity : AppCompatActivity() {
                 true
             }
             id.action_edit_ride -> {
-//                val intent = Intent(applicationContext, RideCreationActivity::class.java)
-//                intent.putExtra(Keys.RIDE_ID.name, rideId)
-//                startActivity(intent)
-                Toast.makeText(this, "Sorry, editing rides is unsupported right now!", Toast.LENGTH_LONG).show()
+                val intent = Intent(applicationContext, RideCreationActivity::class.java)
+                intent.putExtra(Keys.EVENT_ID.name, ride.eventId)
+                intent.putExtra(Keys.RIDE_ID.name, rideId)
+                startActivity(intent)
+//                Toast.makeText(this, "Sorry, editing rides is unsupported right now!", Toast.LENGTH_LONG).show()
                 true
             }
             id.action_delete_ride -> {

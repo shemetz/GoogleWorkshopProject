@@ -27,6 +27,7 @@ class RideCreationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_ridecreation)
         Database.initializeIfNeeded(this)
         val eventId = intent.getIntExtra(Keys.EVENT_ID.name, -1)
+        val existingRideId = intent.getIntExtra(Keys.RIDE_ID.name, -1)
         Log.d(tag, "Created $tag with Event ID $eventId")
 
         val driverId: Id = Database.idOfCurrentUser
@@ -101,15 +102,27 @@ class RideCreationActivity : AppCompatActivity() {
                 putString(Preferences.LAST_ORIGIN_LOCATION__READABLE.name, btn_origin.text.toString())
                 apply()
             }
-
-            Database.addRide(
-                driverId, eventId, originLocation!!, timeOfDay!!,
-                car_model.text.toString(), car_color.text.toString(),
-                num_seats.text.toString().toInt(), extra_details.text.toString()
-            ) { newRide: Ride ->
-                RidePageActivity.start(this, newRide.id, true, clearPrevActivity = true)
-                finish()
-            }
+            if (existingRideId == -1)
+                Database.addRide(
+                    driverId, eventId, originLocation!!, timeOfDay!!,
+                    car_model.text.toString(), car_color.text.toString(),
+                    num_seats.text.toString().toInt(), extra_details.text.toString()
+                ) { newRide: Ride ->
+                    RidePageActivity.start(this, newRide.id, true, clearPrevActivity = true)
+                    finish()
+                }
+            else
+                Database.getRide(existingRideId) { ride ->
+                    ride.origin = originLocation!!
+                    ride.departureTime = timeOfDay!!
+                    ride.carModel = car_model.text.toString()
+                    ride.carColor = car_color.text.toString()
+                    ride.passengerCount = num_seats.text.toString().toInt()
+                    ride.extraDetails = extra_details.text.toString()
+                    Database.updateRide(ride)
+                    RidePageActivity.start(this, ride.id, true, clearPrevActivity = true)
+                    finish()
+                }
         }
         new_ride_form.requestFocus()
 
@@ -120,6 +133,24 @@ class RideCreationActivity : AppCompatActivity() {
         sharedPrefs.getString(Preferences.LAST_ORIGIN_LOCATION__LAT_LNG.name, null)
             ?.apply { originLocation = this.decodeToLatLng().toLocation() }
         sharedPrefs.getString(Preferences.LAST_ORIGIN_LOCATION__READABLE.name, null)?.apply { btn_origin.text = this }
+
+        if (existingRideId != -1) {
+            Log.i(tag, "Editing existing ride; loading info...")
+            Database.getRide(existingRideId) { ride ->
+                car_model.setText(ride.carModel)
+                car_color.setText(ride.carColor)
+                num_seats.setText(ride.passengerCount.toString())
+                originLocation = ride.origin
+                timeOfDay = ride.departureTime
+                val cal = Calendar.getInstance()
+                cal.set(Calendar.HOUR_OF_DAY, ride.departureTime.hours)
+                cal.set(Calendar.MINUTE, ride.departureTime.minutes)
+                pick_time_button.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+                geocode(this@RideCreationActivity, originLocation!!.toLatLng()) {
+                    btn_origin.text = it
+                }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
