@@ -7,12 +7,10 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ListView
 import android.widget.TextView
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
@@ -21,10 +19,7 @@ import org.team2.ridetogather.*
 import org.team2.ridetogather.adapter.FacebookEvent
 import org.team2.ridetogather.adapter.FacebookEventAdapter
 import org.team2.ridetogather.adapter.ItemClickListener
-import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.time.DayOfWeek
-import java.time.LocalDateTime
 import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
@@ -122,10 +117,7 @@ class AllEvents : Fragment() {
                     }
                     val datetime = formatDatetime(parseStandardDatetime(eventsArray.optJSONObject(i).getString("start_time")))
                     val placeObject = eventsArray.optJSONObject(i).optJSONObject("place")
-                    if (placeObject?.getJSONObject("location") != null){
-
-
-                        val locationObject = placeObject.getJSONObject("location")
+                    placeObject?.optJSONObject("location")?.let { locationObject ->
                         val location = placeObject.getString("name")+", "+locationObject.getString("city")+", "+locationObject.getString("country")
                         val loc = LatLng(
                             locationObject.getDouble("latitude"),
@@ -155,6 +147,7 @@ class AllEvents : Fragment() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                Log.e(tag, "Error reading facebook events result", e)
             }
         }
 
